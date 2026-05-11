@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     RENDER: Optional[str] = None
     DEMO_EMAIL: Optional[str] = None
     DEMO_PASSWORD: Optional[str] = None
+    ADMIN_EMAIL: Optional[str] = None
+    ADMIN_PASSWORD: Optional[str] = None
 
     class Config:
         env_file = ".env"

@@ -13,6 +13,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 settings = get_settings()
 DEMO_EMAIL = settings.DEMO_EMAIL or "demo@facturd-demo.com"
 DEMO_PASSWORD = settings.DEMO_PASSWORD or "DemoFactuRD2026!"
+ADMIN_EMAIL = settings.ADMIN_EMAIL or "admin@facturd.com"
+ADMIN_PASSWORD = settings.ADMIN_PASSWORD or "Admin123."
 
 
 def upsert_demo_data() -> None:
@@ -250,5 +252,54 @@ def upsert_demo_data() -> None:
         db.close()
 
 
+def upsert_admin_data() -> None:
+    db = SessionLocal()
+    try:
+        empresa = db.query(models.Empresa).filter(models.Empresa.rnc == "101000001").first()
+        if not empresa:
+            empresa = models.Empresa(
+                id=generar_id(),
+                nombre="Jinaite",
+                rnc="101000001",
+                direccion="Av. Principal, Santo Domingo",
+                telefono="809-555-0101",
+                email="info@jinaite.com",
+                secuencia_ncf=1,
+                secuencia_ecf=1,
+                itbis=18.0,
+                regimen="ORDINARIO",
+            )
+            db.add(empresa)
+            db.flush()
+            print(f"Empresa creada: {empresa.nombre} (RNC: {empresa.rnc})")
+        else:
+            print(f"Empresa ya existe: {empresa.nombre}")
+
+        user = db.query(models.User).filter(models.User.email == ADMIN_EMAIL).first()
+        if not user:
+            user = models.User(
+                id=generar_id(),
+                email=ADMIN_EMAIL,
+                password=pwd_context.hash(ADMIN_PASSWORD),
+                name="Admin Jinaite",
+                role=models.Role.ADMIN,
+                empresa_id=empresa.id,
+            )
+            db.add(user)
+            db.flush()
+            print(f"Usuario admin creado: {ADMIN_EMAIL}")
+        else:
+            print(f"Usuario admin ya existe: {ADMIN_EMAIL}")
+
+        db.commit()
+        print(f"Admin listo")
+        print(f"  Email: {ADMIN_EMAIL}")
+        print(f"  Password: {ADMIN_PASSWORD}")
+        print(f"  Empresa: {empresa.nombre} (RNC: {empresa.rnc})")
+    finally:
+        db.close()
+
+
 if __name__ == "__main__":
+    upsert_admin_data()
     upsert_demo_data()
