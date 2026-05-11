@@ -2,20 +2,17 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from datetime import timedelta
-import uuid
 
 from app.database import get_db
 from app.models import models
 from app.models.schemas import UserCreate, UserLogin, LoginResponse, UserResponse, EmpresaResponse
 from app.middleware.auth import create_access_token, get_current_user
 from app.config import get_settings
+from app.utils import generar_id
 
 router = APIRouter(prefix="/api/auth", tags=["Auth"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 settings = get_settings()
-
-def generar_id():
-    return uuid.uuid4().hex[:24]
 
 @router.post("/register", response_model=LoginResponse)
 def register(user_data: UserCreate, db: Session = Depends(get_db)):

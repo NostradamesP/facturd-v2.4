@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-import uuid
 from datetime import datetime, timedelta
 
 from app.database import get_db
@@ -14,11 +13,9 @@ from app.routes.facturas import (
     normalizar_enum,
     preparar_detalles_factura,
 )
+from app.utils import generar_id
 
 router = APIRouter(prefix="/api/cotizaciones", tags=["Cotizaciones"])
-
-def generar_id():
-    return uuid.uuid4().hex[:24]
 
 @router.get("")
 @router.get("/")

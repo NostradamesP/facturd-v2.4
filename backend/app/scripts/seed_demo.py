@@ -1,20 +1,18 @@
 from datetime import datetime, timedelta
 import json
-import uuid
 
 from passlib.context import CryptContext
 
 from app.database import SessionLocal
 from app.models import models
+from app.utils import generar_id
+from app.config import get_settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-DEMO_EMAIL = "demo@facturd-demo.com"
-DEMO_PASSWORD = "DemoFactuRD2026!"
-
-
-def generar_id() -> str:
-    return uuid.uuid4().hex[:24]
+settings = get_settings()
+DEMO_EMAIL = settings.DEMO_EMAIL or "demo@facturd-demo.com"
+DEMO_PASSWORD = settings.DEMO_PASSWORD or "DemoFactuRD2026!"
 
 
 def upsert_demo_data() -> None:

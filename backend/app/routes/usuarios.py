@@ -1,17 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
-import uuid
 
 from app.database import get_db
 from app.models import models
 from app.middleware.auth import get_current_empresa, get_current_user
+from app.utils import generar_id
 
 router = APIRouter(prefix="/api/usuarios", tags=["Usuarios"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-def generar_id():
-    return uuid.uuid4().hex[:24]
 
 @router.get("/")
 def get_usuarios(

@@ -1,17 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-import uuid
 
 from app.database import get_db
 from app.middleware.auth import get_current_empresa
 from app.models import models
 from app.models.schemas import RegistroDGIICreate, RegistroDGIIUpdate
+from app.utils import generar_id
 
 router = APIRouter(prefix="/api/dgii", tags=["DGII"])
-
-
-def generar_id() -> str:
-    return uuid.uuid4().hex[:24]
 
 
 def estado_dgii(value):
