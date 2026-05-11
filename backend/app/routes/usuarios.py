@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import models
+from app.models.schemas import UserResponse
 from app.middleware.auth import get_current_empresa, get_current_user
 from app.utils import pwd_context, generar_id
 
@@ -18,9 +19,9 @@ def get_usuarios(
 
 @router.get("/me")
 def get_current_user_info(
-    current_user: dict = Depends(get_current_user)
+    current_user: models.User = Depends(get_current_user)
 ):
-    return current_user
+    return UserResponse(id=current_user.id, email=current_user.email, name=current_user.name, role=current_user.role.value)
 
 @router.post("/")
 def create_usuario(
