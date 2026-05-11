@@ -4,7 +4,7 @@ from functools import lru_cache
 import secrets
 import os
 
-RENDER_SUPABASE_URL = "postgresql+psycopg2://postgres.fxytqxizerydyfqcpnxz:FactuRD2026Supabase23@aws-0-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require"
+RENDER_SUPABASE_URL = "postgresql+psycopg2://postgres.fxytqxizerydyfqcpnxz:Nostradame07.@aws-0-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require"
 
 class Settings(BaseSettings):
     APP_NAME: str = "FactuRD"
