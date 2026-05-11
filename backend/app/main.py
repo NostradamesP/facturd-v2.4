@@ -43,12 +43,11 @@ app.add_middleware(
 
 @app.middleware("http")
 async def cookie_to_auth_header(request: Request, call_next):
-    if "authorization" not in {k.lower(): v for k, v in request.headers.items()}:
+    has_auth = any(k.lower() == b"authorization" for k, _ in request.scope.get("headers", []))
+    if not has_auth:
         token = request.cookies.get("token")
         if token:
-            request.headers.__dict__["_list"].append(
-                (b"authorization", f"Bearer {token}".encode())
-            )
+            request.scope["headers"].append((b"authorization", f"Bearer {token}".encode()))
     return await call_next(request)
 
 
