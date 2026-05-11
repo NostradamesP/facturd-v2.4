@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 from datetime import timedelta
 
@@ -12,8 +12,21 @@ from app.utils import pwd_context, generar_id
 router = APIRouter(prefix="/api/auth", tags=["Auth"])
 settings = get_settings()
 
+
+def _set_token_cookie(response: Response, token: str, max_age: int):
+    response.set_cookie(
+        key="token",
+        value=token,
+        max_age=max_age,
+        httponly=True,
+        samesite="none" if settings.RENDER else "lax",
+        secure=bool(settings.RENDER),
+        path="/",
+    )
+
+
 @router.post("/register", response_model=LoginResponse)
-def register(request: Request, user_data: UserCreate, db: Session = Depends(get_db)):
+def register(user_data: UserCreate, response: Response, db: Session = Depends(get_db)):
     existing_user = db.query(models.User).filter(models.User.email == user_data.email).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="El email ya está registrado")
@@ -46,6 +59,7 @@ def register(request: Request, user_data: UserCreate, db: Session = Depends(get_
         data={"sub": user.id},
         expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
+    _set_token_cookie(response, access_token, settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
     
     return LoginResponse(
         token=access_token,
@@ -54,7 +68,7 @@ def register(request: Request, user_data: UserCreate, db: Session = Depends(get_
     )
 
 @router.post("/login", response_model=LoginResponse)
-def login(login_data: UserLogin, db: Session = Depends(get_db)):
+def login(login_data: UserLogin, response: Response, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == login_data.email).first()
     if not user or not pwd_context.verify(login_data.password, user.password):
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
@@ -65,6 +79,7 @@ def login(login_data: UserLogin, db: Session = Depends(get_db)):
         data={"sub": user.id},
         expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
+    _set_token_cookie(response, access_token, settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
     
     return LoginResponse(
         token=access_token,
