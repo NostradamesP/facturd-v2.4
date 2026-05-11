@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 12
     CORS_ORIGINS: str = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:8000")
     AUTO_CREATE_TABLES: bool = False
+    RENDER: bool = False
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
