@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import os
 
-from app.database import engine, Base
+from app.database import engine, Base, SessionLocal
 from app.config import get_settings
 from app.routes import auth, clientes, productos, proveedores, cotizaciones, plantillas, facturas, pagos, empresa, pdf, dgii
 
@@ -51,6 +51,16 @@ app.include_router(dgii.router)
 @app.get("/api/health")
 def health_check():
     return {"status": "ok", "message": "FactuRD API running"}
+
+@app.get("/api/health/db")
+def health_db():
+    try:
+        db = SessionLocal()
+        result = db.execute("SELECT 1").scalar()
+        db.close()
+        return {"status": "ok", "db_connected": True, "result": result}
+    except Exception as e:
+        return {"status": "error", "db_connected": False, "error": str(e), "error_type": type(e).__name__}
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
