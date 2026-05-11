@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import os
 
+from sqlalchemy import text
 from app.database import engine, Base, SessionLocal
 from app.config import get_settings
 from app.routes import auth, clientes, productos, proveedores, cotizaciones, plantillas, facturas, pagos, empresa, pdf, dgii
@@ -56,7 +57,7 @@ def health_check():
 def health_db():
     try:
         db = SessionLocal()
-        result = db.execute("SELECT 1").scalar()
+        result = db.execute(text("SELECT 1")).scalar()
         db.close()
         return {"status": "ok", "db_connected": True, "result": result}
     except Exception as e:
