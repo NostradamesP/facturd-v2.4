@@ -1,0 +1,29 @@
+# Local data and secrets
+.git/
+_git/
+.env
+.env.*
+!.env.example
+!.env.production.example
+!backend/.env.example
+!facturd-desktop/.env.production.example
+!deploy/**/.env*.example
+facturd.db
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+.pytest_cache/
+
+# Frontend
+node_modules/
+dist/
+
+# macOS
+.DS_Store

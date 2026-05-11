@@ -1,0 +1,12 @@
+.DS_Store
+.env
+.env.*
+*.db
+*.sqlite
+*.sqlite3
+*.log
+venv
+__pycache__
+app/__pycache__
+app/**/__pycache__
+tests
