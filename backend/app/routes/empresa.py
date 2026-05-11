@@ -3,9 +3,10 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import models
-from app.middleware.auth import get_current_empresa
+from app.middleware.auth import get_current_empresa, require_role
 
 router = APIRouter(prefix="/api/empresa", tags=["Empresa"])
+require_admin = require_role(["ADMIN"])
 
 @router.get("")
 @router.get("/")
@@ -34,7 +35,8 @@ def get_empresa(
 def update_empresa(
     data: dict,
     empresa_id: str = Depends(get_current_empresa),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _: models.User = Depends(require_admin),
 ):
     empresa = db.query(models.Empresa).filter(models.Empresa.id == empresa_id).first()
     if not empresa:

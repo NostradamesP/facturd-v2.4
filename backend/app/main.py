@@ -11,7 +11,7 @@ import uvicorn
 from sqlalchemy import text
 from app.database import engine, Base, SessionLocal
 from app.config import get_settings
-from app.routes import auth, clientes, productos, proveedores, cotizaciones, plantillas, facturas, pagos, empresa, pdf, dgii
+from app.routes import auth, clientes, productos, proveedores, cotizaciones, plantillas, facturas, pagos, empresa, pdf, dgii, usuarios
 
 logging.basicConfig(
     level=logging.INFO,
@@ -116,6 +116,7 @@ app.include_router(pagos.router)
 app.include_router(empresa.router)
 app.include_router(pdf.router)
 app.include_router(dgii.router)
+app.include_router(usuarios.router)
 
 
 @app.get("/api/health")

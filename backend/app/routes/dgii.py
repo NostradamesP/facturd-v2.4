@@ -2,12 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.middleware.auth import get_current_empresa
+from app.middleware.auth import get_current_empresa, require_role
 from app.models import models
 from app.models.schemas import RegistroDGIICreate, RegistroDGIIUpdate
 from app.utils import generar_id
 
 router = APIRouter(prefix="/api/dgii", tags=["DGII"])
+require_admin = require_role(["ADMIN"])
 
 
 def estado_dgii(value):
@@ -56,6 +57,7 @@ def get_registros_dgii(
     estado: str = "",
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db),
+    _: models.User = Depends(require_admin),
 ):
     query = db.query(models.RegistroDGII).filter(models.RegistroDGII.empresa_id == empresa_id)
     if estado:
@@ -69,6 +71,7 @@ def get_registro_factura_dgii(
     factura_id: str,
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db),
+    _: models.User = Depends(require_admin),
 ):
     get_factura(factura_id, empresa_id, db)
     registro = db.query(models.RegistroDGII).filter(
@@ -86,6 +89,7 @@ def upsert_registro_factura_dgii(
     data: RegistroDGIICreate,
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db),
+    _: models.User = Depends(require_admin),
 ):
     factura = get_factura(factura_id, empresa_id, db)
     registro = db.query(models.RegistroDGII).filter(
@@ -118,6 +122,7 @@ def update_registro_dgii(
     data: RegistroDGIIUpdate,
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db),
+    _: models.User = Depends(require_admin),
 ):
     registro = db.query(models.RegistroDGII).filter(
         models.RegistroDGII.id == registro_id,
