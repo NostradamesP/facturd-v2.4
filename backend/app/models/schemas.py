@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 from typing import Optional, List, TypeVar, Generic
 from datetime import datetime
 from enum import Enum
@@ -72,8 +72,7 @@ class UserResponse(BaseModel):
     name: str
     role: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class LoginResponse(BaseModel):
     token: str
@@ -97,8 +96,7 @@ class EmpresaUpdate(EmpresaBase):
 class EmpresaResponse(EmpresaBase):
     id: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 LoginResponse.model_rebuild()
 
@@ -125,8 +123,7 @@ class ClienteResponse(ClienteBase):
     estatus: str
     saldo_pendiente: float
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Proveedor
 class ProveedorBase(BaseModel):
@@ -147,8 +144,7 @@ class ProveedorResponse(ProveedorBase):
     id: str
     empresa_id: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Producto
 class ProductoBase(BaseModel):
@@ -174,8 +170,7 @@ class ProductoResponse(ProductoBase):
     empresa_id: str
     activo: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Detalle Factura
 class DetalleFacturaBase(BaseModel):
@@ -193,8 +188,7 @@ class DetalleFacturaCreate(DetalleFacturaBase):
 class DetalleFacturaResponse(DetalleFacturaBase):
     id: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Factura
 class FacturaBase(BaseModel):
@@ -223,8 +217,7 @@ class FacturaResponse(FacturaBase):
     total: float
     estado: EstadoFacturaEnum
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class RegistroDGIIBase(BaseModel):
     track_id: Optional[str] = None
@@ -263,8 +256,7 @@ class RegistroDGIIResponse(RegistroDGIIBase):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Stats
 class DashboardStats(BaseModel):
@@ -317,5 +309,4 @@ class PlantillaFacturaResponse(PlantillaFacturaBase):
     id: str
     empresa_id: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

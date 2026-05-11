@@ -1,13 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+import uuid
 
 from app.database import get_db
 from app.models.models import PlantillaFactura
 from app.models.schemas import PlantillaFacturaCreate, PlantillaFacturaUpdate, PlantillaFacturaResponse
 from app.middleware.auth import get_current_empresa
-from app.utils import generar_id
 
 router = APIRouter(prefix="/api/plantillas", tags=["Plantillas"])
+
+def generar_id():
+    return uuid.uuid4().hex[:24]
 
 def crear_plantilla_default(db: Session, empresa_id: str) -> PlantillaFactura:
     plantilla = PlantillaFactura(

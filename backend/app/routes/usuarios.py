@@ -1,21 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from passlib.context import CryptContext
 
 from app.database import get_db
 from app.models import models
-from app.middleware.auth import get_current_empresa, get_current_user, require_role
-from app.utils import generar_id
+from app.middleware.auth import get_current_empresa, get_current_user
+from app.utils import pwd_context, generar_id
 
 router = APIRouter(prefix="/api/usuarios", tags=["Usuarios"])
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-require_admin = require_role(["ADMIN"])
 
 @router.get("/")
 def get_usuarios(
     empresa_id: str = Depends(get_current_empresa),
-    db: Session = Depends(get_db),
-    _: models.User = Depends(require_admin),
+    db: Session = Depends(get_db)
 ):
     usuarios = db.query(models.User).filter(models.User.empresa_id == empresa_id).all()
     return [{"id": u.id, "email": u.email, "name": u.name, "role": u.role.value, "created_at": u.created_at} for u in usuarios]
@@ -30,8 +26,7 @@ def get_current_user_info(
 def create_usuario(
     data: dict,
     empresa_id: str = Depends(get_current_empresa),
-    db: Session = Depends(get_db),
-    _: models.User = Depends(require_admin),
+    db: Session = Depends(get_db)
 ):
     existing = db.query(models.User).filter(models.User.email == data.get("email")).first()
     if existing:
@@ -57,8 +52,7 @@ def update_usuario(
     usuario_id: str,
     data: dict,
     empresa_id: str = Depends(get_current_empresa),
-    db: Session = Depends(get_db),
-    _: models.User = Depends(require_admin),
+    db: Session = Depends(get_db)
 ):
     usuario = db.query(models.User).filter(
         models.User.id == usuario_id,
@@ -81,8 +75,7 @@ def update_usuario(
 def delete_usuario(
     usuario_id: str,
     empresa_id: str = Depends(get_current_empresa),
-    db: Session = Depends(get_db),
-    _: models.User = Depends(require_admin),
+    db: Session = Depends(get_db)
 ):
     usuario = db.query(models.User).filter(
         models.User.id == usuario_id,

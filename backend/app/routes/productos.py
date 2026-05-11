@@ -1,14 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+import uuid
 
 from app.database import get_db
 from app.models import models
 from app.models.schemas import ProductoCreate, ProductoUpdate, ProductoResponse, PaginatedResponse
 from app.middleware.auth import get_current_empresa
-from app.utils import generar_id
 
 router = APIRouter(prefix="/api/productos", tags=["Productos"])
+
+def generar_id() -> str:
+    val_hex: str = uuid.uuid4().hex
+    return val_hex[:24]  # type: ignore
 
 @router.get("", response_model=PaginatedResponse[ProductoResponse])
 @router.get("/", response_model=PaginatedResponse[ProductoResponse])

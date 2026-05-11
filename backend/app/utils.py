@@ -1,39 +1,38 @@
 import uuid
+import re
 from datetime import datetime
-from fastapi import HTTPException
+from typing import Optional
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def generar_id() -> str:
     return uuid.uuid4().hex[:24]
 
 
-def normalizar_enum(enum_cls, value, default):
-    if value is None:
-        return default
-    key = str(value).upper()
-    if key in ("CANCELADA", "CANCELADO") and hasattr(enum_cls, "__members__"):
-        if "ANULADA" in enum_cls.__members__:
-            key = "ANULADA"
-    if hasattr(enum_cls, "__members__") and key in enum_cls.__members__:
-        return enum_cls[key]
-    raise HTTPException(status_code=400, detail=f"Valor invalido: {value}")
+def normalizar_enum(valor: str) -> str:
+    return "ANULADA" if valor.upper() == "CANCELADA" else valor.upper()
 
 
-def parse_date(value):
-    if not value:
+def parse_date(valor: str) -> Optional[datetime]:
+    if not valor:
         return None
-    if isinstance(value, datetime):
-        return value
+    for fmt in ("%Y-%m-%d", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S"):
+        try:
+            return datetime.strptime(valor, fmt)
+        except ValueError:
+            continue
+    return None
+
+
+def parse_float(valor) -> float:
+    if valor is None:
+        return 0.0
+    if isinstance(valor, (int, float)):
+        return float(valor)
+    valor = re.sub(r"[^0-9.,-]", "", str(valor).replace(",", "."))
     try:
-        return datetime.fromisoformat(str(value))
+        return float(valor)
     except ValueError:
-        raise HTTPException(status_code=400, detail=f"Fecha invalida: {value}")
-
-
-def parse_float(value, default: float = 0.0) -> float:
-    if value in (None, ""):
-        return default
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        raise HTTPException(status_code=400, detail=f"Numero invalido: {value}")
+        return 0.0

@@ -1,13 +1,29 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
+from datetime import datetime
+import uuid
 
 from app.database import get_db
 from app.middleware.auth import get_current_empresa
 from app.models import models
 from app.models.schemas import DashboardStats
-from app.utils import generar_id, normalizar_enum, parse_date, parse_float
 
 router = APIRouter(prefix="/api/facturas", tags=["Facturas"])
+
+
+def generar_id() -> str:
+    return uuid.uuid4().hex[:24]
+
+
+def normalizar_enum(enum_cls, value, default):
+    if value is None:
+        return default
+    key = str(value).upper()
+    if key == "CANCELADA" and enum_cls is models.EstadoFactura:
+        key = "ANULADA"
+    if key in enum_cls.__members__:
+        return enum_cls[key]
+    raise HTTPException(status_code=400, detail=f"Valor invalido: {value}")
 
 
 def generar_ncf(tipo_ncf: models.TipoNCF, secuencia: int) -> str:
@@ -22,6 +38,26 @@ def generar_ncf_disponible(tipo_ncf: models.TipoNCF, secuencia: int, db: Session
         if not existe:
             return ncf, secuencia_actual
         secuencia_actual += 1
+
+
+def parse_date(value):
+    if not value:
+        return None
+    if isinstance(value, datetime):
+        return value
+    try:
+        return datetime.fromisoformat(str(value))
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Fecha invalida: {value}")
+
+
+def parse_float(value, default: float = 0.0) -> float:
+    if value in (None, ""):
+        return default
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail=f"Numero invalido: {value}")
 
 
 def preparar_detalles_factura(detalles_data: list, empresa_id: str, db: Session) -> tuple[list[dict], float, float]:
