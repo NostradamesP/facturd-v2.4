@@ -19,7 +19,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:8000").split(",")
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:8000,https://facturd-pruebas.netlify.app").split(",")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
