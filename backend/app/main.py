@@ -42,6 +42,17 @@ app.add_middleware(
 
 
 @app.middleware("http")
+async def cookie_to_auth_header(request: Request, call_next):
+    if "authorization" not in {k.lower(): v for k, v in request.headers.items()}:
+        token = request.cookies.get("token")
+        if token:
+            request.headers.__dict__["_list"].append(
+                (b"authorization", f"Bearer {token}".encode())
+            )
+    return await call_next(request)
+
+
+@app.middleware("http")
 async def log_requests(request: Request, call_next):
     start = time.time()
     response = await call_next(request)

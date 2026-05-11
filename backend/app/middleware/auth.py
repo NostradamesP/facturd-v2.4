@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from app.config import get_settings
@@ -10,14 +10,7 @@ from app.models import models
 
 settings = get_settings()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
-
-
-async def get_token_from_request(request: Request) -> Optional[str]:
-    token = await oauth2_scheme(request)
-    if token:
-        return token
-    return request.cookies.get("token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 
 def require_role(allowed_roles: list[str]):
@@ -30,6 +23,7 @@ def require_role(allowed_roles: list[str]):
         return current_user
     return role_checker
 
+
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
@@ -40,8 +34,8 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
     return encoded_jwt
 
-async def get_current_user(request: Request, db: Session = Depends(get_db)):
-    token = await get_token_from_request(request)
+
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Credenciales inválidas",
@@ -54,11 +48,12 @@ async def get_current_user(request: Request, db: Session = Depends(get_db)):
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    
+
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if user is None:
         raise credentials_exception
     return user
+
 
 def get_current_empresa(current_user: models.User = Depends(get_current_user)):
     return current_user.empresa_id
