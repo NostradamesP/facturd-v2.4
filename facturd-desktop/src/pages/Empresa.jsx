@@ -263,17 +263,6 @@ export default function Empresa() {
             </div>
           </div>
 
-          <div className="bg-primary-container/20 rounded-xl p-6 border border-primary/10">
-            <div className="flex gap-4">
-              <span className="material-symbols-outlined text-primary">info</span>
-              <div>
-                <p className="text-xs font-bold text-primary mb-1 uppercase tracking-tight">{t('Pro-Tip: Branding Matters')}</p>
-                <p className="text-xs text-on-primary-container leading-relaxed">
-                  {t('Companies with high-resolution logos and clear contact information on invoices get paid up to 14% faster on average.')}
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

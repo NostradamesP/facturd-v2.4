@@ -19,6 +19,7 @@ export default function Inventario() {
     stock: '',
     costo_unitario: '',
     itbis: '',
+    tipo: 'PRODUCTO',
   });
   const { addToast } = useToast();
 
@@ -50,10 +51,11 @@ export default function Inventario() {
         stock: producto.stock?.toString() || '',
         costo_unitario: producto.costo_unitario?.toString() || '',
         itbis: producto.itbis?.toString() || '',
+        tipo: producto.tipo || 'PRODUCTO',
       });
     } else {
       setEditingProducto(null);
-      setFormData({ nombre: '', codigo: '', descripcion: '', precio_unitario: '', stock: '', costo_unitario: '', itbis: '' });
+      setFormData({ nombre: '', codigo: '', descripcion: '', precio_unitario: '', stock: '', costo_unitario: '', itbis: '', tipo: 'PRODUCTO' });
     }
     setShowModal(true);
   };
@@ -69,6 +71,7 @@ export default function Inventario() {
         stock: parseInt(formData.stock) || 0,
         costo_unitario: parseFloat(formData.costo_unitario) || 0,
         itbis: parseFloat(formData.itbis) || 0,
+        tipo: formData.tipo || 'PRODUCTO',
       };
       if (editingProducto) {
         await productosService.update(editingProducto.id, data);
@@ -262,6 +265,26 @@ export default function Inventario() {
                     className="w-full bg-transparent border-0 border-b-2 border-outline-variant/20 focus:ring-0 focus:border-primary px-0 py-2 text-on-surface font-medium transition-colors"
                     required
                   />
+                </div>
+                <div className="col-span-2 flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, tipo: 'PRODUCTO' })}
+                    className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                      formData.tipo === 'PRODUCTO' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'
+                    }`}
+                  >
+                    {t('Product')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, tipo: 'SERVICIO' })}
+                    className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                      formData.tipo === 'SERVICIO' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'
+                    }`}
+                  >
+                    {t('Service')}
+                  </button>
                 </div>
                 <div className="relative">
                   <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('SKU Code')}</label>

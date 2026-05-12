@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { facturasService, clientesService, productosService, plantillasService, dgiiService } from '../services/api';
 import { useToast } from '../components/Toast';
@@ -61,6 +61,7 @@ export default function Facturas() {
   const [savedTemplates, setSavedTemplates] = useState([]);
   const [dgiiLoading, setDgiiLoading] = useState(false);
   const [dgiiRegistro, setDgiiRegistro] = useState(null);
+  const location = useLocation();
   const { addToast } = useToast();
   const [formData, setFormData] = useState({
     cliente_id: '',
@@ -79,6 +80,17 @@ export default function Facturas() {
       setLoading(false);
     }
   }, [user]);
+
+  const autoOpenRef = useRef(false);
+  useEffect(() => {
+    if (!loading && !autoOpenRef.current && location.state?.openFacturaId) {
+      const factura = facturas.find(f => f.id === location.state.openFacturaId);
+      if (factura) {
+        autoOpenRef.current = true;
+        handleViewFactura(factura);
+      }
+    }
+  }, [loading]);
 
   const fetchData = async () => {
     try {

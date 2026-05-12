@@ -159,6 +159,7 @@ class ProductoBase(BaseModel):
     codigo_barra: Optional[str] = None
     aplica_itbis: bool = True
     tipo_itbis: TipoItbisEnum = TipoItbisEnum.ITBIS_18
+    tipo: str = "PRODUCTO"
 
 class ProductoCreate(ProductoBase):
     pass

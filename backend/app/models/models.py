@@ -19,6 +19,10 @@ class TipoItbis(enum.Enum):
     ITBIS_EXENTO = "ITBIS_EXENTO"
     ITBIS_REDUCIDO_13 = "ITBIS_REDUCIDO_13"
 
+class TipoProducto(enum.Enum):
+    PRODUCTO = "PRODUCTO"
+    SERVICIO = "SERVICIO"
+
 class TipoNCF(enum.Enum):
     B01 = "B01"
     B02 = "B02"
@@ -137,6 +141,7 @@ class Producto(Base):
     codigo_barra = Column(String, nullable=True)
     aplica_itbis = Column(Boolean, default=True)
     tipo_itbis = Column(Enum(TipoItbis), default=TipoItbis.ITBIS_18)
+    tipo = Column(Enum(TipoProducto), default=TipoProducto.PRODUCTO)
     activo = Column(Boolean, default=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())

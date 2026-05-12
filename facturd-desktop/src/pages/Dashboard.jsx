@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { facturasService, clientesService, productosService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const statusValue = (estado) => String(estado || '').toUpperCase();
 
 export default function Dashboard() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [facturas, setFacturas] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -122,7 +124,7 @@ export default function Dashboard() {
               </thead>
               <tbody className="divide-y divide-outline-variant/5">
                 {recentFacturas.map((factura) => (
-                  <tr key={factura.id} className="hover:bg-surface-container-low/30 transition-colors">
+                  <tr key={factura.id} onClick={() => navigate('/facturas', { state: { openFacturaId: factura.id } })} className="hover:bg-surface-container-low/30 transition-colors cursor-pointer">
                     <td className="px-8 py-4">
                       <div>
                         <p className="font-medium text-on-surface">{factura.ncf || 'N/A'}</p>
