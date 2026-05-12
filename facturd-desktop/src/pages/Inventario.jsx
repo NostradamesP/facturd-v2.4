@@ -26,6 +26,7 @@ export default function Inventario() {
   });
    const { addToast } = useToast();
   const [submitting, setSubmitting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => {
     if (user) {
