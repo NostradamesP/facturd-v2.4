@@ -209,8 +209,15 @@ class DetalleFacturaBase(BaseModel):
     itbis: float = 0
     total: float
 
-class DetalleFacturaCreate(DetalleFacturaBase):
-    pass
+class DetalleFacturaCreate(BaseModel):
+    producto_id: Optional[str] = None
+    tipo: str = "producto"
+    descripcion: str = ""
+    cantidad: float = 1
+    precio_unitario: float = 0
+    aplica_itbis: bool = True
+    itbis: float = 0
+    total: float = 0
 
 class DetalleFacturaResponse(DetalleFacturaBase):
     id: str
@@ -224,12 +231,27 @@ class FacturaBase(BaseModel):
     nota: Optional[str] = None
     visual_settings: Optional[str] = None
 
-class FacturaCreate(FacturaBase):
-    detalles: List[DetalleFacturaCreate]
+class FacturaCreate(BaseModel):
+    cliente_id: str
+    tipo_ncf: str = "E41"
+    fecha: Optional[str] = None
+    fecha_vencimiento: Optional[str] = None
+    nota: Optional[str] = None
     descuento: float = 0
+    descuento_porcentaje: Optional[float] = None
+    visual_settings: Optional[str] = None
+    detalles: List[DetalleFacturaCreate] = []
 
 class FacturaUpdate(BaseModel):
-    estado: Optional[EstadoFacturaEnum] = None
+    cliente_id: Optional[str] = None
+    estado: Optional[str] = None
+    fecha: Optional[str] = None
+    nota: Optional[str] = None
+    descuento: Optional[float] = None
+    descuento_porcentaje: Optional[float] = None
+    fecha_vencimiento: Optional[str] = None
+    visual_settings: Optional[str] = None
+    detalles: Optional[List[DetalleFacturaCreate]] = None
 
 class FacturaResponse(FacturaBase):
     id: str

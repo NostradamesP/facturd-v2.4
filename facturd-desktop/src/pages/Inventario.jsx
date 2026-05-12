@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { productosService } from '../services/api';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function Inventario() {
   const { t } = useTranslation();
@@ -23,7 +24,8 @@ export default function Inventario() {
     aplica_itbis: true,
     tipo_itbis: 'ITBIS_18',
   });
-  const { addToast } = useToast();
+   const { addToast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -66,6 +68,7 @@ export default function Inventario() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
     try {
       const data = {
         nombre: formData.nombre,
@@ -91,19 +94,26 @@ export default function Inventario() {
     } catch (error) {
       console.error('Error saving producto:', error);
       addToast(error.response?.data?.detail || t('Error al guardar producto'), 'error');
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (confirm(t('¿Está seguro de eliminar este producto?'))) {
-      try {
-        await productosService.delete(id);
-        addToast(t('Producto eliminado correctamente'), 'success');
-        fetchProductos();
-      } catch (error) {
-        console.error('Error deleting producto:', error);
-        addToast(error.response?.data?.detail || t('Error al eliminar producto'), 'error');
-      }
+  const handleDelete = (id) => {
+    setConfirmDelete({ id });
+  };
+
+  const executeDelete = async () => {
+    if (!confirmDelete) return;
+    try {
+      await productosService.delete(confirmDelete.id);
+      addToast(t('Producto eliminado correctamente'), 'success');
+      fetchProductos();
+    } catch (error) {
+      console.error('Error deleting producto:', error);
+      addToast(error.response?.data?.detail || t('Error al eliminar producto'), 'error');
+    } finally {
+      setConfirmDelete(null);
     }
   };
 
@@ -361,6 +371,14 @@ export default function Inventario() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!confirmDelete}
+        title={t('Eliminar producto')}
+        message={t('¿Está seguro de eliminar este producto?')}
+        onConfirm={executeDelete}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 }

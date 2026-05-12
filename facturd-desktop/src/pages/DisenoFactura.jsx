@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../components/Toast';
 import { plantillasService } from '../services/api';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const ELEMENT_TYPES = {
   TEXT: 'text',
@@ -278,6 +279,7 @@ export default function DisenoFactura() {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(true);
   const [templateName, setTemplateName] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(null);
   
   const canvasRef = useRef(null);
   const dragStartRef = useRef({ x: 0, y: 0, elementX: 0, elementY: 0 });
@@ -416,19 +418,25 @@ export default function DisenoFactura() {
     }
   };
 
-  const handleDeleteTemplate = async (templateId) => {
-    if (!confirm(t('¿Eliminar esta plantilla?'))) return;
+  const handleDeleteTemplate = (templateId) => {
+    setConfirmDelete({ templateId });
+  };
+
+  const executeDeleteTemplate = async () => {
+    if (!confirmDelete) return;
     try {
-      await plantillasService.delete(templateId);
+      await plantillasService.delete(confirmDelete.templateId);
       addToast(t('Plantilla eliminada'), 'success');
       loadTemplates();
-      if (currentTemplateId === templateId) {
+      if (currentTemplateId === confirmDelete.templateId) {
         setCurrentTemplateId(null);
         setElements([]);
       }
     } catch (error) {
       console.error('Error deleting template:', error);
       addToast(t('Error al eliminar plantilla'), 'error');
+    } finally {
+      setConfirmDelete(null);
     }
   };
 
@@ -1767,6 +1775,14 @@ export default function DisenoFactura() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!confirmDelete}
+        title={t('Eliminar plantilla')}
+        message={t('¿Eliminar esta plantilla?')}
+        onConfirm={executeDeleteTemplate}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 }

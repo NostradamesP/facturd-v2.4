@@ -7,7 +7,7 @@ import uuid
 from app.database import get_db
 from app.middleware.auth import get_current_empresa
 from app.models import models
-from app.models.schemas import DashboardStats
+from app.models.schemas import DashboardStats, FacturaCreate, FacturaUpdate
 
 router = APIRouter(prefix="/api/facturas", tags=["Facturas"])
 
@@ -276,7 +276,7 @@ def get_stats(
 @router.post("", status_code=201)
 @router.post("/", status_code=201)
 def create_factura(
-    data: dict,
+    data: FacturaCreate,
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db),
 ):
@@ -284,7 +284,7 @@ def create_factura(
     if not empresa:
         raise HTTPException(status_code=404, detail="Empresa no encontrada")
 
-    cliente_id = data.get("cliente_id")
+    cliente_id = data.cliente_id
     cliente = db.query(models.Cliente).filter(
         models.Cliente.id == cliente_id,
         models.Cliente.empresa_id == empresa_id,
@@ -292,11 +292,12 @@ def create_factura(
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
 
-    tipo_ncf = normalizar_enum(models.TipoNCF, data.get("tipo_ncf", "E41"), models.TipoNCF.E41)
+    tipo_ncf = normalizar_enum(models.TipoNCF, data.tipo_ncf, models.TipoNCF.E41)
     ncf, secuencia = generar_ncf_disponible(tipo_ncf, empresa.secuencia_ncf or 1, db)
-    detalles_data = data.get("detalles") or []
-    detalles_preparados, subtotal, itbis = preparar_detalles_factura(detalles_data, empresa_id, db)
-    descuento = calcular_descuento(data, subtotal)
+    detalles_preparados, subtotal, itbis = preparar_detalles_factura(
+        [d.model_dump() for d in data.detalles], empresa_id, db
+    )
+    descuento = calcular_descuento(data.model_dump(), subtotal)
     total = subtotal + itbis - descuento
     factura = models.Factura(
         id=generar_id(),
@@ -305,15 +306,15 @@ def create_factura(
         ncf=ncf,
         tipo_ncf=tipo_ncf,
         secuencia=secuencia,
-        fecha=parse_date(data.get("fecha")) or None,
-        fecha_vencimiento=parse_date(data.get("fecha_vencimiento")),
+        fecha=parse_date(data.fecha) or None,
+        fecha_vencimiento=parse_date(data.fecha_vencimiento),
         subtotal=subtotal,
         descuento=descuento,
         itbis=itbis,
         total=total,
         estado=models.EstadoFactura.PENDIENTE,
-        nota=data.get("nota"),
-        visual_settings=data.get("visual_settings"),
+        nota=data.nota,
+        visual_settings=data.visual_settings,
     )
     db.add(factura)
     db.flush()
@@ -343,7 +344,7 @@ def get_factura(
 @router.put("/{factura_id}")
 def update_factura(
     factura_id: str,
-    data: dict,
+    data: FacturaUpdate,
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db),
 ):
@@ -354,38 +355,38 @@ def update_factura(
     if not factura:
         raise HTTPException(status_code=404, detail="Factura no encontrada")
 
-    actualiza_detalles = "detalles" in data
+    actualiza_detalles = data.detalles is not None
     total_pagado = total_pagado_factura(factura.id, db)
     if actualiza_detalles and factura.estado in (models.EstadoFactura.PAGADA, models.EstadoFactura.ENVIADA_DGII):
         raise HTTPException(status_code=400, detail="No se pueden editar los renglones de una factura cerrada")
     if actualiza_detalles and total_pagado > 0:
         raise HTTPException(status_code=400, detail="No se pueden editar renglones de una factura con pagos registrados")
 
-    if "cliente_id" in data:
+    if data.cliente_id is not None:
         cliente = db.query(models.Cliente).filter(
-            models.Cliente.id == data.get("cliente_id"),
+            models.Cliente.id == data.cliente_id,
             models.Cliente.empresa_id == empresa_id,
         ).first()
         if not cliente:
             raise HTTPException(status_code=404, detail="Cliente no encontrado")
-        factura.cliente_id = data.get("cliente_id")
+        factura.cliente_id = data.cliente_id
 
-    if "fecha" in data:
-        factura.fecha = parse_date(data.get("fecha")) or factura.fecha
-    if "fecha_vencimiento" in data:
-        factura.fecha_vencimiento = parse_date(data.get("fecha_vencimiento"))
+    if data.fecha is not None:
+        factura.fecha = parse_date(data.fecha) or factura.fecha
+    if data.fecha_vencimiento is not None:
+        factura.fecha_vencimiento = parse_date(data.fecha_vencimiento)
 
     if actualiza_detalles:
         restaurar_stock_factura(factura, db)
         detalles_preparados, subtotal, itbis = preparar_detalles_factura(
-            data.get("detalles") or [],
+            [d.model_dump() for d in data.detalles],
             empresa_id,
             db,
         )
         db.query(models.DetalleFactura).filter(
             models.DetalleFactura.factura_id == factura.id
         ).delete(synchronize_session=False)
-        descuento = calcular_descuento(data, subtotal)
+        descuento = calcular_descuento(data.model_dump(), subtotal)
         factura.subtotal = subtotal
         factura.descuento = descuento
         factura.itbis = itbis
@@ -398,8 +399,8 @@ def update_factura(
             nota_kardex="Edicion venta",
         )
 
-    if "estado" in data:
-        nuevo_estado = normalizar_enum(models.EstadoFactura, data["estado"], factura.estado)
+    if data.estado is not None:
+        nuevo_estado = normalizar_enum(models.EstadoFactura, data.estado, factura.estado)
         if total_pagado > 0 and nuevo_estado != factura.estado:
             if nuevo_estado == models.EstadoFactura.PAGADA and total_pagado >= (factura.total or 0):
                 factura.estado = nuevo_estado
@@ -407,10 +408,10 @@ def update_factura(
                 raise HTTPException(status_code=400, detail="El estado de una factura con pagos se controla desde cobros")
         else:
             factura.estado = nuevo_estado
-    if "nota" in data:
-        factura.nota = data["nota"]
-    if "visual_settings" in data:
-        factura.visual_settings = data["visual_settings"]
+    if data.nota is not None:
+        factura.nota = data.nota
+    if data.visual_settings is not None:
+        factura.visual_settings = data.visual_settings
     db.commit()
     db.refresh(factura)
     return factura_to_dict(factura, db, include_detalles=True)

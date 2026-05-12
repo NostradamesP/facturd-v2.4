@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { clientesService } from '../services/api';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function Clientes() {
   const { t } = useTranslation();
@@ -19,6 +20,7 @@ export default function Clientes() {
     direccion: '',
   });
   const { addToast } = useToast();
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -65,6 +67,7 @@ export default function Clientes() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
     console.log('Clientes: Submitting formData:', formData);
     try {
       if (editingCliente) {
@@ -81,19 +84,26 @@ export default function Clientes() {
     } catch (error) {
       console.error('Clientes: Error saving cliente:', error);
       addToast(error.response?.data?.detail || error.message || t('Error al guardar cliente'), 'error');
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (confirm(t('¿Está seguro de eliminar este cliente?'))) {
-      try {
-        await clientesService.delete(id);
-        addToast(t('Cliente eliminado correctamente'), 'success');
-        fetchClientes();
-      } catch (error) {
-        console.error('Error deleting cliente:', error);
-        addToast(error.response?.data?.detail || t('Error al eliminar cliente'), 'error');
-      }
+  const handleDelete = (id) => {
+    setConfirmDelete({ id });
+  };
+
+  const executeDelete = async () => {
+    if (!confirmDelete) return;
+    try {
+      await clientesService.delete(confirmDelete.id);
+      addToast(t('Cliente eliminado correctamente'), 'success');
+      fetchClientes();
+    } catch (error) {
+      console.error('Error deleting cliente:', error);
+      addToast(error.response?.data?.detail || t('Error al eliminar cliente'), 'error');
+    } finally {
+      setConfirmDelete(null);
     }
   };
 
@@ -303,6 +313,14 @@ export default function Clientes() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!confirmDelete}
+        title={t('Eliminar cliente')}
+        message={t('¿Está seguro de eliminar este cliente?')}
+        onConfirm={executeDelete}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 }

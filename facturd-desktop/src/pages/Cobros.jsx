@@ -19,7 +19,8 @@ export default function Cobros() {
     metodo: 'EFECTIVO',
     fecha: new Date().toISOString().split('T')[0],
   });
-  const { addToast } = useToast();
+   const { addToast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -56,6 +57,7 @@ export default function Cobros() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
     try {
       await pagosService.create({
         ...formData,
@@ -68,6 +70,8 @@ export default function Cobros() {
     } catch (error) {
       console.error('Error creating pago:', error);
       addToast(error.response?.data?.detail || t('Error al registrar pago'), 'error');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -245,9 +249,10 @@ export default function Cobros() {
                 </button>
                 <button
                   type="submit"
-                  className="px-8 py-3 rounded-lg text-sm font-bold text-on-primary bg-gradient-to-br from-primary to-primary-dim shadow-lg shadow-primary/20 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
+                  disabled={submitting}
+                  className={`px-8 py-3 rounded-lg text-sm font-bold text-on-primary bg-gradient-to-br from-primary to-primary-dim shadow-lg shadow-primary/20 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all ${submitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  {t('Record Payment')}
+                  {submitting ? t('Guardando...') : t('Record Payment')}
                 </button>
               </div>
             </form>

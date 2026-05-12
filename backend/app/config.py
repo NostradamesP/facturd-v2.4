@@ -3,6 +3,9 @@ from typing import Optional
 from functools import lru_cache
 import secrets
 import os
+import logging
+
+logger = logging.getLogger("facturd")
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env")
@@ -19,7 +22,8 @@ class Settings(BaseSettings):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         if not self.JWT_SECRET:
-            raise ValueError("JWT_SECRET must be set in environment or .env file")
+            self.JWT_SECRET = secrets.token_urlsafe(32)
+            logger.warning("No JWT_SECRET set in environment. Using random secret — tokens will be invalidated on restart!")
 
 @lru_cache()
 def get_settings():

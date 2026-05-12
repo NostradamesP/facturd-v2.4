@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { proveedoresService } from '../services/api';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function Proveedores() {
   const { t } = useTranslation();
@@ -21,6 +22,7 @@ export default function Proveedores() {
     costo_promedio: '',
   });
   const { addToast } = useToast();
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -60,6 +62,7 @@ export default function Proveedores() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
     try {
       if (editingProveedor) {
         await proveedoresService.update(editingProveedor.id, formData);
@@ -73,19 +76,26 @@ export default function Proveedores() {
     } catch (error) {
       console.error('Error saving proveedor:', error);
       addToast(error.response?.data?.detail || t('Error al guardar proveedor'), 'error');
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (confirm(t('¿Está seguro de eliminar este proveedor?'))) {
-      try {
-        await proveedoresService.delete(id);
-        addToast(t('Proveedor eliminado correctamente'), 'success');
-        fetchProveedores();
-      } catch (error) {
-        console.error('Error deleting proveedor:', error);
-        addToast(error.response?.data?.detail || t('Error al eliminar proveedor'), 'error');
-      }
+  const handleDelete = (id) => {
+    setConfirmDelete({ id });
+  };
+
+  const executeDelete = async () => {
+    if (!confirmDelete) return;
+    try {
+      await proveedoresService.delete(confirmDelete.id);
+      addToast(t('Proveedor eliminado correctamente'), 'success');
+      fetchProveedores();
+    } catch (error) {
+      console.error('Error deleting proveedor:', error);
+      addToast(error.response?.data?.detail || t('Error al eliminar proveedor'), 'error');
+    } finally {
+      setConfirmDelete(null);
     }
   };
 
@@ -301,6 +311,14 @@ export default function Proveedores() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!confirmDelete}
+        title={t('Eliminar proveedor')}
+        message={t('¿Está seguro de eliminar este proveedor?')}
+        onConfirm={executeDelete}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 }

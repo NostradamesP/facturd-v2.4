@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { gastosService, proveedoresService } from '../services/api';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const CATEGORIAS = ['INSUMOS', 'SERVICIOS', 'LOGISTICA', 'NOMINA', 'MARKETING', 'OFICINA', 'OTROS'];
 
@@ -22,7 +23,8 @@ export default function Gastos() {
     categoria: 'OTROS',
     nota: '',
   });
-  const { addToast } = useToast();
+   const { addToast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -72,6 +74,7 @@ export default function Gastos() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
     try {
       if (editingGasto) {
         await gastosService.update(editingGasto.id, formData);
@@ -85,19 +88,26 @@ export default function Gastos() {
     } catch (error) {
       console.error('Error saving gasto:', error);
       addToast(error.response?.data?.detail || t('Error al guardar gasto'), 'error');
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (confirm(t('¿Está seguro de eliminar este gasto?'))) {
-      try {
-        await gastosService.delete(id);
-        addToast(t('Gasto eliminado correctamente'), 'success');
-        fetchData();
-      } catch (error) {
-        console.error('Error deleting gasto:', error);
-        addToast(error.response?.data?.detail || t('Error al eliminar gasto'), 'error');
-      }
+  const handleDelete = (id) => {
+    setConfirmDelete({ id });
+  };
+
+  const executeDelete = async () => {
+    if (!confirmDelete) return;
+    try {
+      await gastosService.delete(confirmDelete.id);
+      addToast(t('Gasto eliminado correctamente'), 'success');
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting gasto:', error);
+      addToast(error.response?.data?.detail || t('Error al eliminar gasto'), 'error');
+    } finally {
+      setConfirmDelete(null);
     }
   };
 
@@ -294,6 +304,14 @@ export default function Gastos() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!confirmDelete}
+        title={t('Eliminar gasto')}
+        message={t('¿Está seguro de eliminar este gasto?')}
+        onConfirm={executeDelete}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 }

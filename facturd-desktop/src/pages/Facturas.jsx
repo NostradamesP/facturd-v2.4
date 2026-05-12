@@ -5,6 +5,7 @@ import { facturasService, clientesService, productosService, plantillasService, 
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import FacturaPreview from '../components/factura/FacturaPreview';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const STATUS_FILTERS = [
   { value: 'all', key: 'All' },
@@ -63,6 +64,7 @@ export default function Facturas() {
   const [dgiiRegistro, setDgiiRegistro] = useState(null);
   const location = useLocation();
   const { addToast } = useToast();
+  const [confirmAction, setConfirmAction] = useState(null);
   const [formData, setFormData] = useState({
     cliente_id: '',
     tipo_ncf: 'E41',
@@ -318,8 +320,12 @@ export default function Facturas() {
     }
   };
 
-  const handleAnularFactura = async (factura = selectedFactura) => {
-    if (!factura || !confirm(`¿Anular la factura ${factura.ncf || ''}?`)) return;
+  const handleAnularFactura = (factura = selectedFactura) => {
+    if (!factura) return;
+    setConfirmAction({ type: 'anular', factura });
+  };
+
+  const handleAnularConfirm = async (factura) => {
     try {
       await facturasService.update(factura.id, { estado: 'ANULADA' });
       addToast('Factura anulada correctamente', 'success');
@@ -332,14 +338,16 @@ export default function Facturas() {
     }
   };
 
-  const handleEnviarDGII = async (factura = selectedFactura) => {
+  const handleEnviarDGII = (factura = selectedFactura) => {
     if (!factura || !factura.id) return;
     if (!factura.ncf) {
       addToast('La factura debe tener un NCF asignado antes de enviarse a la DGII', 'error');
       return;
     }
-    if (!confirm(`¿Enviar la factura ${factura.ncf} a la DGII?\n\nSe generará el XML e-CF y se enviará al portal de la DGII.`)) return;
-    
+    setConfirmAction({ type: 'dgii', factura });
+  };
+
+  const handleEnviarDGIIConfirm = async (factura) => {
     setDgiiLoading(true);
     try {
       const res = await dgiiService.enviar(factura.id);
@@ -402,7 +410,7 @@ export default function Facturas() {
 
   const handleDetalleChange = (index, field, value) => {
     const newDetalles = [...formData.detalles];
-    newDetalles[index][field] = value;
+    newDetalles[index] = { ...newDetalles[index], [field]: value };
     const current = newDetalles[index];
     
     if (field === 'producto_id' && value) {
@@ -528,20 +536,34 @@ export default function Facturas() {
     await saveFactura();
   };
 
-  const handleDelete = async (id) => {
-    if (confirm('¿Está seguro de eliminar esta factura?')) {
-      try {
-        await facturasService.delete(id);
-        addToast('Factura eliminada correctamente', 'success');
-        if (selectedFactura?.id === id) {
-          setShowDetail(false);
-          setSelectedFactura(null);
-        }
-        fetchData();
-      } catch (error) {
-        console.error('Error deleting factura:', error);
-        addToast(error.response?.data?.detail || 'Error al eliminar factura', 'error');
+  const handleDelete = (id) => {
+    setConfirmAction({ type: 'delete', id });
+  };
+
+  const handleDeleteConfirm = async (id) => {
+    try {
+      await facturasService.delete(id);
+      addToast('Factura eliminada correctamente', 'success');
+      if (selectedFactura?.id === id) {
+        setShowDetail(false);
+        setSelectedFactura(null);
       }
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting factura:', error);
+      addToast(error.response?.data?.detail || 'Error al eliminar factura', 'error');
+    }
+  };
+
+  const executeConfirm = async () => {
+    if (!confirmAction) return;
+    const { type, factura, id } = confirmAction;
+    try {
+      if (type === 'delete') await handleDeleteConfirm(id);
+      else if (type === 'anular') await handleAnularConfirm(factura);
+      else if (type === 'dgii') await handleEnviarDGIIConfirm(factura);
+    } finally {
+      setConfirmAction(null);
     }
   };
 
@@ -1392,6 +1414,16 @@ export default function Facturas() {
           </button>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!confirmAction}
+        title={confirmAction?.type === 'anular' ? 'Anular factura' : confirmAction?.type === 'dgii' ? 'Enviar a DGII' : 'Eliminar factura'}
+        message={confirmAction?.type === 'anular' ? `¿Anular la factura ${confirmAction?.factura?.ncf || ''}?` : confirmAction?.type === 'dgii' ? '¿Enviar la factura a la DGII?\n\nSe generará el XML e-CF y se enviará al portal.' : '¿Está seguro de eliminar esta factura?'}
+        onConfirm={executeConfirm}
+        onCancel={() => setConfirmAction(null)}
+        confirmText={confirmAction?.type === 'anular' ? 'Anular' : confirmAction?.type === 'dgii' ? 'Enviar' : 'Eliminar'}
+        variant={confirmAction?.type === 'dgii' ? 'primary' : 'danger'}
+      />
     </>
   );
 }
