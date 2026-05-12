@@ -5,8 +5,51 @@ from app.database import SessionLocal
 from app.models import models
 from app.utils import pwd_context, generar_id
 
+ADMIN_EMAIL = "admin@facturd.com"
+ADMIN_PASSWORD = "Admin123."
+ADMIN_RNC = "101234567"
+
 DEMO_EMAIL = "demo@facturd-demo.com"
 DEMO_PASSWORD = "DemoFactuRD2026!"
+
+
+def upsert_admin() -> None:
+    db = SessionLocal()
+    try:
+        admin = db.query(models.User).filter(models.User.email == ADMIN_EMAIL).first()
+        if admin:
+            return
+
+        empresa = db.query(models.Empresa).filter(models.Empresa.rnc == ADMIN_RNC).first()
+        if not empresa:
+            empresa = models.Empresa(
+                id=generar_id(),
+                nombre="FactuRD Demo SRL",
+                rnc=ADMIN_RNC,
+                direccion="Av. Admin 1, Santo Domingo",
+                telefono="809-555-0001",
+                email=ADMIN_EMAIL,
+                secuencia_ncf=1,
+                secuencia_ecf=1,
+                itbis=18.0,
+                regimen="ORDINARIO",
+            )
+            db.add(empresa)
+            db.flush()
+
+        admin = models.User(
+            id=generar_id(),
+            email=ADMIN_EMAIL,
+            password=pwd_context.hash(ADMIN_PASSWORD),
+            name="Admin",
+            role=models.Role.ADMIN,
+            empresa_id=empresa.id,
+        )
+        db.add(admin)
+        db.commit()
+        print(f"Admin listo: {ADMIN_EMAIL}")
+    finally:
+        db.close()
 
 
 def upsert_demo_data() -> None:
@@ -245,4 +288,5 @@ def upsert_demo_data() -> None:
 
 
 if __name__ == "__main__":
+    upsert_admin()
     upsert_demo_data()
