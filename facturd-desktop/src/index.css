@@ -91,3 +91,47 @@ body {
 .animate-slide-in {
   animation: slide-in 0.3s ease-out;
 }
+
+@media print {
+  @page {
+    margin: 0.5cm;
+    size: auto;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  nav, header, .no-print {
+    display: none !important;
+  }
+
+  .fixed.inset-0 {
+    position: static !important;
+    background: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  .max-w-6xl {
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    background: white !important;
+  }
+
+  .print-area {
+    grid-column: 1 / -1 !important;
+    max-width: 100% !important;
+  }
+
+  .bg-surface,
+  .bg-surface-container,
+  .bg-surface-container-lowest,
+  .bg-surface-container-high,
+  .bg-surface-container-highest {
+    background: white !important;
+  }
+}

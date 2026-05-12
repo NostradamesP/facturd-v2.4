@@ -90,6 +90,8 @@ class Empresa(Base):
     itbis = Column(Float, default=18.0)
     regimen = Column(String, default="ORDINARIO")
     idioma = Column(String(2), default="es", server_default="es")
+    nombre_sistema = Column(String, nullable=True)
+    logo_url = Column(String, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 

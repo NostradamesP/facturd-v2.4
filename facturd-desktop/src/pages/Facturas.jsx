@@ -565,7 +565,8 @@ export default function Facturas() {
   }
 
   return (
-    <div className="space-y-8">
+    <>
+    <div className="space-y-8 no-print">
       <div className="flex justify-between items-end">
         <div>
           <h1 className="font-headline text-3xl font-extrabold text-on-surface tracking-tight mb-2">
@@ -695,11 +696,12 @@ export default function Facturas() {
           </tbody>
         </table>
       </div>
+    </div>
 
       {showDetail && selectedFactura && (
         <div className="fixed inset-0 bg-black/30 flex items-start justify-center z-50 overflow-y-auto p-6">
           <div className="w-full max-w-6xl bg-surface rounded-xl shadow-2xl my-6 overflow-hidden">
-            <div className="px-8 py-6 border-b border-outline-variant/10 flex items-start justify-between gap-6">
+            <div className="px-8 py-6 border-b border-outline-variant/10 flex items-start justify-between gap-6 no-print">
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <h2 className="font-headline text-2xl font-extrabold text-on-surface tracking-tight">
@@ -758,7 +760,7 @@ export default function Facturas() {
             </div>
 
             <div className="grid grid-cols-12 gap-8 p-8">
-              <div className="col-span-8">
+              <div className="col-span-8 print-area">
                 <FacturaPreview
                   formData={{
                     ...selectedFactura,
@@ -770,7 +772,7 @@ export default function Facturas() {
                   onTemplateChange={setSelectedTemplate}
                 />
               </div>
-              <aside className="col-span-4 space-y-4">
+              <aside className="col-span-4 space-y-4 no-print">
                 <div className="bg-surface-container rounded-xl p-6">
                   <h3 className="font-headline text-lg font-bold mb-4 text-on-surface">Resumen</h3>
                   <div className="space-y-3 text-sm">
@@ -1390,6 +1392,6 @@ export default function Facturas() {
           </button>
         </div>
       )}
-    </div>
+    </>
   );
 }

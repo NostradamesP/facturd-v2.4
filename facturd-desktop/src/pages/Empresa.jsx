@@ -17,6 +17,8 @@ export default function Empresa() {
     telefono: '',
     email: '',
     idioma: 'es',
+    nombre_sistema: '',
+    logo_url: '',
   });
   const [originalData, setOriginalData] = useState({});
   const { addToast } = useToast();
@@ -38,6 +40,8 @@ export default function Empresa() {
           telefono: res.data.telefono || '',
           email: res.data.email || '',
           idioma: res.data.idioma || 'es',
+          nombre_sistema: res.data.nombre_sistema || '',
+          logo_url: res.data.logo_url || '',
         };
         setFormData(data);
         setOriginalData(data);
@@ -165,6 +169,16 @@ export default function Empresa() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="w-full bg-transparent border-0 border-b-2 border-outline-variant/20 focus:ring-0 focus:border-primary px-0 py-2 text-on-surface font-medium transition-colors"
+                  />
+                </div>
+                <div className="col-span-1 md:col-span-2 relative">
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('System Name')}</label>
+                  <input
+                    type="text"
+                    value={formData.nombre_sistema}
+                    onChange={(e) => setFormData({ ...formData, nombre_sistema: e.target.value })}
+                    className="w-full bg-transparent border-0 border-b-2 border-outline-variant/20 focus:ring-0 focus:border-primary px-0 py-2 text-on-surface font-medium transition-colors"
+                    placeholder="Ej: Mi Sistema de Facturación"
                   />
                 </div>
                 <div className="relative">

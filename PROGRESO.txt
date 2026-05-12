@@ -1,0 +1,90 @@
+========================================
+FACTURD v2.4 - PROGRESO
+========================================
+Fecha: 2026-05-12
+
+=== CAMBIOS REALIZADOS EN EL CODIGO ===
+
+1. Login.jsx - Fallback "FactuRD"
+   - Archivo: facturd-desktop/src/pages/Login.jsx
+   - Cambio: Cuando empresa.nombre_sistema no está definido,
+     ahora muestra "FactuRD" como título por defecto en lugar
+     de no mostrar nada.
+
+=== MIGRACION A PRODUCCION (Supabase + Render) ===
+Estado: COMPLETADA
+
+Base de datos local SQLite migrada a Supabase PostgreSQL.
+Render API ahora conecta a Supabase via DATABASE_URL en Render Dashboard.
+
+Datos migrados (totales en Supabase):
+  - 6 empresas
+  - 9 usuarios
+  - 10 clientes
+  - 5 productos
+  - 7 plantillas de factura
+  - 10 facturas (con 13 detalles) en 4 empresas distintas
+  - 3 cotizaciones
+  - 59 registros de kardex
+
+Admin (empresa Jinaite) ve: 6 facturas, 5 clientes
+
+Servicios:
+  - Produccion API: https://facturd-api-pruebas.onrender.com/api (conectado a Supabase)
+  - Produccion Frontend: https://facturd-pruebas.netlify.app
+  - Local API: http://localhost:8000 (conectado a Supabase)
+  - Local Frontend: http://127.0.0.1:3002
+
+Arquitectura:
+  - Supabase: solo base de datos PostgreSQL
+  - Render: backend API (FastAPI) con DATABASE_URL de Supabase
+  - Netlify: frontend (React) apuntando a Render API
+
+Pasos realizados:
+  1. Instalacion Supabase CLI, login, link al proyecto fxytqxizerydyfqcpnxz
+  2. Creacion de columnas faltantes en Supabase (idioma, nombre_sistema, logo_url, tipo, tamano_fuente)
+  3. Migracion ORM (migrate_orm.py) datos de SQLite a Supabase
+  4. Stamped alembic_version para evitar re-migracion
+  5. Configuracion DATABASE_URL en Render Dashboard con pooler de Supabase
+  6. Render redeploy -> login fallaba por hash de password migrado
+  7. Fix: regenerados hashes bcrypt para admin@facturd.com y demo@facturddemo.com
+
+=== CONFIGURACION ===
+
+Backend .env local:
+  DATABASE_URL=postgresql+psycopg2://postgres.fxytqxizerydyfqcpnxz:Nostradame07.@aws-1-us-east-1.pooler.supabase.com:5432/postgres?sslmode=require
+  JWT_SECRET del archivo .env local
+
+Render Dashboard (Environment Variables):
+  DATABASE_URL=postgresql+psycopg2://postgres.fxytqxizerydyfqcpnxz:Nostradame07.@aws-1-us-east-1.pooler.supabase.com:5432/postgres?sslmode=require
+
+Para desarrollo local con SQLite, cambiar DATABASE_URL a:
+  DATABASE_URL=sqlite:///./facturd.db
+
+Archivos relevantes:
+  - backend/migrate_orm.py: script de migracion ORM
+  - backend/.env: config local (actualmente apunta a Supabase)
+  - facturd-desktop/src/pages/Login.jsx: fallback "FactuRD"
+  - PROGRESO.txt: este archivo
+
+=== CREDENCIALES PRODUCCION ===
+
+Admin:
+  Email: admin@facturd.com
+  Password: Admin123.
+  Empresa: Jinaite (RNC 101000001)
+
+Demo:
+  Email: demo@facturddemo.com
+  Password: DemoFactuRD2026!
+  Empresa: Jinaite (RNC 101000001)
+
+Otros usuarios migrados (en sus respectivas empresas):
+  - test@test.com / test@example.com -> Test Company
+  - gfreites1@gmail.com (Gary) -> Test Company
+  - facturd.test.1777995827800@example.com -> Empresa Prueba FactuRD
+  - facturd.flow.1777996439@example.com -> Empresa Flujo
+  - codex.1778001352835@example.com -> Empresa Codex
+  - prueba@test.com -> Prueba SRL
+
+Nota: cada usuario solo ve facturas de su propia empresa.

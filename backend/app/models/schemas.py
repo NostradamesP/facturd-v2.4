@@ -87,6 +87,8 @@ class EmpresaBase(BaseModel):
     telefono: Optional[str] = None
     email: Optional[str] = None
     idioma: str = "es"
+    nombre_sistema: Optional[str] = None
+    logo_url: Optional[str] = None
 
 class EmpresaCreate(EmpresaBase):
     pass
