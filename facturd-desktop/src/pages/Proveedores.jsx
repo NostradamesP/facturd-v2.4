@@ -17,6 +17,8 @@ export default function Proveedores() {
     email: '',
     telefono: '',
     direccion: '',
+    productos_servicios: '',
+    costo_promedio: '',
   });
   const { addToast } = useToast();
 
@@ -46,10 +48,12 @@ export default function Proveedores() {
         email: proveedor.email || '',
         telefono: proveedor.telefono || '',
         direccion: proveedor.direccion || '',
+        productos_servicios: proveedor.productos_servicios || '',
+        costo_promedio: proveedor.costo_promedio?.toString() || '',
       });
     } else {
       setEditingProveedor(null);
-      setFormData({ nombre: '', rnc: '', email: '', telefono: '', direccion: '' });
+      setFormData({ nombre: '', rnc: '', email: '', telefono: '', direccion: '', productos_servicios: '', costo_promedio: '' });
     }
     setShowModal(true);
   };
@@ -139,6 +143,12 @@ export default function Proveedores() {
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
                 {t('Phone')}
               </th>
+              <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+                {t('Supplies')}
+              </th>
+              <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant text-right">
+                {t('Cost')}
+              </th>
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant text-center">
                 {t('Actions')}
               </th>
@@ -164,6 +174,12 @@ export default function Proveedores() {
                 <td className="px-8 py-4 text-on-surface-variant">
                   {proveedor.telefono || '-'}
                 </td>
+                <td className="px-8 py-4 text-on-surface-variant text-sm max-w-[200px] truncate">
+                  {proveedor.productos_servicios || '-'}
+                </td>
+                <td className="px-8 py-4 text-right font-medium text-on-surface">
+                  {proveedor.costo_promedio ? `$${(proveedor.costo_promedio).toLocaleString('es-DO', { minimumFractionDigits: 2 })}` : '-'}
+                </td>
                 <td className="px-8 py-4 text-center">
                   <button 
                     onClick={() => handleOpenModal(proveedor)}
@@ -182,7 +198,7 @@ export default function Proveedores() {
             ))}
             {proveedores.length === 0 && (
               <tr>
-                <td colSpan="5" className="px-8 py-8 text-center text-on-surface-variant">
+                <td colSpan="7" className="px-8 py-8 text-center text-on-surface-variant">
                   {t('No providers registered')}
                 </td>
               </tr>
@@ -243,6 +259,26 @@ export default function Proveedores() {
                   type="text"
                   value={formData.direccion}
                   onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
+                  className="w-full bg-transparent border-0 border-b-2 border-outline-variant/20 focus:ring-0 focus:border-primary px-0 py-2 text-on-surface font-medium transition-colors"
+                />
+              </div>
+              <div className="col-span-2 relative">
+                <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Supplies')}</label>
+                <textarea
+                  value={formData.productos_servicios}
+                  onChange={(e) => setFormData({ ...formData, productos_servicios: e.target.value })}
+                  className="w-full bg-transparent border-0 border-b-2 border-outline-variant/20 focus:ring-0 focus:border-primary px-0 py-2 text-on-surface font-medium transition-colors resize-none"
+                  rows={2}
+                  placeholder="Ej: Materiales de oficina, servicios de limpieza, etc."
+                />
+              </div>
+              <div className="relative">
+                <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Cost')}</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.costo_promedio}
+                  onChange={(e) => setFormData({ ...formData, costo_promedio: e.target.value })}
                   className="w-full bg-transparent border-0 border-b-2 border-outline-variant/20 focus:ring-0 focus:border-primary px-0 py-2 text-on-surface font-medium transition-colors"
                 />
               </div>

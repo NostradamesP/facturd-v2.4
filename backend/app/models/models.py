@@ -123,6 +123,8 @@ class Proveedor(Base):
     direccion = Column(String, nullable=True)
     telefono = Column(String, nullable=True)
     email = Column(String, nullable=True)
+    productos_servicios = Column(Text, nullable=True)
+    costo_promedio = Column(Float, default=0)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 

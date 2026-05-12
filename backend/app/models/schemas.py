@@ -134,6 +134,8 @@ class ProveedorBase(BaseModel):
     direccion: Optional[str] = None
     telefono: Optional[str] = None
     email: Optional[str] = None
+    productos_servicios: Optional[str] = None
+    costo_promedio: float = 0
 
 class ProveedorCreate(ProveedorBase):
     pass

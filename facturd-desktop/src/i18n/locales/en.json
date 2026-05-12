@@ -270,5 +270,6 @@
   "¿Está seguro de eliminar este cliente?": "Are you sure you want to delete this client?",
   "¿Está seguro de eliminar este producto?": "Are you sure you want to delete this product?",
   "¿Está seguro de eliminar este proveedor?": "Are you sure you want to delete this provider?",
-  "Service": "Service"
+  "Service": "Service",
+  "Supplies": "Supplies"
 }

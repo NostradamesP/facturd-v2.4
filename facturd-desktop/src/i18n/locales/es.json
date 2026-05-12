@@ -135,7 +135,7 @@
   "Contact": "Contact",
   "Copia de": "Copia de",
   "Copiar elemento": "Copiar elemento",
-  "Cost": "Cost",
+  "Cost": "Costo",
   "Date": "Date",
   "Description": "Description",
   "Deshacer (Ctrl+Z)": "Deshacer (Ctrl+Z)",
@@ -272,5 +272,6 @@
   "¿Está seguro de eliminar este cliente?": "¿Está seguro de eliminar este cliente?",
   "¿Está seguro de eliminar este producto?": "¿Está seguro de eliminar este producto?",
   "¿Está seguro de eliminar este proveedor?": "¿Está seguro de eliminar este proveedor?",
-  "Service": "Servicio"
+  "Service": "Servicio",
+  "Supplies": "Provee"
 }
