@@ -83,6 +83,7 @@ export default function FacturaPreview({ formData, cliente, selectedTemplate, on
           <p className="font-medium text-gray-900">{selectedClient?.nombre || 'Client Name'}</p>
           <p className="text-gray-500 text-xs">{selectedClient?.rnc || 'RNC'}</p>
           <p className="text-gray-500 text-xs">{selectedClient?.direccion || 'Address'}</p>
+          <p className="text-gray-500 text-xs">{selectedClient?.email || ''}</p>
         </div>
         <div className="text-right">
           <p className="text-xs text-gray-400 mb-1">Date: <span className="text-gray-700">{formData.fecha || '-'}</span></p>
@@ -164,10 +165,9 @@ export default function FacturaPreview({ formData, cliente, selectedTemplate, on
           <p className="font-medium text-gray-900">{selectedClient?.nombre || 'Client'}</p>
           <p className="text-gray-500 text-xs">{selectedClient?.rnc || 'RNC'}</p>
           <p className="text-gray-500 text-xs">{selectedClient?.direccion || 'Address'}</p>
+          <p className="text-gray-500 text-xs">{selectedClient?.email || ''}</p>
         </div>
       </div>
-
-      <div className="space-y-3 mb-8">
         {detalles.map((item, i) => (
           <div key={i} className="flex justify-between items-center py-2 border-b border-gray-100">
             <div>
@@ -220,6 +220,7 @@ export default function FacturaPreview({ formData, cliente, selectedTemplate, on
           <p className="text-gray-400 text-xs uppercase mb-2">Client</p>
           <p className="font-bold text-lg">{selectedClient?.nombre || 'Client Name'}</p>
           <p className="text-gray-400 text-xs">{selectedClient?.rnc || 'RNC'}</p>
+          <p className="text-gray-400 text-xs">{selectedClient?.email || ''}</p>
         </div>
         <div className="text-right">
           <p className="text-gray-400 text-xs">Date: <span className="text-white">{formData.fecha || '-'}</span></p>
