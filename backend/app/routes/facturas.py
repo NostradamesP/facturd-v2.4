@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 from datetime import datetime
 from typing import Optional
 import uuid
@@ -200,11 +200,12 @@ def total_pagado_factura(factura_id: str, db: Session) -> float:
 
 
 def factura_to_dict(factura: models.Factura, db: Session, include_detalles: bool = False) -> dict:
+    cliente = db.query(models.Cliente).filter(models.Cliente.id == factura.cliente_id).first() if factura.cliente_id else None
     data = {
         "id": factura.id,
         "empresa_id": factura.empresa_id,
         "cliente_id": factura.cliente_id,
-        "cliente_nombre": factura.cliente.nombre if factura.cliente else None,
+        "cliente_nombre": cliente.nombre if cliente else None,
         "ncf": factura.ncf,
         "tipo_ncf": factura.tipo_ncf.value if factura.tipo_ncf else None,
         "secuencia": factura.secuencia,
@@ -247,7 +248,7 @@ def get_facturas(
     estado: Optional[str] = None,
 ):
     """Get all facturas for the current empresa"""
-    query = db.query(models.Factura).options(joinedload(models.Factura.cliente)).filter(models.Factura.empresa_id == empresa_id)
+    query = db.query(models.Factura).filter(models.Factura.empresa_id == empresa_id)
     if estado:
         query = query.filter(models.Factura.estado == estado)
 
@@ -332,7 +333,7 @@ def get_factura(
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db),
 ):
-    factura = db.query(models.Factura).options(joinedload(models.Factura.cliente)).filter(
+    factura = db.query(models.Factura).filter(
         models.Factura.id == factura_id,
         models.Factura.empresa_id == empresa_id,
     ).first()
@@ -423,7 +424,7 @@ def delete_factura(
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db),
 ):
-    factura = db.query(models.Factura).options(joinedload(models.Factura.cliente)).filter(
+    factura = db.query(models.Factura).filter(
         models.Factura.id == factura_id,
         models.Factura.empresa_id == empresa_id,
     ).first()

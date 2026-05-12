@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List
 from datetime import datetime
@@ -9,6 +9,7 @@ from app.database import get_db
 from app.models import models
 from app.models.schemas import GastoCreate, GastoUpdate, GastoResponse
 from app.middleware.auth import get_current_empresa
+from app.models.models import Proveedor
 from app.utils import generar_id
 
 router = APIRouter(prefix="/api/gastos", tags=["Gastos"])
@@ -49,14 +50,15 @@ def get_gastos(
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db)
 ):
-    query = db.query(models.Gasto).options(joinedload(models.Gasto.proveedor)).filter(models.Gasto.empresa_id == empresa_id)
+    query = db.query(models.Gasto).filter(models.Gasto.empresa_id == empresa_id)
     if search:
         query = query.filter(models.Gasto.nota.ilike(f"%{search}%"))
     gastos = query.order_by(models.Gasto.fecha.desc()).offset(skip).limit(limit).all()
 
     result = []
     for g in gastos:
-        proveedor_nombre = g.proveedor.nombre if g.proveedor else None
+        proveedor = db.query(Proveedor).filter(Proveedor.id == g.proveedor_id).first() if g.proveedor_id else None
+        proveedor_nombre = proveedor.nombre if proveedor else None
         result.append(GastoResponse(
             id=g.id,
             empresa_id=g.empresa_id,
@@ -77,13 +79,14 @@ def get_gasto(
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db)
 ):
-    gasto = db.query(models.Gasto).options(joinedload(models.Gasto.proveedor)).filter(
+    gasto = db.query(models.Gasto).filter(
         models.Gasto.id == gasto_id,
         models.Gasto.empresa_id == empresa_id
     ).first()
     if not gasto:
         raise HTTPException(status_code=404, detail="Gasto no encontrado")
-    proveedor_nombre = gasto.proveedor.nombre if gasto.proveedor else None
+    proveedor = db.query(Proveedor).filter(Proveedor.id == gasto.proveedor_id).first() if gasto.proveedor_id else None
+    proveedor_nombre = proveedor.nombre if proveedor else None
     return GastoResponse(
         id=gasto.id,
         empresa_id=gasto.empresa_id,
@@ -124,8 +127,9 @@ def create_gasto(
     db.add(gasto)
     db.commit()
     db.refresh(gasto)
-    gasto = db.query(models.Gasto).options(joinedload(models.Gasto.proveedor)).filter(models.Gasto.id == gasto.id).first()
-    proveedor_nombre = gasto.proveedor.nombre if gasto.proveedor else None
+    gasto = db.query(models.Gasto).filter(models.Gasto.id == gasto.id).first()
+    proveedor = db.query(Proveedor).filter(Proveedor.id == gasto.proveedor_id).first() if gasto.proveedor_id else None
+    proveedor_nombre = proveedor.nombre if proveedor else None
     return GastoResponse(
         id=gasto.id,
         empresa_id=gasto.empresa_id,
@@ -146,7 +150,7 @@ def update_gasto(
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db)
 ):
-    gasto = db.query(models.Gasto).options(joinedload(models.Gasto.proveedor)).filter(
+    gasto = db.query(models.Gasto).filter(
         models.Gasto.id == gasto_id,
         models.Gasto.empresa_id == empresa_id
     ).first()
@@ -167,8 +171,9 @@ def update_gasto(
 
     db.commit()
     db.refresh(gasto)
-    gasto = db.query(models.Gasto).options(joinedload(models.Gasto.proveedor)).filter(models.Gasto.id == gasto.id).first()
-    proveedor_nombre = gasto.proveedor.nombre if gasto.proveedor else None
+    gasto = db.query(models.Gasto).filter(models.Gasto.id == gasto.id).first()
+    proveedor = db.query(Proveedor).filter(Proveedor.id == gasto.proveedor_id).first() if gasto.proveedor_id else None
+    proveedor_nombre = proveedor.nombre if proveedor else None
     return GastoResponse(
         id=gasto.id,
         empresa_id=gasto.empresa_id,

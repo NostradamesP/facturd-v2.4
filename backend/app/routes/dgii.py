@@ -1,6 +1,6 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 import uuid
 
 from app.database import get_db
@@ -93,18 +93,15 @@ def get_facturas_con_dgii(
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db),
 ):
-    facturas = db.query(models.Factura).options(
-        joinedload(models.Factura.cliente),
-        joinedload(models.Factura.registro_dgii),
-    ).filter(
+    facturas = db.query(models.Factura).filter(
         models.Factura.empresa_id == empresa_id,
         models.Factura.estado == models.EstadoFactura.ENVIADA_DGII,
     ).order_by(models.Factura.fecha.desc()).all()
 
     result = []
     for factura in facturas:
-        registro = factura.registro_dgii
-        cliente = factura.cliente
+        registro = db.query(models.RegistroDGII).filter(models.RegistroDGII.factura_id == factura.id).first()
+        cliente = db.query(models.Cliente).filter(models.Cliente.id == factura.cliente_id).first()
         result.append({
             "factura_id": factura.id,
             "ncf": factura.ncf,
