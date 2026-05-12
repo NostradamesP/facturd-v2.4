@@ -75,17 +75,17 @@ export default function Empresa() {
     setSaving(true);
     try {
       await empresaService.update(formData);
-      addToast('Empresa actualizada correctamente', 'success');
+      addToast(t('Empresa actualizada correctamente'), 'success');
     } catch (error) {
       console.error('Error updating empresa:', error);
-      addToast(error.response?.data?.detail || 'Error al actualizar empresa', 'error');
+      addToast(error.response?.data?.detail || t('Error al actualizar empresa'), 'error');
     } finally {
       setSaving(false);
     }
   };
 
   if (loading) {
-    return <div className="text-center py-10">Cargando...</div>;
+    return <div className="text-center py-10">{t('Cargando...')}</div>;
   }
 
   return (

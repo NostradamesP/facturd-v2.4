@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { pagosService, facturasService } from '../services/api';
 import { useToast } from '../components/Toast';
@@ -21,11 +21,13 @@ export default function Cobros() {
   });
    const { addToast } = useToast();
   const [submitting, setSubmitting] = useState(false);
+  const cancelled = useRef(false);
 
   useEffect(() => {
     if (user) {
       fetchData();
     }
+    return () => { cancelled.current = true; };
   }, [user]);
 
   const fetchData = async () => {
@@ -34,6 +36,7 @@ export default function Cobros() {
         pagosService.getAll(),
         facturasService.getAll(),
       ]);
+      if (cancelled.current) return;
       const facturasData = facturasRes.data || [];
       setPagos(pagosRes.data || []);
       setFacturas(facturasData);
@@ -49,9 +52,9 @@ export default function Cobros() {
         localStorage.removeItem('facturd_cobro_factura_id');
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      if (!cancelled.current) console.error('Error fetching data:', error);
     } finally {
-      setLoading(false);
+      if (!cancelled.current) setLoading(false);
     }
   };
 
@@ -75,10 +78,13 @@ export default function Cobros() {
     }
   };
 
-  const totalCobrado = pagos.reduce((sum, p) => sum + (p.monto || 0), 0);
-  const pendingAmount = facturas
-    .filter(f => statusValue(f.estado) === 'PENDIENTE')
-    .reduce((sum, f) => sum + (f.total || 0), 0);
+  const totalCobrado = useMemo(() => pagos.reduce((sum, p) => sum + (p.monto || 0), 0), [pagos]);
+  const pendingAmount = useMemo(() =>
+    facturas
+      .filter(f => statusValue(f.estado) === 'PENDIENTE')
+      .reduce((sum, f) => sum + (f.total || 0), 0),
+    [facturas]
+  );
 
   if (loading) {
     return <div className="text-center py-10">{t('Cargando...')}</div>;

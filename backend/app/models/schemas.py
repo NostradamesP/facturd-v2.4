@@ -271,6 +271,56 @@ class FacturaResponse(FacturaBase):
 
     model_config = ConfigDict(from_attributes=True)
 
+# Cotizacion
+class DetalleCotizacionCreate(BaseModel):
+    producto_id: Optional[str] = None
+    descripcion: str = ""
+    cantidad: float = 1
+    precio_unitario: float = 0
+    descuento: float = 0
+    itbis: float = 0
+    total: float = 0
+
+class CotizacionCreate(BaseModel):
+    cliente_id: str
+    fecha: Optional[str] = None
+    nota: Optional[str] = None
+    descuento: float = 0
+    descuento_porcentaje: Optional[float] = None
+    visual_settings: Optional[str] = None
+    dias_validez: Optional[int] = None
+    detalles: List[DetalleCotizacionCreate] = []
+
+class CotizacionUpdate(BaseModel):
+    estado: Optional[str] = None
+    nota: Optional[str] = None
+
+class CotizacionConvertData(BaseModel):
+    descuento_porcentaje: Optional[float] = None
+    tipo_ncf: Optional[str] = None
+    visual_settings: Optional[str] = None
+
+# Pago
+class PagoCreate(BaseModel):
+    factura_id: str
+    monto: float
+    metodo: str = "EFECTIVO"
+    referencia: Optional[str] = None
+    nota: Optional[str] = None
+
+# Usuario
+class UsuarioCreate(BaseModel):
+    email: str
+    password: str
+    name: str
+    role: Optional[str] = "VENDEDOR"
+
+class UsuarioUpdate(BaseModel):
+    name: Optional[str] = None
+    role: Optional[str] = None
+    password: Optional[str] = None
+
+
 class RegistroDGIIBase(BaseModel):
     track_id: Optional[str] = None
     estado: EstadoDGIIEnum = EstadoDGIIEnum.PENDIENTE

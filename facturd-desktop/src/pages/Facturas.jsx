@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { facturasService, clientesService, productosService, plantillasService, dgiiService, pdfService } from '../services/api';
@@ -65,6 +65,7 @@ export default function Facturas() {
   const location = useLocation();
   const { addToast } = useToast();
   const [confirmAction, setConfirmAction] = useState(null);
+  const cancelled = useRef(false);
   const [formData, setFormData] = useState({
     cliente_id: '',
     tipo_ncf: 'E41',
@@ -81,6 +82,9 @@ export default function Facturas() {
     } else {
       setLoading(false);
     }
+    return () => {
+      cancelled.current = true;
+    };
   }, [user]);
 
   const autoOpenRef = useRef(false);
@@ -101,39 +105,43 @@ export default function Facturas() {
         clientesService.getAll(),
         productosService.getAll(),
       ]);
+      if (cancelled.current) return;
       setFacturas(facturasRes.data || []);
       setClientes(clientesRes.data || []);
       setProductos(productosRes.data || []);
     } catch (error) {
+      if (cancelled.current) return;
       console.error('Facturas ERROR:', error.response?.status, error.response?.data);
       if (error.response?.status === 401) {
-        addToast('Sesión expirada. Por favor inicie sesión nuevamente', 'error');
+        addToast(t('Sesión expirada. Por favor inicie sesión nuevamente'), 'error');
       }
     }
 
     try {
       const plantillasRes = await plantillasService.getAll();
+      if (cancelled.current) return;
       setSavedTemplates(plantillasRes.data || []);
     } catch (error) {
+      if (cancelled.current) return;
       console.warn('No se pudieron cargar las plantillas personalizadas:', error.response?.data || error.message);
     } finally {
-      setLoading(false);
+      if (!cancelled.current) setLoading(false);
     }
   };
 
-  const filteredFacturas = facturas.filter(f => {
+  const filteredFacturas = useMemo(() => facturas.filter(f => {
     if (filter === 'all') return true;
     return statusValue(f.estado) === filter;
-  });
+  }), [facturas, filter]);
 
-  const filteredClientes = clientes.filter(c => {
+  const filteredClientes = useMemo(() => clientes.filter(c => {
     const search = clienteSearch.trim().toLowerCase();
     if (!search) return true;
     return (
       c.nombre?.toLowerCase().includes(search) ||
       c.rnc?.toLowerCase().includes(search)
     );
-  });
+  }), [clientes, clienteSearch]);
 
   const selectedCliente = clientes.find(c => c.id === formData.cliente_id);
   const invoiceBodyLocked = editingFactura && ['PAGADA', 'ANULADA', 'ENVIADA_DGII'].includes(statusValue(editingFactura.estado));
@@ -226,7 +234,7 @@ export default function Facturas() {
       setShowDetail(true);
     } catch (error) {
       console.error('Error opening factura:', error);
-      addToast(error.response?.data?.detail || 'No se pudo abrir la factura', 'error');
+      addToast(error.response?.data?.detail || t('No se pudo abrir la factura'), 'error');
     }
   };
 
@@ -240,7 +248,7 @@ export default function Facturas() {
 
   const handleClienteRapidoDone = async () => {
     if (!clienteRapido.nombre.trim()) {
-      addToast('Escribe el nombre del cliente', 'error');
+      addToast(t('Escribe el nombre del cliente'), 'error');
       return;
     }
     try {
@@ -261,10 +269,10 @@ export default function Facturas() {
       setClienteRapido(emptyClienteRapido());
       setClienteRapidoDone(true);
       setShowClienteDropdown(false);
-      addToast('Cliente guardado y seleccionado', 'success');
+      addToast(t('Cliente guardado y seleccionado'), 'success');
     } catch (error) {
       console.error('Error creating quick cliente:', error);
-      addToast(error.response?.data?.detail || 'No se pudo guardar el cliente', 'error');
+      addToast(error.response?.data?.detail || t('No se pudo guardar el cliente'), 'error');
     }
   };
 
@@ -313,10 +321,10 @@ export default function Facturas() {
       setClienteSearch(cliente?.nombre || facturaCompleta.cliente_nombre || '');
       setShowModal(true);
       setShowPreview(false);
-      addToast('Factura duplicada como borrador nuevo', 'success');
+      addToast(t('Factura duplicada como borrador nuevo'), 'success');
     } catch (error) {
       console.error('Error duplicating factura:', error);
-      addToast(error.response?.data?.detail || 'No se pudo duplicar la factura', 'error');
+      addToast(error.response?.data?.detail || t('No se pudo duplicar la factura'), 'error');
     }
   };
 
@@ -328,20 +336,20 @@ export default function Facturas() {
   const handleAnularConfirm = async (factura) => {
     try {
       await facturasService.update(factura.id, { estado: 'ANULADA' });
-      addToast('Factura anulada correctamente', 'success');
+      addToast(t('Factura anulada correctamente'), 'success');
       setShowDetail(false);
       setSelectedFactura(null);
       fetchData();
     } catch (error) {
       console.error('Error anulando factura:', error);
-      addToast(error.response?.data?.detail || 'No se pudo anular la factura', 'error');
+      addToast(error.response?.data?.detail || t('No se pudo anular la factura'), 'error');
     }
   };
 
   const handleEnviarDGII = (factura = selectedFactura) => {
     if (!factura || !factura.id) return;
     if (!factura.ncf) {
-      addToast('La factura debe tener un NCF asignado antes de enviarse a la DGII', 'error');
+      addToast(t('La factura debe tener un NCF asignado antes de enviarse a la DGII'), 'error');
       return;
     }
     setConfirmAction({ type: 'dgii', factura });
@@ -352,13 +360,13 @@ export default function Facturas() {
     try {
       const res = await dgiiService.enviar(factura.id);
       setDgiiRegistro(res.data?.registro_dgii || null);
-      addToast(`Factura enviada a DGII exitosamente (Track ID: ${res.data?.registro_dgii?.track_id || 'N/A'})`, 'success');
+      addToast(t('Factura enviada a DGII exitosamente') + ` (Track ID: ${res.data?.registro_dgii?.track_id || 'N/A'})`, 'success');
       setShowDetail(false);
       setSelectedFactura(null);
       fetchData();
     } catch (error) {
       console.error('Error enviando a DGII:', error);
-      addToast(error.response?.data?.detail || 'Error al enviar factura a la DGII', 'error');
+      addToast(error.response?.data?.detail || t('Error al enviar factura a la DGII'), 'error');
     } finally {
       setDgiiLoading(false);
     }
@@ -369,12 +377,12 @@ export default function Facturas() {
     try {
       const res = await dgiiService.consultar(factura.id);
       const estado = res.data?.estado_dgii || 'DESCONOCIDO';
-      addToast(`Estado DGII: ${estado}`, estado === 'ACEPTADO' ? 'success' : 'warning');
+      addToast(t('Estado DGII') + `: ${estado}`, estado === 'ACEPTADO' ? 'success' : 'warning');
       setDgiiRegistro(res.data);
       fetchData();
     } catch (error) {
       console.error('Error consultando DGII:', error);
-      addToast(error.response?.data?.detail || 'Error al consultar DGII', 'error');
+      addToast(error.response?.data?.detail || t('Error al consultar DGII'), 'error');
     }
   };
 
@@ -449,7 +457,7 @@ export default function Facturas() {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        addToast('Sesión expirada. Por favor inicia sesión nuevamente', 'error');
+        addToast(t('Sesión expirada. Por favor inicia sesión nuevamente'), 'error');
         return;
       }
 
@@ -457,7 +465,7 @@ export default function Facturas() {
       if (!clienteId) {
         const nombreCliente = (clienteManual ? clienteRapido.nombre : clienteSearch).trim();
         if (!nombreCliente) {
-          addToast('Selecciona un cliente o escribe uno nuevo', 'error');
+          addToast(t('Selecciona un cliente o escribe uno nuevo'), 'error');
           return;
         }
         const nuevoCliente = {
@@ -480,7 +488,7 @@ export default function Facturas() {
       );
 
       if (!detallesValidos.length) {
-        addToast('Agrega al menos un producto o servicio', 'error');
+        addToast(t('Agrega al menos un producto o servicio'), 'error');
         return;
       }
 
@@ -514,10 +522,10 @@ export default function Facturas() {
             }
           : dataToSend;
         await facturasService.update(editingFactura.id, updatePayload);
-        addToast('Factura actualizada correctamente', 'success');
+        addToast(t('Factura actualizada correctamente'), 'success');
       } else {
         await facturasService.create(dataToSend);
-        addToast('Factura creada correctamente', 'success');
+        addToast(t('Factura creada correctamente'), 'success');
       }
       setShowModal(false);
       setClienteManual(false);
@@ -526,7 +534,7 @@ export default function Facturas() {
       fetchData();
     } catch (error) {
       console.error('Error saving factura:', error);
-      const errorMsg = error.response?.data?.detail || error.message || 'Error al guardar factura';
+      const errorMsg = error.response?.data?.detail || error.message || t('Error al guardar factura');
       addToast(errorMsg, 'error');
     }
   };
@@ -543,7 +551,7 @@ export default function Facturas() {
   const handleDeleteConfirm = async (id) => {
     try {
       await facturasService.delete(id);
-      addToast('Factura eliminada correctamente', 'success');
+      addToast(t('Factura eliminada correctamente'), 'success');
       if (selectedFactura?.id === id) {
         setShowDetail(false);
         setSelectedFactura(null);
@@ -551,7 +559,7 @@ export default function Facturas() {
       fetchData();
     } catch (error) {
       console.error('Error deleting factura:', error);
-      addToast(error.response?.data?.detail || 'Error al eliminar factura', 'error');
+      addToast(error.response?.data?.detail || t('Error al eliminar factura'), 'error');
     }
   };
 
@@ -1086,7 +1094,7 @@ export default function Facturas() {
                           </div>
                           <div className="col-span-2 flex items-center justify-between pt-1">
                             <p className="text-xs text-on-surface-variant">
-                              {clienteRapidoDone ? 'Cliente guardado en Clientes.' : 'Presiona Enter o Listo para guardarlo en Clientes.'}
+                              {clienteRapidoDone ? t('Cliente guardado en Clientes.') : t('Presiona Enter o Listo para guardarlo en Clientes.')}
                             </p>
                             <button
                               type="button"
@@ -1094,7 +1102,7 @@ export default function Facturas() {
                               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary hover:opacity-90"
                             >
                               <span className="material-symbols-outlined text-base">done</span>
-                              Listo
+                              {t('Listo')}
                             </button>
                           </div>
                         </div>
@@ -1417,11 +1425,11 @@ export default function Facturas() {
 
       <ConfirmDialog
         open={!!confirmAction}
-        title={confirmAction?.type === 'anular' ? 'Anular factura' : confirmAction?.type === 'dgii' ? 'Enviar a DGII' : 'Eliminar factura'}
-        message={confirmAction?.type === 'anular' ? `¿Anular la factura ${confirmAction?.factura?.ncf || ''}?` : confirmAction?.type === 'dgii' ? '¿Enviar la factura a la DGII?\n\nSe generará el XML e-CF y se enviará al portal.' : '¿Está seguro de eliminar esta factura?'}
+        title={confirmAction?.type === 'anular' ? t('Anular factura') : confirmAction?.type === 'dgii' ? t('Enviar a DGII') : t('Eliminar factura')}
+        message={confirmAction?.type === 'anular' ? `${t('¿Anular la factura')} ${confirmAction?.factura?.ncf || ''}?` : confirmAction?.type === 'dgii' ? t('¿Enviar la factura a la DGII?\n\nSe generará el XML e-CF y se enviará al portal.') : t('¿Está seguro de eliminar esta factura?')}
         onConfirm={executeConfirm}
         onCancel={() => setConfirmAction(null)}
-        confirmText={confirmAction?.type === 'anular' ? 'Anular' : confirmAction?.type === 'dgii' ? 'Enviar' : 'Eliminar'}
+        confirmText={confirmAction?.type === 'anular' ? t('Anular') : confirmAction?.type === 'dgii' ? t('Enviar') : t('Eliminar')}
         variant={confirmAction?.type === 'dgii' ? 'primary' : 'danger'}
       />
     </>

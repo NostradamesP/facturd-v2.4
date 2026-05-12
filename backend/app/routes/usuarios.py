@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import models
-from app.models.schemas import UserResponse
+from app.models.schemas import UserResponse, UsuarioCreate, UsuarioUpdate
 from app.middleware.auth import get_current_empresa, get_current_user
 from app.utils import pwd_context, generar_id
 
@@ -25,22 +25,22 @@ def get_current_user_info(
 
 @router.post("/", status_code=201)
 def create_usuario(
-    data: dict,
+    data: UsuarioCreate,
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db)
 ):
-    existing = db.query(models.User).filter(models.User.email == data.get("email")).first()
+    existing = db.query(models.User).filter(models.User.email == data.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email ya registrado")
     
-    hashed_password = pwd_context.hash(data.get("password"))
-    role_str = data.get("role", "VENDEDOR")
+    hashed_password = pwd_context.hash(data.password)
+    role_str = data.role or "VENDEDOR"
     role = models.Role[role_str] if role_str in models.Role.__members__ else models.Role.VENDEDOR
     usuario = models.User(
         id=generar_id(),
-        email=data.get("email"),
+        email=data.email,
         password=hashed_password,
-        name=data.get("name"),
+        name=data.name,
         role=role,
         empresa_id=empresa_id
     )
@@ -51,7 +51,7 @@ def create_usuario(
 @router.put("/{usuario_id}")
 def update_usuario(
     usuario_id: str,
-    data: dict,
+    data: UsuarioUpdate,
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db)
 ):
@@ -62,12 +62,14 @@ def update_usuario(
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     
-    if "name" in data:
-        usuario.name = data["name"]
-    if "role" in data:
-        usuario.role = models.Role[data["role"]]
-    if "password" in data and data["password"]:
-        usuario.password = pwd_context.hash(data["password"])
+    update_data = data.model_dump(exclude_unset=True)
+    if "password" in update_data and update_data["password"]:
+        update_data["password"] = pwd_context.hash(update_data["password"])
+    if "role" in update_data:
+        update_data["role"] = models.Role[update_data["role"]]
+    
+    for key, value in update_data.items():
+        setattr(usuario, key, value)
     
     db.commit()
     return {"id": usuario.id, "email": usuario.email, "name": usuario.name, "role": usuario.role.value}

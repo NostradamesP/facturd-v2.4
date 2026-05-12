@@ -4,6 +4,7 @@ import uuid
 
 from app.database import get_db
 from app.models import models
+from app.models.schemas import PagoCreate
 from app.middleware.auth import get_current_empresa
 from app.utils import generar_id
 
@@ -52,12 +53,12 @@ def get_pagos(
 @router.post("", status_code=201)
 @router.post("/", status_code=201)
 def create_pago(
-    data: dict,
+    data: PagoCreate,
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db)
 ):
     factura = db.query(models.Factura).filter(
-        models.Factura.id == data.get("factura_id"),
+        models.Factura.id == data.factura_id,
         models.Factura.empresa_id == empresa_id
     ).first()
     if not factura:
@@ -67,7 +68,7 @@ def create_pago(
     if factura.estado == models.EstadoFactura.ENVIADA_DGII:
         raise HTTPException(status_code=400, detail="Esta factura ya fue enviada a DGII y requiere un flujo controlado de cobro")
     
-    monto = parse_monto(data.get("monto"))
+    monto = parse_monto(data.monto)
     
     pagos_anteriores = db.query(models.Pago).filter(models.Pago.factura_id == factura.id).all()
     total_pagado = sum(p.monto or 0 for p in pagos_anteriores)
@@ -75,7 +76,7 @@ def create_pago(
     if total_pagado + monto > (factura.total or 0):
         raise HTTPException(status_code=400, detail="Monto excede el total de la factura")
     
-    metodo = str(data.get("metodo", "EFECTIVO")).upper()
+    metodo = str(data.metodo).upper()
     if metodo not in models.MetodoPago.__members__:
         raise HTTPException(status_code=400, detail="Metodo de pago invalido")
 
@@ -85,8 +86,8 @@ def create_pago(
         factura_id=factura.id,
         monto=monto,
         metodo=models.MetodoPago[metodo],
-        referencia=data.get("referencia"),
-        nota=data.get("nota")
+        referencia=data.referencia,
+        nota=data.nota
     )
     db.add(pago)
     

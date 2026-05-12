@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { facturasService, gastosService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -13,6 +13,7 @@ export default function Dashboard() {
   const [facturas, setFacturas] = useState([]);
   const [gastosResumen, setGastosResumen] = useState({ total_mes: 0 });
   const [loading, setLoading] = useState(true);
+  const cancelled = useRef(false);
 
   useEffect(() => {
     if (!user) return;
@@ -23,27 +24,42 @@ export default function Dashboard() {
           facturasService.getAll(),
           gastosService.getResumen().catch(() => ({ data: { total_mes: 0 } })),
         ]);
+        if (cancelled.current) return;
         setFacturas(facturasRes.data || []);
         setGastosResumen(gastosRes.data || { total_mes: 0 });
       } catch (error) {
-        console.error('Error fetching data:', error);
+        if (!cancelled.current) console.error('Error fetching data:', error);
       } finally {
-        setLoading(false);
+        if (!cancelled.current) setLoading(false);
       }
     };
     fetchData();
+    return () => { cancelled.current = true; };
   }, [user]);
 
-  const totalRevenue = facturas
-    .filter(f => statusValue(f.estado) === 'PAGADA')
-    .reduce((sum, f) => sum + (f.total || 0), 0);
+  const totalRevenue = useMemo(() =>
+    facturas
+      .filter(f => statusValue(f.estado) === 'PAGADA')
+      .reduce((sum, f) => sum + (f.total || 0), 0),
+    [facturas]
+  );
 
-  const pendingInvoices = facturas.filter(f => statusValue(f.estado) === 'PENDIENTE').length;
-  const paidThisMonth = facturas
-    .filter(f => statusValue(f.estado) === 'PAGADA')
-    .reduce((sum, f) => sum + (f.total || 0), 0);
+  const pendingInvoices = useMemo(() =>
+    facturas.filter(f => statusValue(f.estado) === 'PENDIENTE').length,
+    [facturas]
+  );
 
-  const recentFacturas = facturas.slice(-5).reverse();
+  const paidThisMonth = useMemo(() =>
+    facturas
+      .filter(f => statusValue(f.estado) === 'PAGADA')
+      .reduce((sum, f) => sum + (f.total || 0), 0),
+    [facturas]
+  );
+
+  const recentFacturas = useMemo(() =>
+    facturas.slice(-5).reverse(),
+    [facturas]
+  );
 
   if (loading) {
     return <div className="text-center py-10">{t('Cargando...')}</div>;

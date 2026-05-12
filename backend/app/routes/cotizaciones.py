@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from typing import Optional
 import uuid
 from datetime import datetime, timedelta
 
 from app.database import get_db
 from app.models import models
+from app.models.schemas import CotizacionCreate, CotizacionConvertData, CotizacionUpdate
 from app.middleware.auth import get_current_empresa
 from app.routes.facturas import (
     agregar_detalles_factura,
@@ -49,7 +51,7 @@ def get_cotizacion(
 @router.post("", status_code=201)
 @router.post("/", status_code=201)
 def create_cotizacion(
-    cotizacion_data: dict,
+    cotizacion_data: CotizacionCreate,
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db)
 ):
@@ -59,27 +61,27 @@ def create_cotizacion(
     secuencia = empresa.secuencia_ncf + 50000
     numero = f"COT-{secuencia:06d}"
     
-    detalles_data = cotizacion_data.get("detalles", [])
-    subtotal = sum(d.get("cantidad", 0) * d.get("precio_unitario", 0) for d in detalles_data)
-    itbis = sum(d.get("itbis", 0) for d in detalles_data)
-    total = subtotal + itbis - cotizacion_data.get("descuento", 0)
+    detalles_data = cotizacion_data.detalles
+    subtotal = sum(d.cantidad * d.precio_unitario for d in detalles_data)
+    itbis = sum(d.itbis for d in detalles_data)
+    total = subtotal + itbis - cotizacion_data.descuento
     
     fecha_validez = None
-    if cotizacion_data.get("dias_validez"):
-        fecha_validez = datetime.now() + timedelta(days=cotizacion_data.get("dias_validez"))
+    if cotizacion_data.dias_validez:
+        fecha_validez = datetime.now() + timedelta(days=cotizacion_data.dias_validez)
     
     cotizacion = models.Cotizacion(
         id=generar_id(),
         empresa_id=empresa_id,
-        cliente_id=cotizacion_data.get("cliente_id"),
+        cliente_id=cotizacion_data.cliente_id,
         numero=numero,
         secuencia=secuencia,
         fecha_validez=fecha_validez,
         subtotal=subtotal,
-        descuento=cotizacion_data.get("descuento", 0),
+        descuento=cotizacion_data.descuento,
         itbis=itbis,
         total=total,
-        nota=cotizacion_data.get("nota")
+        nota=cotizacion_data.nota
     )
     db.add(cotizacion)
     db.flush()
@@ -88,13 +90,13 @@ def create_cotizacion(
         detalle = models.DetalleCotizacion(
             id=generar_id(),
             cotizacion_id=cotizacion.id,
-            producto_id=d.get("producto_id"),
-            descripcion=d.get("descripcion"),
-            cantidad=d.get("cantidad"),
-            precio_unitario=d.get("precio_unitario"),
-            descuento=d.get("descuento", 0),
-            itbis=d.get("itbis", 0),
-            total=d.get("total")
+            producto_id=d.producto_id,
+            descripcion=d.descripcion,
+            cantidad=d.cantidad,
+            precio_unitario=d.precio_unitario,
+            descuento=d.descuento,
+            itbis=d.itbis,
+            total=d.total
         )
         db.add(detalle)
     
@@ -105,7 +107,7 @@ def create_cotizacion(
 @router.put("/{cotizacion_id}")
 def update_cotizacion(
     cotizacion_id: str,
-    cotizacion_data: dict,
+    cotizacion_data: CotizacionUpdate,
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db)
 ):
@@ -116,10 +118,9 @@ def update_cotizacion(
     if not cotizacion:
         raise HTTPException(status_code=404, detail="Cotización no encontrada")
     
-    if "estado" in cotizacion_data:
-        cotizacion.estado = cotizacion_data["estado"]
-    if "nota" in cotizacion_data:
-        cotizacion.nota = cotizacion_data["nota"]
+    update_data = cotizacion_data.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(cotizacion, key, value)
     
     db.commit()
     return cotizacion
@@ -145,11 +146,11 @@ def delete_cotizacion(
 @router.post("/{cotizacion_id}/convertir")
 def convertir_cotizacion_factura(
     cotizacion_id: str,
-    data: dict = None,
+    data: Optional[CotizacionConvertData] = None,
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db)
 ):
-    data = data or {}
+    data = data or CotizacionConvertData()
     cotizacion = db.query(models.Cotizacion).filter(
         models.Cotizacion.id == cotizacion_id,
         models.Cotizacion.empresa_id == empresa_id
@@ -179,11 +180,11 @@ def convertir_cotizacion_factura(
     ]
     detalles_preparados, subtotal, itbis = preparar_detalles_factura(detalles_data, empresa_id, db)
     descuento = calcular_descuento(
-        {"descuento": cotizacion.descuento, "descuento_porcentaje": data.get("descuento_porcentaje")},
+        {"descuento": cotizacion.descuento, "descuento_porcentaje": data.descuento_porcentaje},
         subtotal,
     )
     total = subtotal + itbis - descuento
-    tipo_ncf = normalizar_enum(models.TipoNCF, data.get("tipo_ncf", "E41"), models.TipoNCF.E41)
+    tipo_ncf = normalizar_enum(models.TipoNCF, data.tipo_ncf or "E41", models.TipoNCF.E41)
     ncf, secuencia = generar_ncf_disponible(tipo_ncf, empresa.secuencia_ncf or 1, db)
     
     factura = models.Factura(
@@ -199,7 +200,7 @@ def convertir_cotizacion_factura(
         total=total,
         estado=models.EstadoFactura.PENDIENTE,
         nota=cotizacion.nota,
-        visual_settings=data.get("visual_settings"),
+        visual_settings=data.visual_settings,
     )
     db.add(factura)
     db.flush()
