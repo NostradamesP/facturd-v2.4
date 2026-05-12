@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useToast } from '../components/Toast';
 import { plantillasService } from '../services/api';
 
@@ -257,6 +258,7 @@ const PLANTILLAS_PREDEFINIDAS = [
 ];
 
 export default function DisenoFactura() {
+  const { t } = useTranslation();
   const { addToast } = useToast();
   const [elements, setElements] = useState([]);
   const [selectedElement, setSelectedElement] = useState(null);
@@ -330,7 +332,7 @@ export default function DisenoFactura() {
           setElements(newElements);
           saveToHistory(newElements);
           setSelectedElement(newElement.id);
-          addToast('Elemento pegado', 'success');
+          addToast(t('Elemento pegado'), 'success');
         }
       }
     };
@@ -367,7 +369,7 @@ export default function DisenoFactura() {
     saveToHistory(nextElements);
     if (options.name !== undefined) setTemplateName(options.name);
     if (options.closeModal !== false) setShowPreviewModal(false);
-    addToast(options.message || 'Plantilla aplicada', 'success');
+    addToast(options.message || t('Plantilla aplicada'), 'success');
   };
 
   const getSavedTemplateElements = (template) => {
@@ -380,24 +382,24 @@ export default function DisenoFactura() {
 
   const handleSaveTemplate = async () => {
     if (!templateName.trim()) {
-      addToast('Ingresa un nombre para la plantilla', 'error');
+      addToast(t('Ingresa un nombre para la plantilla'), 'error');
       return;
     }
     try {
       const disenoJson = JSON.stringify(elements);
       if (currentTemplateId) {
         await plantillasService.update(currentTemplateId, { nombre: templateName, diseno_json: disenoJson });
-        addToast('Plantilla actualizada', 'success');
+        addToast(t('Plantilla actualizada'), 'success');
       } else {
         await plantillasService.create({ nombre: templateName, diseno_json: disenoJson });
-        addToast('Plantilla guardada', 'success');
+        addToast(t('Plantilla guardada'), 'success');
       }
       setShowSaveModal(false);
       setTemplateName('');
       loadTemplates();
     } catch (error) {
       console.error('Error saving template:', error);
-      addToast('Error al guardar plantilla', 'error');
+      addToast(t('Error al guardar plantilla'), 'error');
     }
   };
 
@@ -410,15 +412,15 @@ export default function DisenoFactura() {
       });
     } catch (error) {
       console.error('Error loading template:', error);
-      addToast('Error al cargar plantilla', 'error');
+      addToast(t('Error al cargar plantilla'), 'error');
     }
   };
 
   const handleDeleteTemplate = async (templateId) => {
-    if (!confirm('¿Eliminar esta plantilla?')) return;
+    if (!confirm(t('¿Eliminar esta plantilla?'))) return;
     try {
       await plantillasService.delete(templateId);
-      addToast('Plantilla eliminada', 'success');
+      addToast(t('Plantilla eliminada'), 'success');
       loadTemplates();
       if (currentTemplateId === templateId) {
         setCurrentTemplateId(null);
@@ -426,7 +428,7 @@ export default function DisenoFactura() {
       }
     } catch (error) {
       console.error('Error deleting template:', error);
-      addToast('Error al eliminar plantilla', 'error');
+      addToast(t('Error al eliminar plantilla'), 'error');
     }
   };
 
@@ -468,7 +470,7 @@ export default function DisenoFactura() {
     saveToHistory(newElements);
     setSelectedElement(newElement.id);
     setDraggedTool(null);
-    addToast(`${draggedTool.label} añadido`, 'success');
+    addToast(`${draggedTool.label} ${t('añadido')}`, 'success');
   };
 
   const handleElementMouseDown = (e, elementId) => {
@@ -599,7 +601,7 @@ export default function DisenoFactura() {
     setElements(newElements);
     saveToHistory(newElements);
     if (selectedElement === elementId) setSelectedElement(null);
-    addToast('Elemento eliminado', 'success');
+    addToast(t('Elemento eliminado'), 'success');
   };
 
   const handleDuplicateElement = (elementId) => {
@@ -610,7 +612,7 @@ export default function DisenoFactura() {
       setElements(newElements);
       saveToHistory(newElements);
       setSelectedElement(newElement.id);
-      addToast('Elemento duplicado', 'success');
+      addToast(t('Elemento duplicado'), 'success');
     }
   };
 
@@ -618,7 +620,7 @@ export default function DisenoFactura() {
     const element = elements.find(el => el.id === elementId);
     if (!element) return;
     setCopiedElement(element);
-    addToast('Elemento copiado', 'success');
+    addToast(t('Elemento copiado'), 'success');
   };
 
   const handlePasteElement = () => {
@@ -628,7 +630,7 @@ export default function DisenoFactura() {
     setElements(newElements);
     saveToHistory(newElements);
     setSelectedElement(newElement.id);
-    addToast('Elemento pegado', 'success');
+    addToast(t('Elemento pegado'), 'success');
   };
 
   const handleMoveLayer = (elementId, direction) => {
@@ -938,8 +940,8 @@ export default function DisenoFactura() {
       <div className="flex justify-between items-center px-6 py-4 bg-surface-container border-b border-outline-variant/10">
         <div className="flex items-center gap-4">
           <div>
-            <h1 className="font-headline text-2xl font-extrabold text-on-surface">Diseñador de Facturas</h1>
-            <p className="text-on-surface-variant text-sm">Arrastra, redimensiona y personaliza</p>
+            <h1 className="font-headline text-2xl font-extrabold text-on-surface">{t('Diseñador de Facturas')}</h1>
+            <p className="text-on-surface-variant text-sm">{t('Arrastra, redimensiona y personaliza')}</p>
           </div>
         </div>
         
@@ -948,7 +950,7 @@ export default function DisenoFactura() {
             onClick={undo}
             disabled={historyIndex === 0}
             className="p-2 rounded-lg hover:bg-surface-container-high disabled:opacity-30"
-            title="Deshacer (Ctrl+Z)"
+            title={t('Deshacer (Ctrl+Z)')}
           >
             <span className="material-symbols-outlined">undo</span>
           </button>
@@ -956,7 +958,7 @@ export default function DisenoFactura() {
             onClick={redo}
             disabled={historyIndex === history.length - 1}
             className="p-2 rounded-lg hover:bg-surface-container-high disabled:opacity-30"
-            title="Rehacer (Ctrl+Y)"
+            title={t('Rehacer (Ctrl+Y)')}
           >
             <span className="material-symbols-outlined">redo</span>
           </button>
@@ -965,7 +967,7 @@ export default function DisenoFactura() {
             onClick={() => selectedElement && handleCopyElement(selectedElement)}
             disabled={!selectedElement}
             className="p-2 rounded-lg hover:bg-surface-container-high disabled:opacity-30"
-            title="Copiar elemento"
+            title={t('Copiar elemento')}
           >
             <span className="material-symbols-outlined">content_copy</span>
           </button>
@@ -973,7 +975,7 @@ export default function DisenoFactura() {
             onClick={handlePasteElement}
             disabled={!copiedElement}
             className="p-2 rounded-lg hover:bg-surface-container-high disabled:opacity-30"
-            title="Pegar elemento"
+            title={t('Pegar elemento')}
           >
             <span className="material-symbols-outlined">content_paste</span>
           </button>
@@ -981,7 +983,7 @@ export default function DisenoFactura() {
             onClick={() => selectedElement && handleDuplicateElement(selectedElement)}
             disabled={!selectedElement}
             className="p-2 rounded-lg hover:bg-surface-container-high disabled:opacity-30"
-            title="Duplicar elemento"
+            title={t('Duplicar elemento')}
           >
             <span className="material-symbols-outlined">control_point_duplicate</span>
           </button>
@@ -989,7 +991,7 @@ export default function DisenoFactura() {
             onClick={() => selectedElement && handleMoveLayer(selectedElement, 'backward')}
             disabled={!selectedElement}
             className="p-2 rounded-lg hover:bg-surface-container-high disabled:opacity-30"
-            title="Enviar atrás"
+            title={t('Enviar atrás')}
           >
             <span className="material-symbols-outlined">flip_to_back</span>
           </button>
@@ -997,7 +999,7 @@ export default function DisenoFactura() {
             onClick={() => selectedElement && handleMoveLayer(selectedElement, 'forward')}
             disabled={!selectedElement}
             className="p-2 rounded-lg hover:bg-surface-container-high disabled:opacity-30"
-            title="Traer adelante"
+            title={t('Traer adelante')}
           >
             <span className="material-symbols-outlined">flip_to_front</span>
           </button>
@@ -1007,7 +1009,7 @@ export default function DisenoFactura() {
           <button
             onClick={() => setShowGrid(!showGrid)}
             className={`p-2 rounded-lg ${showGrid ? 'bg-primary-container text-primary' : 'hover:bg-surface-container-high'}`}
-            title="Mostrar/Mostrar cuadrícula"
+            title={t('Mostrar cuadrícula')}
           >
             <span className="material-symbols-outlined">grid_on</span>
           </button>
@@ -1036,7 +1038,7 @@ export default function DisenoFactura() {
             }}
             className="px-3 py-2 rounded-lg bg-surface-container-low border border-outline-variant/20 text-sm min-w-[180px]"
           >
-            <option value="">Mis plantillas...</option>
+            <option value="">{t('Mis plantillas...')}</option>
             {savedTemplates.map(t => (
               <option key={t.id} value={t.id}>{t.nombre}</option>
             ))}
@@ -1047,15 +1049,15 @@ export default function DisenoFactura() {
             className="px-3 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-sm flex items-center gap-1"
           >
             <span className="material-symbols-outlined text-sm">palette</span>
-            Plantillas
+            {t('Plantillas')}
           </button>
 
           <button
-            onClick={() => { setElements([]); setSelectedElement(null); setCurrentTemplateId(null); saveToHistory([]); addToast('Lienzo limpiado', 'success'); }}
+            onClick={() => { setElements([]); setSelectedElement(null); setCurrentTemplateId(null); saveToHistory([]); addToast(t('Lienzo limpiado'), 'success'); }}
             className="px-3 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors text-sm flex items-center gap-1"
           >
             <span className="material-symbols-outlined text-sm">delete_sweep</span>
-            Limpiar
+            {t('Limpiar')}
           </button>
           
           <button
@@ -1071,7 +1073,7 @@ export default function DisenoFactura() {
             className="px-4 py-2.5 rounded-lg bg-gradient-to-br from-primary to-primary-dim text-on-primary font-semibold shadow-lg shadow-primary/20 flex items-center gap-2"
           >
             <span className="material-symbols-outlined text-sm">save</span>
-            Guardar
+            {t('Guardar')}
           </button>
         </div>
       </div>
@@ -1079,8 +1081,8 @@ export default function DisenoFactura() {
       <div className="flex-1 flex overflow-hidden">
         <div className="w-64 bg-surface-container flex flex-col overflow-hidden">
           <div className="p-3 border-b border-outline-variant/10">
-            <h3 className="font-semibold text-on-surface text-sm">Elementos</h3>
-            <p className="text-xs text-on-surface-variant">Arrastra al lienzo</p>
+            <h3 className="font-semibold text-on-surface text-sm">{t('Elementos')}</h3>
+            <p className="text-xs text-on-surface-variant">{t('Arrastra al lienzo')}</p>
           </div>
           
           <div className="flex-1 overflow-y-auto p-3 space-y-4">
@@ -1138,8 +1140,8 @@ export default function DisenoFactura() {
                 <div className="absolute inset-0 flex items-center justify-center p-8">
                   <div className="w-full max-w-md text-center">
                     <span className="material-symbols-outlined text-7xl mb-4 opacity-20 text-primary">dashboard_customize</span>
-                    <p className="text-xl font-bold text-on-surface">Elige una base para empezar</p>
-                    <p className="text-sm text-on-surface-variant mt-1">Usa una plantilla y luego copia, duplica o mueve sus piezas.</p>
+                    <p className="text-xl font-bold text-on-surface">{t('Elige una base para empezar')}</p>
+                    <p className="text-sm text-on-surface-variant mt-1">{t('Usa una plantilla y luego copia, duplica o mueve sus piezas.')}</p>
                     <div className="mt-6 grid grid-cols-2 gap-3 text-left">
                       {PLANTILLAS_PREDEFINIDAS.slice(0, 4).map((plantilla) => (
                         <button
@@ -1149,7 +1151,7 @@ export default function DisenoFactura() {
                             e.stopPropagation();
                             applyTemplateElements(plantilla.elements, {
                               activeTemplate: plantilla.id,
-                              message: `Plantilla "${plantilla.nombre}" aplicada`,
+                              message: `${t('Plantilla')} "${plantilla.nombre}" ${t('aplicada')}`,
                             });
                           }}
                           className="rounded-xl bg-surface-container-lowest border border-outline-variant/20 p-3 text-left hover:border-primary hover:shadow-md transition-all"
@@ -1169,7 +1171,7 @@ export default function DisenoFactura() {
                       className="mt-5 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary"
                     >
                       <span className="material-symbols-outlined text-base">palette</span>
-                      Ver todas las plantillas
+                      {t('Ver todas las plantillas')}
                     </button>
                   </div>
                 </div>
@@ -1182,7 +1184,7 @@ export default function DisenoFactura() {
           <div className="w-72 bg-surface-container border-l border-outline-variant/10 overflow-y-auto">
             <div className="p-4 border-b border-outline-variant/10">
               <div className="flex justify-between items-center">
-                <h3 className="font-semibold text-on-surface">Propiedades</h3>
+                <h3 className="font-semibold text-on-surface">{t('Propiedades')}</h3>
                 <div className="flex gap-1">
                   <button
                     onClick={() => handleCopyElement(selectedElement)}
@@ -1549,11 +1551,11 @@ export default function DisenoFactura() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-surface-container-lowest rounded-2xl p-6 w-full max-w-md shadow-xl">
             <h3 className="font-headline text-xl font-bold text-on-surface mb-4">
-              {currentTemplateId ? 'Actualizar Plantilla' : 'Guardar Plantilla'}
+              {currentTemplateId ? t('Actualizar Plantilla') : t('Guardar Plantilla')}
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-on-surface-variant mb-2">Nombre de la plantilla</label>
+                <label className="block text-xs font-medium text-on-surface-variant mb-2">{t('Nombre de la plantilla')}</label>
                 <input
                   type="text"
                   value={templateName}
@@ -1565,7 +1567,7 @@ export default function DisenoFactura() {
               </div>
               {savedTemplates.length > 0 && !currentTemplateId && (
                 <div>
-                  <label className="block text-xs font-medium text-on-surface-variant mb-2">O reemplazar existente</label>
+                  <label className="block text-xs font-medium text-on-surface-variant mb-2">{t('O reemplazar existente')}</label>
                   <select
                     onChange={(e) => {
                       const template = savedTemplates.find(t => t.id === e.target.value);
@@ -1576,7 +1578,7 @@ export default function DisenoFactura() {
                     }}
                     className="w-full px-4 py-3 rounded-lg bg-surface-container border border-outline-variant/20 text-on-surface"
                   >
-                    <option value="">Seleccionar...</option>
+                    <option value="">{t('Seleccionar...')}</option>
                     {savedTemplates.map(t => (
                       <option key={t.id} value={t.id}>{t.nombre}</option>
                     ))}
@@ -1589,13 +1591,13 @@ export default function DisenoFactura() {
                 onClick={() => { setShowSaveModal(false); setTemplateName(''); }}
                 className="px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container"
               >
-                Cancelar
+                {t('Cancelar')}
               </button>
               <button
                 onClick={handleSaveTemplate}
                 className="px-6 py-2.5 rounded-lg bg-gradient-to-br from-primary to-primary-dim text-on-primary font-semibold"
               >
-                {currentTemplateId ? 'Actualizar' : 'Guardar'}
+                {currentTemplateId ? t('Actualizar') : t('Guardar')}
               </button>
             </div>
           </div>
@@ -1607,8 +1609,8 @@ export default function DisenoFactura() {
           <div className="bg-surface-container rounded-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden shadow-2xl">
             <div className="flex justify-between items-center px-6 py-4 border-b border-outline-variant/20">
               <div>
-                <h2 className="font-headline text-xl font-bold text-on-surface">Elige una Plantilla</h2>
-                <p className="text-sm text-on-surface-variant">Selecciona un diseño para tu factura</p>
+                <h2 className="font-headline text-xl font-bold text-on-surface">{t('Elige una Plantilla')}</h2>
+                <p className="text-sm text-on-surface-variant">{t('Selecciona un diseño para tu factura')}</p>
               </div>
               <button onClick={() => setShowPreviewModal(false)} className="p-2 hover:bg-surface-container-high rounded-lg">
                 <span className="material-symbols-outlined">close</span>
@@ -1618,20 +1620,20 @@ export default function DisenoFactura() {
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
               {savedTemplates.length > 0 && (
                 <div className="mb-8">
-                  <h3 className="font-headline text-lg font-bold text-on-surface mb-3">Mis plantillas</h3>
+                  <h3 className="font-headline text-lg font-bold text-on-surface mb-3">{t('Mis plantillas')}</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {savedTemplates.map((template) => (
                       <div key={template.id} className="bg-surface-container-lowest rounded-xl border border-outline-variant/20 p-4">
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="font-bold text-on-surface">{template.nombre}</p>
-                            <p className="text-xs text-on-surface-variant">Plantilla guardada</p>
+                            <p className="text-xs text-on-surface-variant">{t('Plantilla guardada')}</p>
                           </div>
                           <button
                             type="button"
                             onClick={() => handleDeleteTemplate(template.id)}
                             className="p-1.5 rounded-lg hover:bg-error-container hover:text-on-error-container"
-                            title="Eliminar"
+                            title={t('Eliminar')}
                           >
                             <span className="material-symbols-outlined text-sm">delete</span>
                           </button>
@@ -1642,7 +1644,7 @@ export default function DisenoFactura() {
                             onClick={() => handleLoadTemplate(template)}
                             className="flex-1 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-on-primary"
                           >
-                            Editar
+                            {t('Editar')}
                           </button>
                           <button
                             type="button"
@@ -1650,12 +1652,12 @@ export default function DisenoFactura() {
                               applyTemplateElements(getSavedTemplateElements(template), {
                                 clone: true,
                                 name: `${template.nombre} copia`,
-                                message: `Copia de "${template.nombre}" lista para editar`,
+                                message: `${t('Copia de')} "${template.nombre}" ${t('lista para editar')}`,
                               });
                             }}
                             className="flex-1 rounded-lg bg-surface-container-high px-3 py-2 text-xs font-bold text-on-surface hover:bg-surface-container-highest"
                           >
-                            Duplicar
+                            {t('Duplicar')}
                           </button>
                         </div>
                       </div>
@@ -1664,7 +1666,7 @@ export default function DisenoFactura() {
                 </div>
               )}
 
-              <h3 className="font-headline text-lg font-bold text-on-surface mb-3">Plantillas base</h3>
+              <h3 className="font-headline text-lg font-bold text-on-surface mb-3">{t('Plantillas base')}</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {PLANTILLAS_PREDEFINIDAS.map((plantilla) => (
                   <div
@@ -1731,32 +1733,32 @@ export default function DisenoFactura() {
                           onClick={() => {
                             applyTemplateElements(plantilla.elements, {
                               activeTemplate: plantilla.id,
-                              message: `Plantilla "${plantilla.nombre}" aplicada`,
+                              message: `${t('Plantilla')} "${plantilla.nombre}" ${t('aplicada')}`,
                             });
                           }}
                           className="flex-1 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-on-primary"
                         >
-                          Usar
+                          {t('Usar')}
                         </button>
                         <button
                           type="button"
                           onClick={() => {
-                            applyTemplateElements(plantilla.elements, {
-                              clone: true,
-                              activeTemplate: `${plantilla.id}-copy`,
-                              name: `${plantilla.nombre} copia`,
-                              message: `Copia de "${plantilla.nombre}" lista para editar`,
+                              applyTemplateElements(plantilla.elements, {
+                                clone: true,
+                                activeTemplate: `${plantilla.id}-copy`,
+                                name: `${plantilla.nombre} copia`,
+                                message: `${t('Copia de')} "${plantilla.nombre}" ${t('lista para editar')}`,
                             });
                           }}
                           className="flex-1 rounded-lg bg-surface-container-high px-3 py-2 text-xs font-bold text-on-surface hover:bg-surface-container-highest"
-                        >
-                          Duplicar
-                        </button>
+                          >
+                            {t('Duplicar')}
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
             </div>
           </div>
         </div>

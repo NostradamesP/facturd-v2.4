@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { pagosService, facturasService } from '../services/api';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
@@ -6,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 const statusValue = (estado) => String(estado || '').toUpperCase();
 
 export default function Cobros() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [pagos, setPagos] = useState([]);
   const [facturas, setFacturas] = useState([]);
@@ -59,13 +61,13 @@ export default function Cobros() {
         ...formData,
         monto: parseFloat(formData.monto),
       });
-      addToast('Pago registrado correctamente', 'success');
+      addToast(t('Pago registrado correctamente'), 'success');
       setShowModal(false);
       setFormData({ factura_id: '', monto: '', metodo: 'EFECTIVO', fecha: new Date().toISOString().split('T')[0] });
       fetchData();
     } catch (error) {
       console.error('Error creating pago:', error);
-      addToast(error.response?.data?.detail || 'Error al registrar pago', 'error');
+      addToast(error.response?.data?.detail || t('Error al registrar pago'), 'error');
     }
   };
 
@@ -75,7 +77,7 @@ export default function Cobros() {
     .reduce((sum, f) => sum + (f.total || 0), 0);
 
   if (loading) {
-    return <div className="text-center py-10">Cargando...</div>;
+    return <div className="text-center py-10">{t('Cargando...')}</div>;
   }
 
   return (
@@ -83,10 +85,10 @@ export default function Cobros() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="font-headline text-4xl font-extrabold text-on-surface tracking-tight mb-2">
-            Payments
+            {t('Payments')}
           </h1>
           <p className="text-on-surface-variant max-w-2xl leading-relaxed">
-            Track and manage customer payments and collections.
+            {t('Track and manage customer payments and collections.')}
           </p>
         </div>
         <button
@@ -94,7 +96,7 @@ export default function Cobros() {
           className="px-8 py-3 rounded-lg text-sm font-bold text-on-primary bg-gradient-to-br from-primary to-primary-dim shadow-lg shadow-primary/20 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2"
         >
           <span className="material-symbols-outlined">add</span>
-          Record Payment
+          {t('Record Payment')}
         </button>
       </div>
 
@@ -107,7 +109,7 @@ export default function Cobros() {
               </span>
             </div>
             <div>
-              <p className="text-white/80 text-sm font-medium">Total Collected</p>
+              <p className="text-white/80 text-sm font-medium">{t('Total Collected')}</p>
               <p className="text-white font-headline text-4xl font-bold">
                 ${totalCobrado.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
               </p>
@@ -120,7 +122,7 @@ export default function Cobros() {
               <span className="material-symbols-outlined text-secondary">schedule</span>
             </div>
             <div>
-              <p className="text-on-surface-variant text-sm">Pending</p>
+              <p className="text-on-surface-variant text-sm">{t('Pending')}</p>
               <p className="text-2xl font-bold text-on-surface font-headline">
                 ${pendingAmount.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
               </p>
@@ -133,7 +135,7 @@ export default function Cobros() {
               <span className="material-symbols-outlined text-green-600">verified</span>
             </div>
             <div>
-              <p className="text-on-surface-variant text-sm">Transactions</p>
+              <p className="text-on-surface-variant text-sm">{t('Transactions')}</p>
               <p className="text-2xl font-bold text-on-surface font-headline">{pagos.length}</p>
             </div>
           </div>
@@ -145,16 +147,16 @@ export default function Cobros() {
           <thead>
             <tr className="bg-surface-container-low/50">
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                Date
+                {t('Date')}
               </th>
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                Invoice
+                {t('Invoice')}
               </th>
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                Method
+                {t('Method')}
               </th>
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant text-right">
-                Amount
+                {t('Amount')}
               </th>
             </tr>
           </thead>
@@ -180,7 +182,7 @@ export default function Cobros() {
             {pagos.length === 0 && (
               <tr>
                 <td colSpan="4" className="px-8 py-8 text-center text-on-surface-variant">
-                  No payments recorded
+                  {t('No payments recorded')}
                 </td>
               </tr>
             )}
@@ -191,17 +193,17 @@ export default function Cobros() {
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white/70 backdrop-blur-xl border border-white/40 rounded-2xl p-8 w-full max-w-lg shadow-[0px_40px_80px_rgba(42,52,57,0.08)]">
-            <h2 className="text-xl font-bold text-on-surface mb-6">Record Payment</h2>
+            <h2 className="text-xl font-bold text-on-surface mb-6">{t('Record Payment')}</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="relative">
-                <label className="block text-xs font-semibold text-on-surface-variant mb-2">Invoice</label>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Invoice')}</label>
                 <select
                   value={formData.factura_id}
                   onChange={(e) => setFormData({ ...formData, factura_id: e.target.value })}
                   className="w-full bg-transparent border-0 border-b-2 border-outline-variant/20 focus:ring-0 focus:border-primary px-0 py-2 text-on-surface font-medium transition-colors"
                   required
                 >
-                  <option value="">Select Invoice</option>
+                  <option value="">{t('Select Invoice')}</option>
                   {facturas.filter(f => statusValue(f.estado) === 'PENDIENTE').map(f => (
                     <option key={f.id} value={f.id}>{f.ncf} - ${f.total}</option>
                   ))}
@@ -209,7 +211,7 @@ export default function Cobros() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="relative">
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">Amount</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Amount')}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -220,16 +222,16 @@ export default function Cobros() {
                   />
                 </div>
                 <div className="relative">
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">Method</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Method')}</label>
                   <select
                     value={formData.metodo}
                     onChange={(e) => setFormData({ ...formData, metodo: e.target.value })}
                     className="w-full bg-transparent border-0 border-b-2 border-outline-variant/20 focus:ring-0 focus:border-primary px-0 py-2 text-on-surface font-medium transition-colors"
                   >
-                    <option value="EFECTIVO">Cash</option>
-                    <option value="TRANSFERENCIA">Transfer</option>
-                    <option value="CHEQUE">Check</option>
-                    <option value="TARJETA">Card</option>
+                    <option value="EFECTIVO">{t('Cash')}</option>
+                    <option value="TRANSFERENCIA">{t('Transfer')}</option>
+                    <option value="CHEQUE">{t('Check')}</option>
+                    <option value="TARJETA">{t('Card')}</option>
                   </select>
                 </div>
               </div>
@@ -239,13 +241,13 @@ export default function Cobros() {
                   onClick={() => setShowModal(false)}
                   className="px-6 py-3 rounded-lg text-sm font-semibold text-on-surface-variant hover:bg-surface-container-high transition-colors"
                 >
-                  Cancel
+                  {t('Cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-8 py-3 rounded-lg text-sm font-bold text-on-primary bg-gradient-to-br from-primary to-primary-dim shadow-lg shadow-primary/20 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
                 >
-                  Record Payment
+                  {t('Record Payment')}
                 </button>
               </div>
             </form>

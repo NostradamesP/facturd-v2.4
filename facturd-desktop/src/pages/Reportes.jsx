@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { facturasService, clientesService, pagosService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const statusValue = (estado) => String(estado || '').toUpperCase();
 
 export default function Reportes() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [facturas, setFacturas] = useState([]);
   const [clientes, setClientes] = useState([]);
@@ -45,17 +47,17 @@ export default function Reportes() {
   }, {});
 
   if (loading) {
-    return <div className="text-center py-10">Cargando...</div>;
+    return <div className="text-center py-10">{t('Cargando...')}</div>;
   }
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="font-headline text-4xl font-extrabold text-on-surface tracking-tight mb-2">
-          Reports & Analytics
+          {t('Reports & Analytics')}
         </h1>
         <p className="text-on-surface-variant max-w-2xl leading-relaxed">
-          Financial insights and business intelligence for your company.
+          {t('Financial insights and business intelligence for your company.')}
         </p>
       </div>
 
@@ -67,7 +69,7 @@ export default function Reportes() {
             </div>
             <span className="text-xs font-bold text-primary bg-primary-container px-2 py-1 rounded-full">+12%</span>
           </div>
-          <p className="text-on-surface-variant text-sm">Total Invoiced</p>
+          <p className="text-on-surface-variant text-sm">{t('Total Invoiced')}</p>
           <p className="text-2xl font-bold text-on-surface font-headline">
             ${totalFacturado.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
           </p>
@@ -80,7 +82,7 @@ export default function Reportes() {
             </div>
             <span className="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-full">+8%</span>
           </div>
-          <p className="text-on-surface-variant text-sm">Total Collected</p>
+          <p className="text-on-surface-variant text-sm">{t('Total Collected')}</p>
           <p className="text-2xl font-bold text-on-surface font-headline">
             ${totalCobrado.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
           </p>
@@ -92,7 +94,7 @@ export default function Reportes() {
               <span className="material-symbols-outlined text-secondary">group</span>
             </div>
           </div>
-          <p className="text-on-surface-variant text-sm">Active Clients</p>
+          <p className="text-on-surface-variant text-sm">{t('Active Clients')}</p>
           <p className="text-2xl font-bold text-on-surface font-headline">{clientes.length}</p>
         </div>
 
@@ -102,7 +104,7 @@ export default function Reportes() {
               <span className="material-symbols-outlined text-tertiary">analytics</span>
             </div>
           </div>
-          <p className="text-on-surface-variant text-sm">Average Invoice</p>
+          <p className="text-on-surface-variant text-sm">{t('Average Invoice')}</p>
           <p className="text-2xl font-bold text-on-surface font-headline">
             ${promedioFactura.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
           </p>
@@ -111,7 +113,7 @@ export default function Reportes() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-surface-container-lowest rounded-xl p-8 shadow-[0px_20px_40px_rgba(42,52,57,0.04)]">
-          <h3 className="font-headline text-xl font-bold text-on-surface mb-6">Billing Trends</h3>
+          <h3 className="font-headline text-xl font-bold text-on-surface mb-6">{t('Billing Trends')}</h3>
           <div className="space-y-4">
             {Object.entries(facturasPorMes).slice(0, 6).map(([mes, monto]) => (
               <div key={mes} className="flex items-center gap-4">
@@ -128,18 +130,18 @@ export default function Reportes() {
               </div>
             ))}
             {Object.keys(facturasPorMes).length === 0 && (
-              <p className="text-on-surface-variant text-center py-4">No data available</p>
+              <p className="text-on-surface-variant text-center py-4">{t('No data available')}</p>
             )}
           </div>
         </div>
 
         <div className="bg-surface-container-lowest rounded-xl p-8 shadow-[0px_20px_40px_rgba(42,52,57,0.04)]">
-          <h3 className="font-headline text-xl font-bold text-on-surface mb-6">Invoice Status</h3>
+          <h3 className="font-headline text-xl font-bold text-on-surface mb-6">{t('Invoice Status')}</h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
               <div className="flex items-center gap-3">
                 <span className="material-symbols-outlined text-green-600">check_circle</span>
-                <span className="font-medium text-on-surface">Paid</span>
+                <span className="font-medium text-on-surface">{t('Paid')}</span>
               </div>
               <span className="font-bold text-green-600">
                 {facturas.filter(f => statusValue(f.estado) === 'PAGADA').length}
@@ -148,7 +150,7 @@ export default function Reportes() {
             <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg">
               <div className="flex items-center gap-3">
                 <span className="material-symbols-outlined text-yellow-600">schedule</span>
-                <span className="font-medium text-on-surface">Pending</span>
+                <span className="font-medium text-on-surface">{t('Pending')}</span>
               </div>
               <span className="font-bold text-yellow-600">
                 {facturas.filter(f => statusValue(f.estado) === 'PENDIENTE').length}
@@ -157,7 +159,7 @@ export default function Reportes() {
             <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
               <div className="flex items-center gap-3">
                 <span className="material-symbols-outlined text-red-600">cancel</span>
-                <span className="font-medium text-on-surface">Overdue</span>
+                <span className="font-medium text-on-surface">{t('Overdue')}</span>
               </div>
               <span className="font-bold text-red-600">
                 {facturas.filter(f => ['ANULADA', 'VENCIDA'].includes(statusValue(f.estado))).length}
@@ -171,9 +173,9 @@ export default function Reportes() {
         <div className="flex gap-4">
           <span className="material-symbols-outlined text-primary">info</span>
           <div>
-            <p className="text-xs font-bold text-primary mb-1 uppercase tracking-tight">Pro-Tip</p>
+            <p className="text-xs font-bold text-primary mb-1 uppercase tracking-tight">{t('Pro-Tip')}</p>
             <p className="text-xs text-on-primary-container leading-relaxed">
-              Generate monthly reports to track your business performance and identify trends.
+              {t('Generate monthly reports to track your business performance and identify trends.')}
             </p>
           </div>
         </div>

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { productosService } from '../services/api';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 
 export default function Inventario() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -70,28 +72,28 @@ export default function Inventario() {
       };
       if (editingProducto) {
         await productosService.update(editingProducto.id, data);
-        addToast('Producto actualizado correctamente', 'success');
+        addToast(t('Producto actualizado correctamente'), 'success');
       } else {
         await productosService.create(data);
-        addToast('Producto creado correctamente', 'success');
+        addToast(t('Producto creado correctamente'), 'success');
       }
       setShowModal(false);
       fetchProductos();
     } catch (error) {
       console.error('Error saving producto:', error);
-      addToast(error.response?.data?.detail || 'Error al guardar producto', 'error');
+      addToast(error.response?.data?.detail || t('Error al guardar producto'), 'error');
     }
   };
 
   const handleDelete = async (id) => {
-    if (confirm('¿Está seguro de eliminar este producto?')) {
+    if (confirm(t('¿Está seguro de eliminar este producto?'))) {
       try {
         await productosService.delete(id);
-        addToast('Producto eliminado correctamente', 'success');
+        addToast(t('Producto eliminado correctamente'), 'success');
         fetchProductos();
       } catch (error) {
         console.error('Error deleting producto:', error);
-        addToast(error.response?.data?.detail || 'Error al eliminar producto', 'error');
+        addToast(error.response?.data?.detail || t('Error al eliminar producto'), 'error');
       }
     }
   };
@@ -100,7 +102,7 @@ export default function Inventario() {
   const lowStock = productos.filter(p => (p.stock || 0) < 10).length;
 
   if (loading) {
-    return <div className="text-center py-10">Cargando...</div>;
+    return <div className="text-center py-10">{t('Cargando...')}</div>;
   }
 
   return (
@@ -108,10 +110,10 @@ export default function Inventario() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="font-headline text-4xl font-extrabold text-on-surface tracking-tight mb-2">
-            Inventory
+            {t('Inventory')}
           </h1>
           <p className="text-on-surface-variant max-w-2xl leading-relaxed">
-            Track and manage your products and services catalog.
+            {t('Track and manage your products and services catalog.')}
           </p>
         </div>
         <button
@@ -119,7 +121,7 @@ export default function Inventario() {
           className="px-8 py-3 rounded-lg text-sm font-bold text-on-primary bg-gradient-to-br from-primary to-primary-dim shadow-lg shadow-primary/20 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2"
         >
           <span className="material-symbols-outlined">add</span>
-          Add Product
+          {t('Add Product')}
         </button>
       </div>
 
@@ -130,7 +132,7 @@ export default function Inventario() {
               <span className="material-symbols-outlined text-primary">inventory_2</span>
             </div>
             <div>
-              <p className="text-on-surface-variant text-sm">Total Products</p>
+              <p className="text-on-surface-variant text-sm">{t('Total Products')}</p>
               <p className="text-2xl font-bold text-on-surface font-headline">{productos.length}</p>
             </div>
           </div>
@@ -141,7 +143,7 @@ export default function Inventario() {
               <span className="material-symbols-outlined text-secondary">category</span>
             </div>
             <div>
-              <p className="text-on-surface-variant text-sm">Categories</p>
+              <p className="text-on-surface-variant text-sm">{t('Categories')}</p>
               <p className="text-2xl font-bold text-on-surface font-headline">-</p>
             </div>
           </div>
@@ -152,7 +154,7 @@ export default function Inventario() {
               <span className="material-symbols-outlined text-green-600">check_circle</span>
             </div>
             <div>
-              <p className="text-on-surface-variant text-sm">In Stock</p>
+              <p className="text-on-surface-variant text-sm">{t('In Stock')}</p>
               <p className="text-2xl font-bold text-on-surface font-headline">
                 {productos.filter(p => (p.stock || 0) > 0).length}
               </p>
@@ -165,7 +167,7 @@ export default function Inventario() {
               <span className="material-symbols-outlined text-error">warning</span>
             </div>
             <div>
-              <p className="text-on-surface-variant text-sm">Low Stock</p>
+              <p className="text-on-surface-variant text-sm">{t('Low Stock')}</p>
               <p className="text-2xl font-bold text-on-surface font-headline">{lowStock}</p>
             </div>
           </div>
@@ -177,22 +179,22 @@ export default function Inventario() {
           <thead>
             <tr className="bg-surface-container-low/50">
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                SKU
+                {t('SKU')}
               </th>
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                Product
+                {t('Product')}
               </th>
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                Description
+                {t('Description')}
               </th>
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant text-right">
-                Price
+                {t('Price')}
               </th>
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant text-right">
-                Quantity
+                {t('Quantity')}
               </th>
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant text-center">
-                Actions
+                {t('Actions')}
               </th>
             </tr>
           </thead>
@@ -235,7 +237,7 @@ export default function Inventario() {
             {productos.length === 0 && (
               <tr>
                 <td colSpan="6" className="px-8 py-8 text-center text-on-surface-variant">
-                  No products in inventory
+                  {t('No products in inventory')}
                 </td>
               </tr>
             )}
@@ -247,12 +249,12 @@ export default function Inventario() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white/70 backdrop-blur-xl border border-white/40 rounded-2xl p-8 w-full max-w-lg shadow-[0px_40px_80px_rgba(42,52,57,0.08)]">
             <h2 className="text-xl font-bold text-on-surface mb-6">
-              {editingProducto ? 'Edit Product' : 'New Product'}
+              {editingProducto ? t('Edit Product') : t('New Product')}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="relative">
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">Product Name</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Product Name')}</label>
                   <input
                     type="text"
                     value={formData.nombre}
@@ -262,7 +264,7 @@ export default function Inventario() {
                   />
                 </div>
                 <div className="relative">
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">SKU Code</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('SKU Code')}</label>
                   <input
                     type="text"
                     value={formData.codigo}
@@ -271,7 +273,7 @@ export default function Inventario() {
                   />
                 </div>
                 <div className="relative">
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">Price</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Price')}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -282,7 +284,7 @@ export default function Inventario() {
                   />
                 </div>
                 <div className="relative">
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">Stock</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Stock')}</label>
                   <input
                     type="number"
                     value={formData.stock}
@@ -292,7 +294,7 @@ export default function Inventario() {
                   />
                 </div>
                 <div className="relative">
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">Cost</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Cost')}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -303,7 +305,7 @@ export default function Inventario() {
                 </div>
               </div>
               <div className="relative">
-                <label className="block text-xs font-semibold text-on-surface-variant mb-2">Description</label>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Description')}</label>
                 <input
                   type="text"
                   value={formData.descripcion}
@@ -317,13 +319,13 @@ export default function Inventario() {
                   onClick={() => setShowModal(false)}
                   className="px-6 py-3 rounded-lg text-sm font-semibold text-on-surface-variant hover:bg-surface-container-high transition-colors"
                 >
-                  Cancel
+                  {t('Cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-8 py-3 rounded-lg text-sm font-bold text-on-primary bg-gradient-to-br from-primary to-primary-dim shadow-lg shadow-primary/20 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
                 >
-                  {editingProducto ? 'Update Product' : 'Save Product'}
+                  {editingProducto ? t('Update Product') : t('Save Product')}
                 </button>
               </div>
             </form>

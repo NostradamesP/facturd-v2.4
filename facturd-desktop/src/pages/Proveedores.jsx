@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { proveedoresService } from '../services/api';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 
 export default function Proveedores() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [proveedores, setProveedores] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -57,34 +59,34 @@ export default function Proveedores() {
     try {
       if (editingProveedor) {
         await proveedoresService.update(editingProveedor.id, formData);
-        addToast('Proveedor actualizado correctamente', 'success');
+        addToast(t('Proveedor actualizado correctamente'), 'success');
       } else {
         await proveedoresService.create(formData);
-        addToast('Proveedor creado correctamente', 'success');
+        addToast(t('Proveedor creado correctamente'), 'success');
       }
       setShowModal(false);
       fetchProveedores();
     } catch (error) {
       console.error('Error saving proveedor:', error);
-      addToast(error.response?.data?.detail || 'Error al guardar proveedor', 'error');
+      addToast(error.response?.data?.detail || t('Error al guardar proveedor'), 'error');
     }
   };
 
   const handleDelete = async (id) => {
-    if (confirm('¿Está seguro de eliminar este proveedor?')) {
+    if (confirm(t('¿Está seguro de eliminar este proveedor?'))) {
       try {
         await proveedoresService.delete(id);
-        addToast('Proveedor eliminado correctamente', 'success');
+        addToast(t('Proveedor eliminado correctamente'), 'success');
         fetchProveedores();
       } catch (error) {
         console.error('Error deleting proveedor:', error);
-        addToast(error.response?.data?.detail || 'Error al eliminar proveedor', 'error');
+        addToast(error.response?.data?.detail || t('Error al eliminar proveedor'), 'error');
       }
     }
   };
 
   if (loading) {
-    return <div className="text-center py-10">Cargando...</div>;
+    return <div className="text-center py-10">{t('Cargando...')}</div>;
   }
 
   return (
@@ -92,10 +94,10 @@ export default function Proveedores() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="font-headline text-4xl font-extrabold text-on-surface tracking-tight mb-2">
-            Providers
+            {t('Providers')}
           </h1>
           <p className="text-on-surface-variant max-w-2xl leading-relaxed">
-            Manage your vendor relationships and supplier information.
+            {t('Manage your vendor relationships and supplier information.')}
           </p>
         </div>
         <button
@@ -103,7 +105,7 @@ export default function Proveedores() {
           className="px-8 py-3 rounded-lg text-sm font-bold text-on-primary bg-gradient-to-br from-primary to-primary-dim shadow-lg shadow-primary/20 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2"
         >
           <span className="material-symbols-outlined">add</span>
-          Add Provider
+          {t('Add Provider')}
         </button>
       </div>
 
@@ -114,7 +116,7 @@ export default function Proveedores() {
               <span className="material-symbols-outlined text-primary">store</span>
             </div>
             <div>
-              <p className="text-on-surface-variant text-sm">Total Providers</p>
+              <p className="text-on-surface-variant text-sm">{t('Total Providers')}</p>
               <p className="text-2xl font-bold text-on-surface font-headline">{proveedores.length}</p>
             </div>
           </div>
@@ -126,19 +128,19 @@ export default function Proveedores() {
           <thead>
             <tr className="bg-surface-container-low/50">
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                Provider
+                {t('Provider')}
               </th>
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                Tax ID
+                {t('Tax ID')}
               </th>
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                Contact
+                {t('Contact')}
               </th>
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                Phone
+                {t('Phone')}
               </th>
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant text-center">
-                Actions
+                {t('Actions')}
               </th>
             </tr>
           </thead>
@@ -181,7 +183,7 @@ export default function Proveedores() {
             {proveedores.length === 0 && (
               <tr>
                 <td colSpan="5" className="px-8 py-8 text-center text-on-surface-variant">
-                  No providers registered
+                  {t('No providers registered')}
                 </td>
               </tr>
             )}
@@ -193,12 +195,12 @@ export default function Proveedores() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white/70 backdrop-blur-xl border border-white/40 rounded-2xl p-8 w-full max-w-lg shadow-[0px_40px_80px_rgba(42,52,57,0.08)]">
             <h2 className="text-xl font-bold text-on-surface mb-6">
-              {editingProveedor ? 'Edit Provider' : 'New Provider'}
+              {editingProveedor ? t('Edit Provider') : t('New Provider')}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="relative">
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">Provider Name</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Provider Name')}</label>
                   <input
                     type="text"
                     value={formData.nombre}
@@ -208,7 +210,7 @@ export default function Proveedores() {
                   />
                 </div>
                 <div className="relative">
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">Tax ID</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Tax ID')}</label>
                   <input
                     type="text"
                     value={formData.rnc}
@@ -217,7 +219,7 @@ export default function Proveedores() {
                   />
                 </div>
                 <div className="relative">
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">Email</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Email')}</label>
                   <input
                     type="email"
                     value={formData.email}
@@ -226,7 +228,7 @@ export default function Proveedores() {
                   />
                 </div>
                 <div className="relative">
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">Phone</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Phone')}</label>
                   <input
                     type="tel"
                     value={formData.telefono}
@@ -236,7 +238,7 @@ export default function Proveedores() {
                 </div>
               </div>
               <div className="relative">
-                <label className="block text-xs font-semibold text-on-surface-variant mb-2">Address</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Address')}</label>
                 <input
                   type="text"
                   value={formData.direccion}
@@ -250,13 +252,13 @@ export default function Proveedores() {
                   onClick={() => setShowModal(false)}
                   className="px-6 py-3 rounded-lg text-sm font-semibold text-on-surface-variant hover:bg-surface-container-high transition-colors"
                 >
-                  Cancel
+                  {t('Cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-8 py-3 rounded-lg text-sm font-bold text-on-primary bg-gradient-to-br from-primary to-primary-dim shadow-lg shadow-primary/20 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
                 >
-                  {editingProveedor ? 'Update Provider' : 'Save Provider'}
+                  {editingProveedor ? t('Update Provider') : t('Save Provider')}
                 </button>
               </div>
             </form>

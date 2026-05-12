@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { clientesService } from '../services/api';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 
 export default function Clientes() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +39,7 @@ export default function Clientes() {
     } catch (error) {
       console.error('Error fetching clientes:', error);
       if (error.response?.status === 401) {
-        addToast('Sesión expirada. Por favor inicie sesión nuevamente', 'error');
+        addToast(t('Sesión expirada. Por favor inicie sesión nuevamente'), 'error');
       }
     } finally {
       setLoading(false);
@@ -68,54 +70,54 @@ export default function Clientes() {
       if (editingCliente) {
         console.log('Clientes: Updating cliente', editingCliente.id);
         await clientesService.update(editingCliente.id, formData);
-        addToast('Cliente actualizado correctamente', 'success');
+        addToast(t('Cliente actualizado correctamente'), 'success');
       } else {
         console.log('Clientes: Creating new cliente');
         await clientesService.create(formData);
-        addToast('Cliente creado correctamente', 'success');
+        addToast(t('Cliente creado correctamente'), 'success');
       }
       setShowModal(false);
       fetchClientes();
     } catch (error) {
       console.error('Clientes: Error saving cliente:', error);
-      addToast(error.response?.data?.detail || error.message || 'Error al guardar cliente', 'error');
+      addToast(error.response?.data?.detail || error.message || t('Error al guardar cliente'), 'error');
     }
   };
 
   const handleDelete = async (id) => {
-    if (confirm('¿Está seguro de eliminar este cliente?')) {
+    if (confirm(t('¿Está seguro de eliminar este cliente?'))) {
       try {
         await clientesService.delete(id);
-        addToast('Cliente eliminado correctamente', 'success');
+        addToast(t('Cliente eliminado correctamente'), 'success');
         fetchClientes();
       } catch (error) {
         console.error('Error deleting cliente:', error);
-        addToast(error.response?.data?.detail || 'Error al eliminar cliente', 'error');
+        addToast(error.response?.data?.detail || t('Error al eliminar cliente'), 'error');
       }
     }
   };
 
   if (loading) {
-    return <div className="text-center py-10">Cargando...</div>;
+    return <div className="text-center py-10">{t('Cargando...')}</div>;
   }
 
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="font-headline text-4xl font-extrabold text-on-surface tracking-tight mb-2">
-            Clients
-          </h1>
-          <p className="text-on-surface-variant max-w-2xl leading-relaxed">
-            Manage your client directory and contact information
-          </p>
+            <h1 className="font-headline text-4xl font-extrabold text-on-surface tracking-tight mb-2">
+              {t('Clients')}
+            </h1>
+            <p className="text-on-surface-variant max-w-2xl leading-relaxed">
+              {t('Manage your client directory and contact information')}
+            </p>
         </div>
         <button
           onClick={() => handleOpenModal()}
           className="px-8 py-3 rounded-lg text-sm font-bold text-on-primary bg-gradient-to-br from-primary to-primary-dim shadow-lg shadow-primary/20 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2"
         >
           <span className="material-symbols-outlined">add</span>
-          Add Client
+          {t('Add Client')}
         </button>
       </div>
 
@@ -126,7 +128,7 @@ export default function Clientes() {
               <span className="material-symbols-outlined text-primary">group</span>
             </div>
             <div>
-              <p className="text-on-surface-variant text-sm">Total Clients</p>
+              <p className="text-on-surface-variant text-sm">{t('Total Clients')}</p>
               <p className="text-2xl font-bold text-on-surface font-headline">{clientes.length}</p>
             </div>
           </div>
@@ -137,7 +139,7 @@ export default function Clientes() {
               <span className="material-symbols-outlined text-green-600">verified</span>
             </div>
             <div>
-              <p className="text-on-surface-variant text-sm">With Tax ID</p>
+              <p className="text-on-surface-variant text-sm">{t('With Tax ID')}</p>
               <p className="text-2xl font-bold text-on-surface font-headline">
                 {clientes.filter(c => c.rnc).length}
               </p>
@@ -150,7 +152,7 @@ export default function Clientes() {
               <span className="material-symbols-outlined text-blue-600">email</span>
             </div>
             <div>
-              <p className="text-on-surface-variant text-sm">With Email</p>
+              <p className="text-on-surface-variant text-sm">{t('With Email')}</p>
               <p className="text-2xl font-bold text-on-surface font-headline">
                 {clientes.filter(c => c.email).length}
               </p>
@@ -164,19 +166,19 @@ export default function Clientes() {
           <thead>
             <tr className="bg-surface-container-low/50">
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                Client
+                {t('Client')}
               </th>
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                Tax ID
+                {t('Tax ID')}
               </th>
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                Email
+                {t('Email')}
               </th>
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                Phone
+                {t('Phone')}
               </th>
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant text-center">
-                Actions
+                {t('Actions')}
               </th>
             </tr>
           </thead>
@@ -219,7 +221,7 @@ export default function Clientes() {
             {clientes.length === 0 && (
               <tr>
                 <td colSpan="5" className="px-8 py-8 text-center text-on-surface-variant">
-                  No clients registered
+                  {t('No clients registered')}
                 </td>
               </tr>
             )}
@@ -231,11 +233,11 @@ export default function Clientes() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white/70 backdrop-blur-xl border border-white/40 rounded-2xl p-8 w-full max-w-lg shadow-[0px_40px_80px_rgba(42,52,57,0.08)]">
             <h2 className="text-xl font-bold text-on-surface mb-6">
-              {editingCliente ? 'Edit Client' : 'New Client'}
+              {editingCliente ? t('Edit Client') : t('New Client')}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="relative">
-                <label className="block text-xs font-semibold text-on-surface-variant mb-2">Client Name</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Client Name')}</label>
                 <input
                   type="text"
                   value={formData.nombre}
@@ -246,7 +248,7 @@ export default function Clientes() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="relative">
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">Tax ID (RNC)</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Tax ID (RNC)')}</label>
                   <input
                     type="text"
                     value={formData.rnc}
@@ -255,7 +257,7 @@ export default function Clientes() {
                   />
                 </div>
                 <div className="relative">
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">Phone</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Phone')}</label>
                   <input
                     type="tel"
                     value={formData.telefono}
@@ -265,16 +267,16 @@ export default function Clientes() {
                 </div>
               </div>
               <div className="relative">
-                <label className="block text-xs font-semibold text-on-surface-variant mb-2">Email</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Email')}</label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full bg-transparent border-0 border-b-2 border-outline-variant/20 focus:ring-0 focus:border-primary px-0 py-2 text-on-surface font-medium transition-colors"
                 />
               </div>
               <div className="relative">
-                <label className="block text-xs font-semibold text-on-surface-variant mb-2">Address</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Address')}</label>
                 <input
                   type="text"
                   value={formData.direccion}
@@ -288,13 +290,13 @@ export default function Clientes() {
                   onClick={() => setShowModal(false)}
                   className="px-6 py-3 rounded-lg text-sm font-semibold text-on-surface-variant hover:bg-surface-container-high transition-colors"
                 >
-                  Cancel
+                  {t('Cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-8 py-3 rounded-lg text-sm font-bold text-on-primary bg-gradient-to-br from-primary to-primary-dim shadow-lg shadow-primary/20 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
                 >
-                  {editingCliente ? 'Update Client' : 'Save Client'}
+                  {editingCliente ? t('Update Client') : t('Save Client')}
                 </button>
               </div>
             </form>
