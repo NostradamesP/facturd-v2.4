@@ -23,11 +23,13 @@ export function ToastProvider({ children }) {
             className={`px-6 py-4 rounded-lg shadow-xl animate-slide-in flex items-center gap-3 ${
               toast.type === 'success' 
                 ? 'bg-green-600 text-white' 
-                : 'bg-red-600 text-white'
+                : toast.type === 'warning'
+                  ? 'bg-amber-600 text-white'
+                  : 'bg-red-600 text-white'
             }`}
           >
             <span className="material-symbols-outlined">
-              {toast.type === 'success' ? 'check_circle' : 'error'}
+              {toast.type === 'success' ? 'check_circle' : toast.type === 'warning' ? 'warning' : 'error'}
             </span>
             <span className="font-medium">{toast.message}</span>
           </div>

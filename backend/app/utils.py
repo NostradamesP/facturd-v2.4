@@ -36,3 +36,13 @@ def parse_float(valor) -> float:
         return float(valor)
     except ValueError:
         return 0.0
+
+
+def validar_rnc_formato(rnc: str) -> bool:
+    rnc = rnc.strip().replace("-", "")
+    if not rnc.isdigit() or len(rnc) != 9:
+        return False
+    pesos = [7, 9, 8, 6, 5, 4, 3, 2]
+    suma = sum(int(rnc[i]) * pesos[i] for i in range(8))
+    digito_esperado = (10 - (suma % 10)) % 10
+    return digito_esperado == int(rnc[8])

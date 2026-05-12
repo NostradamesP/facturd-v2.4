@@ -25,6 +25,7 @@ def get_empresa(
         "email": empresa.email,
         "itbis": empresa.itbis,
         "regimen": empresa.regimen,
+        "idioma": empresa.idioma,
         "secuencia_ncf": empresa.secuencia_ncf,
         "secuencia_ecf": empresa.secuencia_ecf
     }
@@ -52,6 +53,8 @@ def update_empresa(
         empresa.itbis = data["itbis"]
     if "regimen" in data:
         empresa.regimen = data["regimen"]
+    if "idioma" in data:
+        empresa.idioma = data["idioma"]
     
     db.commit()
     db.refresh(empresa)
@@ -64,5 +67,6 @@ def update_empresa(
         "telefono": empresa.telefono,
         "email": empresa.email,
         "itbis": empresa.itbis,
-        "regimen": empresa.regimen
+        "regimen": empresa.regimen,
+        "idioma": empresa.idioma
     }

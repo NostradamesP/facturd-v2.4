@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { empresaService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 
 export default function Empresa() {
+  const { t, i18n } = useTranslation();
   const { user, empresa } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -14,6 +16,7 @@ export default function Empresa() {
     direccion: '',
     telefono: '',
     email: '',
+    idioma: 'es',
   });
   const [originalData, setOriginalData] = useState({});
   const { addToast } = useToast();
@@ -34,6 +37,7 @@ export default function Empresa() {
           direccion: res.data.direccion || '',
           telefono: res.data.telefono || '',
           email: res.data.email || '',
+          idioma: res.data.idioma || 'es',
         };
         setFormData(data);
         setOriginalData(data);
@@ -162,6 +166,17 @@ export default function Empresa() {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="w-full bg-transparent border-0 border-b-2 border-outline-variant/20 focus:ring-0 focus:border-primary px-0 py-2 text-on-surface font-medium transition-colors"
                   />
+                </div>
+                <div className="relative">
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Idioma')}</label>
+                  <select
+                    value={formData.idioma}
+                    onChange={(e) => setFormData({ ...formData, idioma: e.target.value })}
+                    className="w-full bg-transparent border-0 border-b-2 border-outline-variant/20 focus:ring-0 focus:border-primary px-0 py-2 text-on-surface font-medium transition-colors"
+                  >
+                    <option value="es">{t('Español')}</option>
+                    <option value="en">{t('Inglés')}</option>
+                  </select>
                 </div>
               </div>
 

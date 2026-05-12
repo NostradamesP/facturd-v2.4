@@ -12,6 +12,7 @@ from sqlalchemy import text
 from app.database import engine, Base, SessionLocal
 from app.config import get_settings
 from app.routes import auth, clientes, productos, proveedores, cotizaciones, plantillas, facturas, pagos, empresa, pdf, dgii, usuarios
+from app.services.dgii_client import configure as dgii_configure
 
 logging.basicConfig(
     level=logging.INFO,
@@ -24,6 +25,12 @@ settings = get_settings()
 
 if settings.AUTO_CREATE_TABLES or settings.DATABASE_URL.startswith("sqlite"):
     Base.metadata.create_all(bind=engine)
+
+dgii_configure(
+    endpoint=os.getenv("DGII_API_URL"),
+    token=os.getenv("DGII_API_TOKEN"),
+    mock=os.getenv("DGII_MOCK_MODE", "true").lower() in ("true", "1", "yes"),
+)
 
 app = FastAPI(
     title="FactuRD API",

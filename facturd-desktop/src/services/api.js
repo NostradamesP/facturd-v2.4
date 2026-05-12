@@ -102,4 +102,14 @@ export const plantillasService = {
   duplicate: (id) => api.post(`plantillas/${id}/duplicar`),
 };
 
+export const dgiiService = {
+  enviar: (facturaId) => api.post(`dgii/enviar/${facturaId}`),
+  consultar: (facturaId) => api.post(`dgii/consultar/${facturaId}`),
+  getRegistro: (facturaId) => api.get(`dgii/facturas/${facturaId}`),
+  getFacturasEnviadas: () => api.get('dgii/facturas'),
+  validarRNC: (rnc) => api.get(`dgii/rnc/${encodeURIComponent(rnc)}`),
+  getConfig: () => api.get('dgii/config'),
+  getEstadisticas: () => api.get('dgii/estadisticas'),
+};
+
 export default api;

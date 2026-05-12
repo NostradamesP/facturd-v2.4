@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/api';
 
@@ -18,6 +19,7 @@ function getErrorMessage(err, fallback) {
 }
 
 export default function Login() {
+  const { t } = useTranslation();
   const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,7 +40,7 @@ export default function Login() {
       await login(email, password);
       navigate('/dashboard');
     } catch (err) {
-      setError(getErrorMessage(err, 'Error al iniciar sesión'));
+      setError(getErrorMessage(err, t('Error al iniciar sesión')));
     } finally {
       setLoading(false);
     }
@@ -60,7 +62,7 @@ export default function Login() {
       await login(email, password);
       navigate('/dashboard');
     } catch (err) {
-      setError(getErrorMessage(err, 'Error al registrarse'));
+      setError(getErrorMessage(err, t('Error al registrarse')));
     } finally {
       setLoading(false);
     }
@@ -80,11 +82,11 @@ export default function Login() {
           <h1 className="font-['Manrope'] text-2xl font-extrabold text-[#2a3439]">
             FactuRD
           </h1>
-          <p className="text-on-surface-variant mt-2">Sistema de Facturación DGII</p>
+          <p className="text-on-surface-variant mt-2">{t('Sistema de Facturación DGII')}</p>
         </div>
 
         <div className="bg-surface-container-lowest p-8 rounded-2xl shadow-lg">
-          <h2 className="text-xl font-bold text-on-surface mb-6">{isRegistering ? 'Crear Cuenta' : 'Iniciar Sesión'}</h2>
+          <h2 className="text-xl font-bold text-on-surface mb-6">{isRegistering ? t('Crear Cuenta') : t('Iniciar Sesión')}</h2>
           
           {error && (
             <div className="bg-error-container text-on-error-container p-3 rounded-lg mb-4 text-sm">
@@ -97,7 +99,7 @@ export default function Login() {
               <>
                 <div>
                   <label className="block text-sm font-medium text-on-surface mb-1">
-                    Nombre
+                    {t('Nombre')}
                   </label>
                   <input
                     type="text"
@@ -109,7 +111,7 @@ export default function Login() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-on-surface mb-1">
-                    Nombre de Empresa
+                    {t('Nombre de Empresa')}
                   </label>
                   <input
                     type="text"
@@ -121,7 +123,7 @@ export default function Login() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-on-surface mb-1">
-                    RNC
+                    {t('RNC')}
                   </label>
                   <input
                     type="text"
@@ -135,7 +137,7 @@ export default function Login() {
             )}
             <div>
               <label className="block text-sm font-medium text-on-surface mb-1">
-                Correo Electrónico
+                {t('Correo Electrónico')}
               </label>
               <input
                 type="email"
@@ -148,7 +150,7 @@ export default function Login() {
 
             <div>
               <label className="block text-sm font-medium text-on-surface mb-1">
-                Contraseña
+                {t('Contraseña')}
               </label>
               <input
                 type="password"
@@ -164,16 +166,16 @@ export default function Login() {
               disabled={loading}
               className="w-full bg-primary text-on-primary py-3 rounded-lg font-semibold hover:bg-primary-dim transition-colors disabled:opacity-50"
             >
-              {loading ? (isRegistering ? 'Registrando...' : 'Iniciando...') : (isRegistering ? 'Registrarse' : 'Iniciar Sesión')}
+              {loading ? (isRegistering ? t('Registrando...') : t('Iniciando...')) : (isRegistering ? t('Registrarse') : t('Iniciar Sesión'))}
             </button>
           </form>
         </div>
 
         <p className="text-center text-sm text-on-surface-variant mt-6">
           {isRegistering ? (
-            <>¿Ya tienes cuenta? <span className="text-primary font-medium cursor-pointer" onClick={() => setIsRegistering(false)}>Inicia sesión</span></>
+            <>{t('¿Ya tienes cuenta?')} <span className="text-primary font-medium cursor-pointer" onClick={() => setIsRegistering(false)}>{t('Inicia sesión')}</span></>
           ) : (
-            <>¿No tienes cuenta? <span className="text-primary font-medium cursor-pointer" onClick={() => setIsRegistering(true)}>Regístrate</span></>
+            <>{t('¿No tienes cuenta?')} <span className="text-primary font-medium cursor-pointer" onClick={() => setIsRegistering(true)}>{t('Regístrate')}</span></>
           )}
         </p>
       </div>

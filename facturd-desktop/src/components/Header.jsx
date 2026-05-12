@@ -1,9 +1,24 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import { empresaService } from '../services/api';
 
 export default function Header({ title, onMenuClick }) {
-  const { user } = useAuth();
-  const [searchQuery, setSearchQuery] = useState('');
+  const { user, empresa, login } = useAuth();
+  const { t, i18n } = useTranslation();
+  const [langOpen, setLangOpen] = useState(false);
+
+  const switchLanguage = async (lang) => {
+    i18n.changeLanguage(lang);
+    localStorage.setItem('facturd_idioma', lang);
+    if (empresa?.id) {
+      try {
+        await empresaService.update({ ...empresa, idioma: lang });
+      } catch (e) {
+        console.error('Failed to sync language to backend:', e);
+      }
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-surface/95 backdrop-blur flex justify-between items-center px-4 lg:px-8 py-3 lg:py-4 w-full border-b border-outline-variant/10 font-['Inter'] text-sm antialiased">
@@ -19,13 +34,33 @@ export default function Header({ title, onMenuClick }) {
         </span>
       </div>
       <div className="flex items-center gap-2 lg:gap-6">
-        <div className="hidden lg:flex items-center gap-4 text-[#566166]">
-          <span className="material-symbols-outlined cursor-pointer hover:text-[#0056D2] transition-colors active:opacity-70">
-            notifications
-          </span>
-          <span className="material-symbols-outlined cursor-pointer hover:text-[#0056D2] transition-colors active:opacity-70">
-            help_outline
-          </span>
+        <div className="relative">
+          <button
+            onClick={() => setLangOpen(!langOpen)}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-on-surface-variant hover:bg-surface-container-high transition-colors"
+          >
+            <span className="material-symbols-outlined text-sm">translate</span>
+            {i18n.language === 'en' ? 'EN' : 'ES'}
+          </button>
+          {langOpen && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setLangOpen(false)} />
+              <div className="absolute right-0 top-full mt-1 z-20 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/10 py-1 min-w-[120px]">
+                <button
+                  onClick={() => { switchLanguage('es'); setLangOpen(false); }}
+                  className={`w-full text-left px-4 py-2 text-sm font-medium hover:bg-surface-container-high ${i18n.language === 'es' ? 'text-primary' : 'text-on-surface'}`}
+                >
+                  {t('Español')}
+                </button>
+                <button
+                  onClick={() => { switchLanguage('en'); setLangOpen(false); }}
+                  className={`w-full text-left px-4 py-2 text-sm font-medium hover:bg-surface-container-high ${i18n.language === 'en' ? 'text-primary' : 'text-on-surface'}`}
+                >
+                  {t('Inglés')}
+                </button>
+              </div>
+            </>
+          )}
         </div>
         <div className="h-6 lg:h-8 w-px bg-outline-variant opacity-20 hidden lg:block"></div>
         <div className="flex items-center gap-2 lg:gap-3 cursor-pointer group active:opacity-70">

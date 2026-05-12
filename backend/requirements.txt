@@ -14,5 +14,6 @@ requests==2.32.3
 reportlab==4.3.1
 email-validator==2.2.0
 pyppeteer==2.0.0
+lxml==5.3.1
 pytest==8.3.4
 httpx==0.28.1

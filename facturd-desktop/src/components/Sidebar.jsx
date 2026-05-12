@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 
 const navItems = [
-  { path: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
-  { path: '/facturas', label: 'Facturas', icon: 'receipt_long' },
-  { path: '/diseno', label: 'Diseño', icon: 'design_services' },
-  { path: '/clientes', label: 'Clientes', icon: 'group' },
-  { path: '/proveedores', label: 'Proveedores', icon: 'store' },
-  { path: '/inventario', label: 'Inventario', icon: 'inventory_2' },
-  { path: '/cobros', label: 'Cobros', icon: 'payments' },
-  { path: '/reportes', label: 'Reportes', icon: 'analytics' },
-  { path: '/empresa', label: 'Empresa', icon: 'settings' },
+  { path: '/dashboard', key: 'Dashboard', icon: 'dashboard' },
+  { path: '/facturas', key: 'Facturas', icon: 'receipt_long' },
+  { path: '/diseno', key: 'Diseño', icon: 'design_services' },
+  { path: '/clientes', key: 'Clientes', icon: 'group' },
+  { path: '/proveedores', key: 'Proveedores', icon: 'store' },
+  { path: '/inventario', key: 'Inventario', icon: 'inventory_2' },
+  { path: '/cobros', key: 'Cobros', icon: 'payments' },
+  { path: '/reportes', key: 'Reportes', icon: 'analytics' },
+  { path: '/empresa', key: 'Empresa', icon: 'settings' },
 ];
 
 const defaultBrand = {
@@ -67,6 +68,7 @@ const applyBrand = (brand) => {
 
 export default function Sidebar({ isOpen = true, onClose }) {
   const { logout, user } = useAuth();
+  const { t } = useTranslation();
   const location = useLocation();
   const [brand, setBrand] = useState(defaultBrand);
   const [brandOpen, setBrandOpen] = useState(false);
@@ -115,7 +117,7 @@ export default function Sidebar({ isOpen = true, onClose }) {
                 FactuRD
               </h1>
               <p className="text-xs text-on-surface-variant font-medium opacity-70">
-                Premium ERP
+                {t('Premium ERP')}
               </p>
             </div>
           </div>
@@ -139,7 +141,7 @@ export default function Sidebar({ isOpen = true, onClose }) {
                     style={location.pathname === item.path ? { fontVariationSettings: "'FILL' 1" } : {}}>
                 {item.icon}
               </span>
-              <span className="font-headline font-medium text-sm">{item.label}</span>
+              <span className="font-headline font-medium text-sm">{t(item.key)}</span>
             </NavLink>
           ))}
         </nav>
@@ -150,14 +152,14 @@ export default function Sidebar({ isOpen = true, onClose }) {
             className="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-6 py-3 transition-all duration-300 hover:bg-surface-container-high rounded-lg group"
           >
             <span className="material-symbols-outlined group-hover:scale-110 transition-transform">contact_support</span>
-            <span className="font-headline font-medium text-sm">Soporte</span>
+            <span className="font-headline font-medium text-sm">{t('Soporte')}</span>
           </a>
           <button
             onClick={() => { logout(); if (onClose) onClose(); }}
             className="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-6 py-3 transition-all duration-300 hover:bg-surface-container-high rounded-lg group"
           >
             <span className="material-symbols-outlined group-hover:scale-110 transition-transform">logout</span>
-            <span className="font-headline font-medium text-sm">Salir</span>
+            <span className="font-headline font-medium text-sm">{t('Salir')}</span>
           </button>
           <div className="mt-3 rounded-xl bg-surface-container-low border border-outline-variant/20 p-3">
             <button
@@ -167,7 +169,7 @@ export default function Sidebar({ isOpen = true, onClose }) {
             >
               <span className="flex items-center gap-3 text-on-surface">
                 <span className="material-symbols-outlined text-primary">palette</span>
-                <span className="font-headline text-sm font-bold">Ajustes de marca</span>
+                <span className="font-headline text-sm font-bold">{t('Ajustes de marca')}</span>
               </span>
               <span className="material-symbols-outlined text-on-surface-variant text-lg">
                 {brandOpen ? 'expand_less' : 'expand_more'}
@@ -176,10 +178,10 @@ export default function Sidebar({ isOpen = true, onClose }) {
             {brandOpen && (
               <div className="mt-4 space-y-3">
                 {[
-                  ['primary', 'Color principal'],
-                  ['surface', 'Fondo'],
-                  ['sidebar', 'Menu lateral'],
-                  ['text', 'Texto'],
+                  ['primary', t('Color principal')],
+                  ['surface', t('Fondo')],
+                  ['sidebar', t('Menu lateral')],
+                  ['text', t('Texto')],
                 ].map(([key, label]) => (
                   <label key={key} className="flex items-center justify-between gap-3 text-xs font-semibold text-on-surface-variant">
                     <span>{label}</span>
@@ -199,7 +201,7 @@ export default function Sidebar({ isOpen = true, onClose }) {
                   onClick={resetBrand}
                   className="w-full rounded-lg bg-surface-container-high px-3 py-2 text-xs font-bold text-on-surface hover:bg-surface-container-highest"
                 >
-                  Restablecer colores
+                  {t('Restablecer colores')}
                 </button>
               </div>
             )}

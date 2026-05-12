@@ -85,6 +85,7 @@ class Empresa(Base):
     secuencia_ecf = Column(Integer, default=1)
     itbis = Column(Float, default=18.0)
     regimen = Column(String, default="ORDINARIO")
+    idioma = Column(String(2), default="es", server_default="es")
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 

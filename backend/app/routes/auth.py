@@ -64,7 +64,7 @@ def register(user_data: UserCreate, response: Response, db: Session = Depends(ge
     return LoginResponse(
         token=access_token,
         user=UserResponse(id=user.id, email=user.email, name=user.name, role=user.role.value),
-        empresa=EmpresaResponse(id=empresa.id, nombre=empresa.nombre, rnc=empresa.rnc)
+        empresa=EmpresaResponse(id=empresa.id, nombre=empresa.nombre, rnc=empresa.rnc, idioma=empresa.idioma)
     )
 
 @router.post("/login", response_model=LoginResponse)
@@ -84,7 +84,7 @@ def login(login_data: UserLogin, response: Response, db: Session = Depends(get_d
     return LoginResponse(
         token=access_token,
         user=UserResponse(id=user.id, email=user.email, name=user.name, role=user.role.value),
-        empresa=EmpresaResponse(id=empresa.id, nombre=empresa.nombre, rnc=empresa.rnc)
+        empresa=EmpresaResponse(id=empresa.id, nombre=empresa.nombre, rnc=empresa.rnc, idioma=empresa.idioma)
     )
 
 @router.get("/me")
@@ -94,5 +94,5 @@ def get_me(current_user: models.User = Depends(get_current_user), db: Session = 
         raise HTTPException(status_code=404, detail="Empresa no encontrada")
     return {
         "user": UserResponse(id=current_user.id, email=current_user.email, name=current_user.name, role=current_user.role.value),
-        "empresa": EmpresaResponse(id=empresa.id, nombre=empresa.nombre, rnc=empresa.rnc)
+        "empresa": EmpresaResponse(id=empresa.id, nombre=empresa.nombre, rnc=empresa.rnc, idioma=empresa.idioma)
     }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { facturasService, clientesService, productosService, plantillasService } from '../services/api';
+import { facturasService, clientesService, productosService, plantillasService, dgiiService } from '../services/api';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import FacturaPreview from '../components/factura/FacturaPreview';
@@ -9,6 +9,7 @@ const STATUS_FILTERS = [
   { value: 'all', label: 'All' },
   { value: 'PAGADA', label: 'Pagada' },
   { value: 'PENDIENTE', label: 'Pendiente' },
+  { value: 'ENVIADA_DGII', label: 'DGII' },
   { value: 'ANULADA', label: 'Anulada' },
 ];
 
@@ -56,6 +57,8 @@ export default function Facturas() {
   const [clienteRapidoDone, setClienteRapidoDone] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState('classic');
   const [savedTemplates, setSavedTemplates] = useState([]);
+  const [dgiiLoading, setDgiiLoading] = useState(false);
+  const [dgiiRegistro, setDgiiRegistro] = useState(null);
   const { addToast } = useToast();
   const [formData, setFormData] = useState({
     cliente_id: '',
@@ -196,6 +199,8 @@ export default function Facturas() {
     try {
       const facturaCompleta = factura.detalles ? factura : (await facturasService.getById(factura.id)).data;
       setSelectedFactura(facturaCompleta);
+      setDgiiRegistro(null);
+      handleLoadDgiiRegistro(facturaCompleta.id);
       try {
         const settings = facturaCompleta.visual_settings ? JSON.parse(facturaCompleta.visual_settings) : null;
         if (settings?.template) setSelectedTemplate(settings.template);
@@ -310,6 +315,53 @@ export default function Facturas() {
     } catch (error) {
       console.error('Error anulando factura:', error);
       addToast(error.response?.data?.detail || 'No se pudo anular la factura', 'error');
+    }
+  };
+
+  const handleEnviarDGII = async (factura = selectedFactura) => {
+    if (!factura || !factura.id) return;
+    if (!factura.ncf) {
+      addToast('La factura debe tener un NCF asignado antes de enviarse a la DGII', 'error');
+      return;
+    }
+    if (!confirm(`¿Enviar la factura ${factura.ncf} a la DGII?\n\nSe generará el XML e-CF y se enviará al portal de la DGII.`)) return;
+    
+    setDgiiLoading(true);
+    try {
+      const res = await dgiiService.enviar(factura.id);
+      setDgiiRegistro(res.data?.registro_dgii || null);
+      addToast(`Factura enviada a DGII exitosamente (Track ID: ${res.data?.registro_dgii?.track_id || 'N/A'})`, 'success');
+      setShowDetail(false);
+      setSelectedFactura(null);
+      fetchData();
+    } catch (error) {
+      console.error('Error enviando a DGII:', error);
+      addToast(error.response?.data?.detail || 'Error al enviar factura a la DGII', 'error');
+    } finally {
+      setDgiiLoading(false);
+    }
+  };
+
+  const handleConsultarDGII = async (factura = selectedFactura) => {
+    if (!factura || !factura.id) return;
+    try {
+      const res = await dgiiService.consultar(factura.id);
+      const estado = res.data?.estado_dgii || 'DESCONOCIDO';
+      addToast(`Estado DGII: ${estado}`, estado === 'ACEPTADO' ? 'success' : 'warning');
+      setDgiiRegistro(res.data);
+      fetchData();
+    } catch (error) {
+      console.error('Error consultando DGII:', error);
+      addToast(error.response?.data?.detail || 'Error al consultar DGII', 'error');
+    }
+  };
+
+  const handleLoadDgiiRegistro = async (facturaId) => {
+    try {
+      const res = await dgiiService.getRegistro(facturaId);
+      setDgiiRegistro(res.data);
+    } catch {
+      setDgiiRegistro(null);
     }
   };
 
@@ -657,6 +709,25 @@ export default function Facturas() {
                 <button onClick={() => handleCobrarFactura(selectedFactura)} className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high" title="Cobrar">
                   <span className="material-symbols-outlined">payments</span>
                 </button>
+                {selectedFactura.estado !== 'ENVIADA_DGII' && selectedFactura.estado !== 'ANULADA' && selectedFactura.ncf && (
+                  <button
+                    onClick={() => handleEnviarDGII()}
+                    disabled={dgiiLoading}
+                    className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-surface-container hover:bg-primary-container hover:text-on-primary-container disabled:opacity-40"
+                    title="Enviar a DGII"
+                  >
+                    <span className="material-symbols-outlined">{dgiiLoading ? 'hourglass_top' : 'send'}</span>
+                  </button>
+                )}
+                {selectedFactura.estado === 'ENVIADA_DGII' && (
+                  <button
+                    onClick={() => handleConsultarDGII()}
+                    className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-surface-container hover:bg-tertiary-container hover:text-on-tertiary-container"
+                    title="Consultar estado DGII"
+                  >
+                    <span className="material-symbols-outlined">sync</span>
+                  </button>
+                )}
                 <button onClick={() => window.print()} className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high" title="Imprimir">
                   <span className="material-symbols-outlined">print</span>
                 </button>
@@ -695,6 +766,40 @@ export default function Facturas() {
                     <div className="flex justify-between pt-3 border-t border-outline-variant/20 text-lg font-bold"><span>Total</span><span className="font-mono text-primary">{formatMoney(selectedFactura.total)}</span></div>
                   </div>
                 </div>
+                {selectedFactura.estado === 'ENVIADA_DGII' && (
+                  <div className="bg-tertiary-container/10 border border-tertiary-container/30 rounded-xl p-6">
+                    <h3 className="font-headline text-lg font-bold mb-4 text-on-surface flex items-center gap-2">
+                      <span className="material-symbols-outlined text-tertiary">verified</span>
+                      DGII
+                    </h3>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-on-surface-variant">Estado DGII</span>
+                        <span className={`font-bold ${dgiiRegistro?.estado === 'ACEPTADO' ? 'text-green-600' : dgiiRegistro?.estado === 'RECHAZADO' ? 'text-red-600' : 'text-tertiary'}`}>
+                          {dgiiRegistro?.estado || 'PENDIENTE'}
+                        </span>
+                      </div>
+                      {dgiiRegistro?.track_id && (
+                        <div className="flex justify-between">
+                          <span className="text-on-surface-variant">Track ID</span>
+                          <span className="font-mono text-xs font-bold">{dgiiRegistro.track_id}</span>
+                        </div>
+                      )}
+                      {dgiiRegistro?.enviado_at && (
+                        <div className="flex justify-between">
+                          <span className="text-on-surface-variant">Enviado</span>
+                          <span className="font-mono text-xs">{new Date(dgiiRegistro.enviado_at).toLocaleString('es-DO')}</span>
+                        </div>
+                      )}
+                      {dgiiRegistro?.respondido_at && (
+                        <div className="flex justify-between">
+                          <span className="text-on-surface-variant">Respuesta</span>
+                          <span className="font-mono text-xs">{new Date(dgiiRegistro.respondido_at).toLocaleString('es-DO')}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
                 <div className="bg-surface-container-lowest border border-outline-variant/10 rounded-xl p-6">
                   <h3 className="font-headline text-lg font-bold mb-4 text-on-surface">Renglones</h3>
                   <div className="space-y-3">

@@ -86,6 +86,7 @@ class EmpresaBase(BaseModel):
     direccion: Optional[str] = None
     telefono: Optional[str] = None
     email: Optional[str] = None
+    idioma: str = "es"
 
 class EmpresaCreate(EmpresaBase):
     pass
@@ -257,6 +258,36 @@ class RegistroDGIIResponse(RegistroDGIIBase):
     updated_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class DGIIEnviarResponse(BaseModel):
+    factura_id: str
+    ncf: str
+    estado_factura: EstadoFacturaEnum
+    registro_dgii: RegistroDGIIResponse
+
+
+class DGIIConsultarResponse(BaseModel):
+    factura_id: str
+    ncf: str
+    track_id: Optional[str] = None
+    estado_dgii: EstadoDGIIEnum
+    respuesta_dgii: Optional[str] = None
+
+
+class DGIIConfigResponse(BaseModel):
+    mock_mode: bool
+    api_url: Optional[str] = None
+    version: str = "1.0"
+
+
+class RNCValidarResponse(BaseModel):
+    rnc: str
+    valido: bool
+    razon_social: Optional[str] = None
+    estatus: str
+    categoria: Optional[str] = None
+    formato_valido: bool
 
 # Stats
 class DashboardStats(BaseModel):
