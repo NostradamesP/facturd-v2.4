@@ -6,11 +6,9 @@ from app.database import get_db
 from app.models.models import PlantillaFactura
 from app.models.schemas import PlantillaFacturaCreate, PlantillaFacturaUpdate, PlantillaFacturaResponse
 from app.middleware.auth import get_current_empresa
+from app.utils import generar_id
 
 router = APIRouter(prefix="/api/plantillas", tags=["Plantillas"])
-
-def generar_id():
-    return uuid.uuid4().hex[:24]
 
 def crear_plantilla_default(db: Session, empresa_id: str) -> PlantillaFactura:
     plantilla = PlantillaFactura(
@@ -66,7 +64,7 @@ def get_plantilla(
         raise HTTPException(status_code=404, detail="Plantilla no encontrada")
     return plantilla
 
-@router.post("", response_model=PlantillaFacturaResponse)
+@router.post("", status_code=201, response_model=PlantillaFacturaResponse)
 def create_plantilla(
     data: PlantillaFacturaCreate,
     empresa_id: str = Depends(get_current_empresa),
@@ -96,7 +94,7 @@ def update_plantilla(
     if not plantilla:
         raise HTTPException(status_code=404, detail="Plantilla no encontrada")
     
-    for key, value in data.model_dump().items():
+    for key, value in data.model_dump(exclude_unset=True).items():
         setattr(plantilla, key, value)
     
     db.commit()

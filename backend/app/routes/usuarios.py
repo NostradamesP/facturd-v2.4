@@ -23,7 +23,7 @@ def get_current_user_info(
 ):
     return UserResponse(id=current_user.id, email=current_user.email, name=current_user.name, role=current_user.role.value)
 
-@router.post("/")
+@router.post("/", status_code=201)
 def create_usuario(
     data: dict,
     empresa_id: str = Depends(get_current_empresa),

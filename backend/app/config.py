@@ -9,19 +9,17 @@ class Settings(BaseSettings):
 
     APP_NAME: str = "FactuRD"
     DATABASE_URL: str = "sqlite:///./facturd.db"
-    JWT_SECRET: Optional[str] = None
+    JWT_SECRET: str = ""
     JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 12
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     CORS_ORIGINS: str = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:8000")
     AUTO_CREATE_TABLES: bool = False
     RENDER: bool = False
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        if self.JWT_SECRET is None:
-            import warnings
-            warnings.warn("JWT_SECRET no definido en variables de entorno. Generando token temporal (los tokens no persistiran entre reinicios).")
-            self.JWT_SECRET = secrets.token_urlsafe(32)
+        if not self.JWT_SECRET:
+            raise ValueError("JWT_SECRET must be set in environment or .env file")
 
 @lru_cache()
 def get_settings():

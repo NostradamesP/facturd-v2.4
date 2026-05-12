@@ -238,11 +238,14 @@ class FacturaResponse(FacturaBase):
     ncf: str
     secuencia: int
     fecha: datetime
+    fecha_vencimiento: Optional[str] = None
     subtotal: float
     descuento: float
     itbis: float
     total: float
+    nota: Optional[str] = None
     estado: EstadoFacturaEnum
+    detalles: List[DetalleFacturaResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
 

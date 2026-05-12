@@ -88,3 +88,35 @@ Otros usuarios migrados (en sus respectivas empresas):
   - prueba@test.com -> Prueba SRL
 
 Nota: cada usuario solo ve facturas de su propia empresa.
+
+=== PARCHE DE BUGS (2026-05-12) ===
+
+Backend:
+  - Agregado status_code=201 a todos los POST endpoints (10 endpoints)
+  - Eliminada duplicacion de generar_id() - ahora se importa de utils.py
+  - Arreglado N+1 queries en facturas.py, gastos.py, dgii.py (joinedload)
+  - Proveedores ahora devuelve PaginatedResponse (consistente con clientes/productos)
+  - Facturas siempre devuelve respuesta paginada (items+total)
+  - Arreglado plantillas.py: model_dump(exclude_unset=True) evita sobrescribir defaults
+  - CORS: strip() a origins eliminados espacios
+  - database.py: agregado pool_pre_ping=True
+  - config.py: JWT_SECRET requerido (lanza ValueError si falta)
+  - seed_demo.py: credenciales via entorno (SEED_ADMIN_EMAIL, etc.)
+  - __init__.py: agregados gastos, usuarios a imports
+  - schemas.py: FacturaResponse incluye fecha_vencimiento, nota, detalles
+  - auth.py: get_current_empresa con tipo de retorno
+  - dgii_client.py: _validar_formato_rnc delega a utils.py
+  - Cliente/Producto: chequeo unico RNC por empresa
+
+Frontend:
+  - DisenoFactura.jsx: corregido stale closure en handleMouseMove (functional updater)
+  - DisenoFactura.jsx: corregido stale state en updateElementAndSave
+  - DisenoFactura.jsx: eliminado key duplicado (icon: 'circle')
+  - Empresa.jsx: logo upload ahora actualiza formData.logo_url
+  - FacturaPreview.jsx: agregado AbortController a useEffect cleanup
+  - api.js: agregado timeout: 30000, eliminado console.log token
+  - Toast.jsx: corregido memory leak con timersRef cleanup
+  - main.jsx: ErrorBoundary envuelve App
+  - Provedores/Gastos/Cotizaciones/Pagos: corregido unwrapItems() (array plano)
+  - api.js: agregado pdfService.generate()
+  - Inventario.jsx: enviado aplica_itbis + tipo_itbis a backend

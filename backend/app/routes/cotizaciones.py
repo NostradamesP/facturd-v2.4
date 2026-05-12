@@ -14,11 +14,9 @@ from app.routes.facturas import (
     normalizar_enum,
     preparar_detalles_factura,
 )
+from app.utils import generar_id
 
 router = APIRouter(prefix="/api/cotizaciones", tags=["Cotizaciones"])
-
-def generar_id():
-    return uuid.uuid4().hex[:24]
 
 @router.get("")
 @router.get("/")
@@ -48,8 +46,8 @@ def get_cotizacion(
         raise HTTPException(status_code=404, detail="Cotización no encontrada")
     return cotizacion
 
-@router.post("")
-@router.post("/")
+@router.post("", status_code=201)
+@router.post("/", status_code=201)
 def create_cotizacion(
     cotizacion_data: dict,
     empresa_id: str = Depends(get_current_empresa),

@@ -13,19 +13,26 @@ export default function FacturaPreview({ formData, cliente, selectedTemplate, on
   const [customTemplate, setCustomTemplate] = useState(null);
 
   useEffect(() => {
-    if (selectedTemplate && !templates.find(t => t.id === selectedTemplate)) {
-      plantillasService.getById(selectedTemplate)
-        .then(res => {
-          try {
-            setCustomTemplate(res.data.diseno_json ? JSON.parse(res.data.diseno_json) : null);
-          } catch (e) {
-            setCustomTemplate(null);
-          }
-        })
-        .catch(() => setCustomTemplate(null));
-    } else {
+    if (!selectedTemplate || selectedTemplate === 'classic' || selectedTemplate === 'modern' || selectedTemplate === 'bold') {
       setCustomTemplate(null);
+      return;
     }
+    const controller = new AbortController();
+    plantillasService.getById(selectedTemplate, { signal: controller.signal })
+      .then(res => {
+        try {
+          setCustomTemplate(res.data.diseno_json ? JSON.parse(res.data.diseno_json) : null);
+        } catch (e) {
+          setCustomTemplate(null);
+        }
+      })
+      .catch(err => {
+        if (err.name !== 'CanceledError' && err.code !== 'ERR_CANCELED') {
+          console.error('Error loading template:', err);
+          setCustomTemplate(null);
+        }
+      });
+    return () => controller.abort();
   }, [selectedTemplate]);
   
   const detalles = formData.detalles || [];

@@ -1,16 +1,17 @@
 from datetime import datetime, timedelta
 import json
+import os
 
 from app.database import SessionLocal
 from app.models import models
 from app.utils import pwd_context, generar_id
 
-ADMIN_EMAIL = "admin@facturd.com"
-ADMIN_PASSWORD = "Admin123."
+ADMIN_EMAIL = os.getenv("SEED_ADMIN_EMAIL", "admin@facturd.com")
+ADMIN_PASSWORD = os.getenv("SEED_ADMIN_PASSWORD", "Admin123.")
 ADMIN_RNC = "101234567"
 
-DEMO_EMAIL = "demo@facturd-demo.com"
-DEMO_PASSWORD = "DemoFactuRD2026!"
+DEMO_EMAIL = os.getenv("SEED_DEMO_EMAIL", "demo@facturd-demo.com")
+DEMO_PASSWORD = os.getenv("SEED_DEMO_PASSWORD", "DemoFactuRD2026!")
 
 
 def upsert_admin() -> None:

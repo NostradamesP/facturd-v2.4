@@ -7,12 +7,9 @@ from app.database import get_db
 from app.models import models
 from app.models.schemas import ClienteCreate, ClienteUpdate, ClienteResponse, PaginatedResponse
 from app.middleware.auth import get_current_empresa
+from app.utils import generar_id
 
 router = APIRouter(prefix="/api/clientes", tags=["Clientes"])
-
-def generar_id() -> str:
-    val_hex: str = uuid.uuid4().hex
-    return val_hex[:24]  # type: ignore
 
 @router.get("", response_model=PaginatedResponse[ClienteResponse])
 @router.get("/", response_model=PaginatedResponse[ClienteResponse])
@@ -50,8 +47,8 @@ def get_cliente(
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
     return cliente
 
-@router.post("", response_model=ClienteResponse)
-@router.post("/", response_model=ClienteResponse)
+@router.post("", status_code=201, response_model=ClienteResponse)
+@router.post("/", status_code=201, response_model=ClienteResponse)
 def create_cliente(
     cliente_data: ClienteCreate,
     empresa_id: str = Depends(get_current_empresa),

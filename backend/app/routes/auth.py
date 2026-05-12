@@ -25,7 +25,7 @@ def _set_token_cookie(response: Response, token: str, max_age: int):
     )
 
 
-@router.post("/register", response_model=LoginResponse)
+@router.post("/register", status_code=201, response_model=LoginResponse)
 def register(user_data: UserCreate, response: Response, db: Session = Depends(get_db)):
     existing_user = db.query(models.User).filter(models.User.email == user_data.email).first()
     if existing_user:

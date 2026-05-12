@@ -20,6 +20,8 @@ export default function Inventario() {
     costo_unitario: '',
     itbis: '',
     tipo: 'PRODUCTO',
+    aplica_itbis: true,
+    tipo_itbis: 'ITBIS_18',
   });
   const { addToast } = useToast();
 
@@ -52,10 +54,12 @@ export default function Inventario() {
         costo_unitario: producto.costo_unitario?.toString() || '',
         itbis: producto.itbis?.toString() || '',
         tipo: producto.tipo || 'PRODUCTO',
+        aplica_itbis: producto.aplica_itbis !== false,
+        tipo_itbis: producto.tipo_itbis || 'ITBIS_18',
       });
     } else {
       setEditingProducto(null);
-      setFormData({ nombre: '', codigo: '', descripcion: '', precio_unitario: '', stock: '', costo_unitario: '', itbis: '', tipo: 'PRODUCTO' });
+      setFormData({ nombre: '', codigo: '', descripcion: '', precio_unitario: '', stock: '', costo_unitario: '', itbis: '', tipo: 'PRODUCTO', aplica_itbis: true, tipo_itbis: 'ITBIS_18' });
     }
     setShowModal(true);
   };
@@ -72,6 +76,8 @@ export default function Inventario() {
         costo_unitario: parseFloat(formData.costo_unitario) || 0,
         itbis: parseFloat(formData.itbis) || 0,
         tipo: formData.tipo || 'PRODUCTO',
+        aplica_itbis: parseFloat(formData.itbis) > 0,
+        tipo_itbis: parseFloat(formData.itbis) >= 18 ? 'ITBIS_18' : parseFloat(formData.itbis) > 0 ? 'ITBIS_0' : 'ITBIS_0',
       };
       if (editingProducto) {
         await productosService.update(editingProducto.id, data);

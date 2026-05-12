@@ -11,8 +11,8 @@ logger = logging.getLogger("facturd")
 
 router = APIRouter(prefix="/api/empresa", tags=["Empresa"])
 
-@router.get("")
-@router.get("/")
+@router.get("", response_model=EmpresaResponse)
+@router.get("/", response_model=EmpresaResponse)
 def get_empresa(
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db)

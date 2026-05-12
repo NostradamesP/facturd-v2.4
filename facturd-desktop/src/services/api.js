@@ -4,6 +4,7 @@ const API_URL = `${import.meta.env.VITE_API_URL || '/api'}`.replace(/\/?$/, '/')
 
 const api = axios.create({
   baseURL: API_URL,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -12,7 +13,7 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (import.meta.env.DEV) {
-    console.log('AXIOS Request:', config.method?.toUpperCase(), config.url, 'Token:', token ? 'YES' : 'NO');
+    // console.log('AXIOS Request:', config.method?.toUpperCase(), config.url, 'Token:', token ? 'YES' : 'NO');
   }
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -63,7 +64,7 @@ export const clientesService = {
 };
 
 export const proveedoresService = {
-  getAll: () => unwrapItems(api.get('proveedores')),
+  getAll: () => api.get('proveedores').then(res => res.data || []),
   create: (data) => api.post('proveedores', data),
   update: (id, data) => api.put(`proveedores/${id}`, data),
   delete: (id) => api.delete(`proveedores/${id}`),
@@ -77,14 +78,14 @@ export const productosService = {
 };
 
 export const cotizacionesService = {
-  getAll: () => unwrapItems(api.get('cotizaciones')),
+  getAll: () => api.get('cotizaciones').then(res => res.data || []),
   create: (data) => api.post('cotizaciones', data),
   update: (id, data) => api.put(`cotizaciones/${id}`, data),
   delete: (id) => api.delete(`cotizaciones/${id}`),
 };
 
 export const pagosService = {
-  getAll: () => unwrapItems(api.get('pagos')),
+  getAll: () => api.get('pagos').then(res => res.data || []),
   create: (data) => api.post('pagos', data),
 };
 
@@ -103,7 +104,7 @@ export const plantillasService = {
 };
 
 export const gastosService = {
-  getAll: () => unwrapItems(api.get('gastos')),
+  getAll: () => api.get('gastos').then(res => res.data || []),
   create: (data) => api.post('gastos', data),
   update: (id, data) => api.put(`gastos/${id}`, data),
   delete: (id) => api.delete(`gastos/${id}`),
@@ -118,6 +119,10 @@ export const dgiiService = {
   validarRNC: (rnc) => api.get(`dgii/rnc/${encodeURIComponent(rnc)}`),
   getConfig: () => api.get('dgii/config'),
   getEstadisticas: () => api.get('dgii/estadisticas'),
+};
+
+export const pdfService = {
+    generate: (facturaId) => api.post(`/pdf/invoice/${facturaId}`, {}, { responseType: 'blob' }),
 };
 
 export default api;

@@ -7,12 +7,9 @@ from app.database import get_db
 from app.models import models
 from app.models.schemas import ProductoCreate, ProductoUpdate, ProductoResponse, PaginatedResponse
 from app.middleware.auth import get_current_empresa
+from app.utils import generar_id
 
 router = APIRouter(prefix="/api/productos", tags=["Productos"])
-
-def generar_id() -> str:
-    val_hex: str = uuid.uuid4().hex
-    return val_hex[:24]  # type: ignore
 
 @router.get("", response_model=PaginatedResponse[ProductoResponse])
 @router.get("/", response_model=PaginatedResponse[ProductoResponse])
@@ -76,8 +73,8 @@ def get_producto(
         raise HTTPException(status_code=404, detail="Producto no encontrado")
     return producto
 
-@router.post("", response_model=ProductoResponse)
-@router.post("/", response_model=ProductoResponse)
+@router.post("", status_code=201, response_model=ProductoResponse)
+@router.post("/", status_code=201, response_model=ProductoResponse)
 def create_producto(
     producto_data: ProductoCreate,
     empresa_id: str = Depends(get_current_empresa),

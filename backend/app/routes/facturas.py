@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from datetime import datetime
+from typing import Optional
 import uuid
 
 from app.database import get_db
@@ -199,12 +200,11 @@ def total_pagado_factura(factura_id: str, db: Session) -> float:
 
 
 def factura_to_dict(factura: models.Factura, db: Session, include_detalles: bool = False) -> dict:
-    cliente = db.query(models.Cliente).filter(models.Cliente.id == factura.cliente_id).first()
     data = {
         "id": factura.id,
         "empresa_id": factura.empresa_id,
         "cliente_id": factura.cliente_id,
-        "cliente_nombre": cliente.nombre if cliente else None,
+        "cliente_nombre": factura.cliente.nombre if factura.cliente else None,
         "ncf": factura.ncf,
         "tipo_ncf": factura.tipo_ncf.value if factura.tipo_ncf else None,
         "secuencia": factura.secuencia,
@@ -239,27 +239,22 @@ def factura_to_dict(factura: models.Factura, db: Session, include_detalles: bool
 
 
 @router.get("")
-@router.get("/")
 def get_facturas(
-    request: Request,
-    estado: str = "",
-    skip: int = 0,
-    limit: int = 100,
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+    estado: Optional[str] = None,
 ):
-    query = db.query(models.Factura).filter(models.Factura.empresa_id == empresa_id)
+    """Get all facturas for the current empresa"""
+    query = db.query(models.Factura).options(joinedload(models.Factura.cliente)).filter(models.Factura.empresa_id == empresa_id)
     if estado:
-        estado_enum = normalizar_enum(models.EstadoFactura, estado, models.EstadoFactura.PENDIENTE)
-        query = query.filter(models.Factura.estado == estado_enum)
+        query = query.filter(models.Factura.estado == estado)
 
     total = query.count()
-    facturas = query.order_by(models.Factura.fecha.desc()).offset(skip).limit(limit).all()
-    items = [factura_to_dict(factura, db) for factura in facturas]
-
-    if any(key in request.query_params for key in ("skip", "limit", "estado")):
-        return {"items": items, "total": total, "skip": skip, "limit": limit}
-    return items
+    facturas = query.order_by(models.Factura.created_at.desc()).offset(skip).limit(limit).all()
+    items = [factura_to_dict(f, db) for f in facturas]
+    return {"items": items, "total": total, "skip": skip, "limit": limit}
 
 
 @router.get("/stats/dashboard", response_model=DashboardStats)
@@ -278,8 +273,8 @@ def get_stats(
     )
 
 
-@router.post("")
-@router.post("/")
+@router.post("", status_code=201)
+@router.post("/", status_code=201)
 def create_factura(
     data: dict,
     empresa_id: str = Depends(get_current_empresa),
@@ -336,7 +331,7 @@ def get_factura(
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db),
 ):
-    factura = db.query(models.Factura).filter(
+    factura = db.query(models.Factura).options(joinedload(models.Factura.cliente)).filter(
         models.Factura.id == factura_id,
         models.Factura.empresa_id == empresa_id,
     ).first()
@@ -427,7 +422,7 @@ def delete_factura(
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db),
 ):
-    factura = db.query(models.Factura).filter(
+    factura = db.query(models.Factura).options(joinedload(models.Factura.cliente)).filter(
         models.Factura.id == factura_id,
         models.Factura.empresa_id == empresa_id,
     ).first()

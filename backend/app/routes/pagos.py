@@ -5,11 +5,9 @@ import uuid
 from app.database import get_db
 from app.models import models
 from app.middleware.auth import get_current_empresa
+from app.utils import generar_id
 
 router = APIRouter(prefix="/api/pagos", tags=["Pagos"])
-
-def generar_id():
-    return uuid.uuid4().hex[:24]
 
 def parse_monto(value):
     try:
@@ -51,8 +49,8 @@ def get_pagos(
     pagos = query.order_by(models.Pago.fecha.desc()).offset(skip).limit(limit).all()
     return [pago_to_dict(pago, db) for pago in pagos]
 
-@router.post("")
-@router.post("/")
+@router.post("", status_code=201)
+@router.post("/", status_code=201)
 def create_pago(
     data: dict,
     empresa_id: str = Depends(get_current_empresa),

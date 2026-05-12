@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { facturasService, clientesService, productosService, plantillasService, dgiiService } from '../services/api';
+import { facturasService, clientesService, productosService, plantillasService, dgiiService, pdfService } from '../services/api';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import FacturaPreview from '../components/factura/FacturaPreview';

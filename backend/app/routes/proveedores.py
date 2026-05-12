@@ -5,16 +5,14 @@ import uuid
 
 from app.database import get_db
 from app.models import models
-from app.models.schemas import ProveedorCreate, ProveedorUpdate, ProveedorResponse
+from app.models.schemas import ProveedorCreate, ProveedorUpdate, ProveedorResponse, PaginatedResponse
 from app.middleware.auth import get_current_empresa
+from app.utils import generar_id
 
 router = APIRouter(prefix="/api/proveedores", tags=["Proveedores"])
 
-def generar_id():
-    return uuid.uuid4().hex[:24]
-
-@router.get("", response_model=List[ProveedorResponse])
-@router.get("/", response_model=List[ProveedorResponse])
+@router.get("", response_model=PaginatedResponse[ProveedorResponse])
+@router.get("/", response_model=PaginatedResponse[ProveedorResponse])
 def get_proveedores(
     search: str = "",
     skip: int = 0,
@@ -28,7 +26,9 @@ def get_proveedores(
             (models.Proveedor.nombre.ilike(f"%{search}%")) | 
             (models.Proveedor.rnc.ilike(f"%{search}%"))
         )
-    return query.offset(skip).limit(limit).all()
+    total = query.count()
+    items = query.offset(skip).limit(limit).all()
+    return {"items": items, "total": total, "skip": skip, "limit": limit}
 
 @router.get("/{proveedor_id}", response_model=ProveedorResponse)
 def get_proveedor(
@@ -44,8 +44,8 @@ def get_proveedor(
         raise HTTPException(status_code=404, detail="Proveedor no encontrado")
     return proveedor
 
-@router.post("", response_model=ProveedorResponse)
-@router.post("/", response_model=ProveedorResponse)
+@router.post("", status_code=201, response_model=ProveedorResponse)
+@router.post("/", status_code=201, response_model=ProveedorResponse)
 def create_proveedor(
     proveedor_data: ProveedorCreate,
     empresa_id: str = Depends(get_current_empresa),

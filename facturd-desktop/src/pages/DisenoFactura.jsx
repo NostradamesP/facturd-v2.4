@@ -29,7 +29,7 @@ const TOOLBOX_CATEGORIES = [
     items: [
       { type: ELEMENT_TYPES.IMAGE, label: 'Logo/Imagen', icon: 'image', defaultProps: { src: '', width: 120, height: 80, objectFit: 'contain' } },
       { type: ELEMENT_TYPES.RECTANGLE, label: 'Rectángulo', icon: 'rectangle', defaultProps: { width: 150, height: 80, fillColor: '#dae2ff', borderColor: '#0056d2', borderWidth: 1, borderRadius: 0 } },
-      { type: ELEMENT_TYPES.CIRCLE, label: 'Círculo', icon: 'circle', icon: 'circle', defaultProps: { size: 60, fillColor: '#dae2ff', borderColor: '#0056d2', borderWidth: 1 } },
+      { type: ELEMENT_TYPES.CIRCLE, label: 'Círculo', icon: 'circle', defaultProps: { size: 60, fillColor: '#dae2ff', borderColor: '#0056d2', borderWidth: 1 } },
     ]
   },
   {
@@ -498,7 +498,7 @@ export default function DisenoFactura() {
       const newX = snapToGrid(dragStartRef.current.elementX + dx);
       const newY = snapToGrid(dragStartRef.current.elementY + dy);
 
-      setElements(elements.map(el => 
+      setElements(prev => prev.map(el => 
         el.id === selectedElement ? { ...el, x: newX, y: newY } : el
       ));
     }
@@ -548,11 +548,11 @@ export default function DisenoFactura() {
           break;
       }
 
-      setElements(elements.map(el => 
+      setElements(prev => prev.map(el => 
         el.id === selectedElement ? { ...el, ...newProps } : el
       ));
     }
-  }, [isDragging, isResizing, selectedElement, elements, zoom, showGrid, resizeHandle]);
+  }, [isDragging, isResizing, selectedElement, zoom, showGrid, resizeHandle]);
 
   const handleMouseUp = useCallback(() => {
     if (isDragging) {
@@ -661,9 +661,13 @@ export default function DisenoFactura() {
 
   const updateElementAndSave = (property, value) => {
     updateElementProperty(property, value);
-    saveToHistory(elements.map(el => 
-      el.id === selectedElement ? { ...el, [property]: value } : el
-    ));
+    setElements(prev => {
+      const updated = prev.map(el =>
+        el.id === selectedElement ? { ...el, [property]: value } : el
+      );
+      saveToHistory(updated);
+      return updated;
+    });
   };
 
   const renderDynamicText = (type, props) => {

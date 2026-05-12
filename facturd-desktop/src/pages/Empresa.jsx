@@ -59,6 +59,7 @@ export default function Empresa() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setLogo(reader.result);
+        setFormData(prev => ({ ...prev, logo_url: reader.result }));
       };
       reader.readAsDataURL(file);
     }

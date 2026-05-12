@@ -9,11 +9,9 @@ from app.database import get_db
 from app.models import models
 from app.models.schemas import GastoCreate, GastoUpdate, GastoResponse
 from app.middleware.auth import get_current_empresa
+from app.utils import generar_id
 
 router = APIRouter(prefix="/api/gastos", tags=["Gastos"])
-
-def generar_id():
-    return uuid.uuid4().hex[:24]
 
 @router.get("/resumen")
 def get_resumen(
@@ -51,18 +49,14 @@ def get_gastos(
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db)
 ):
-    query = db.query(models.Gasto).filter(models.Gasto.empresa_id == empresa_id)
+    query = db.query(models.Gasto).options(joinedload(models.Gasto.proveedor)).filter(models.Gasto.empresa_id == empresa_id)
     if search:
         query = query.filter(models.Gasto.nota.ilike(f"%{search}%"))
     gastos = query.order_by(models.Gasto.fecha.desc()).offset(skip).limit(limit).all()
 
     result = []
     for g in gastos:
-        proveedor_nombre = None
-        if g.proveedor_id:
-            prov = db.query(models.Proveedor).filter(models.Proveedor.id == g.proveedor_id).first()
-            if prov:
-                proveedor_nombre = prov.nombre
+        proveedor_nombre = g.proveedor.nombre if g.proveedor else None
         result.append(GastoResponse(
             id=g.id,
             empresa_id=g.empresa_id,
@@ -83,17 +77,13 @@ def get_gasto(
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db)
 ):
-    gasto = db.query(models.Gasto).filter(
+    gasto = db.query(models.Gasto).options(joinedload(models.Gasto.proveedor)).filter(
         models.Gasto.id == gasto_id,
         models.Gasto.empresa_id == empresa_id
     ).first()
     if not gasto:
         raise HTTPException(status_code=404, detail="Gasto no encontrado")
-    proveedor_nombre = None
-    if gasto.proveedor_id:
-        prov = db.query(models.Proveedor).filter(models.Proveedor.id == gasto.proveedor_id).first()
-        if prov:
-            proveedor_nombre = prov.nombre
+    proveedor_nombre = gasto.proveedor.nombre if gasto.proveedor else None
     return GastoResponse(
         id=gasto.id,
         empresa_id=gasto.empresa_id,
@@ -107,8 +97,8 @@ def get_gasto(
         proveedor_nombre=proveedor_nombre,
     )
 
-@router.post("", response_model=GastoResponse)
-@router.post("/", response_model=GastoResponse)
+@router.post("", status_code=201, response_model=GastoResponse)
+@router.post("/", status_code=201, response_model=GastoResponse)
 def create_gasto(
     gasto_data: GastoCreate,
     empresa_id: str = Depends(get_current_empresa),
@@ -134,11 +124,8 @@ def create_gasto(
     db.add(gasto)
     db.commit()
     db.refresh(gasto)
-    proveedor_nombre = None
-    if gasto.proveedor_id:
-        prov = db.query(models.Proveedor).filter(models.Proveedor.id == gasto.proveedor_id).first()
-        if prov:
-            proveedor_nombre = prov.nombre
+    gasto = db.query(models.Gasto).options(joinedload(models.Gasto.proveedor)).filter(models.Gasto.id == gasto.id).first()
+    proveedor_nombre = gasto.proveedor.nombre if gasto.proveedor else None
     return GastoResponse(
         id=gasto.id,
         empresa_id=gasto.empresa_id,
@@ -159,7 +146,7 @@ def update_gasto(
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db)
 ):
-    gasto = db.query(models.Gasto).filter(
+    gasto = db.query(models.Gasto).options(joinedload(models.Gasto.proveedor)).filter(
         models.Gasto.id == gasto_id,
         models.Gasto.empresa_id == empresa_id
     ).first()
@@ -180,11 +167,8 @@ def update_gasto(
 
     db.commit()
     db.refresh(gasto)
-    proveedor_nombre = None
-    if gasto.proveedor_id:
-        prov = db.query(models.Proveedor).filter(models.Proveedor.id == gasto.proveedor_id).first()
-        if prov:
-            proveedor_nombre = prov.nombre
+    gasto = db.query(models.Gasto).options(joinedload(models.Gasto.proveedor)).filter(models.Gasto.id == gasto.id).first()
+    proveedor_nombre = gasto.proveedor.nombre if gasto.proveedor else None
     return GastoResponse(
         id=gasto.id,
         empresa_id=gasto.empresa_id,
