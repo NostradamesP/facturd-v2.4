@@ -364,7 +364,7 @@ export default function FacturaPreview({ formData, cliente, selectedTemplate, on
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-4 no-print">
         {templates.map((template) => (
           <button
             key={template.id}
