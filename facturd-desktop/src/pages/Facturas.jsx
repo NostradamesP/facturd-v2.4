@@ -884,7 +884,7 @@ export default function Facturas() {
                   {editingFactura ? `Factura #${editingFactura.ncf || 'INV'}` : 'Borrador nuevo'}
                 </p>
               </div>
-              <div className="flex gap-4">
+              <div className="flex gap-4 no-print">
                 <select
                   value={selectedTemplate}
                   onChange={(e) => setSelectedTemplate(e.target.value)}
