@@ -11,6 +11,7 @@ const navItems = [
   { path: '/proveedores', key: 'Proveedores', icon: 'store' },
   { path: '/inventario', key: 'Inventario', icon: 'inventory_2' },
   { path: '/cobros', key: 'Cobros', icon: 'payments' },
+  { path: '/gastos', key: 'Gastos', icon: 'receipt' },
   { path: '/reportes', key: 'Reportes', icon: 'analytics' },
   { path: '/empresa', key: 'Empresa', icon: 'settings' },
 ];

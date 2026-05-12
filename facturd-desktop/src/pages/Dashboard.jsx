@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { facturasService, clientesService, productosService } from '../services/api';
+import { facturasService, gastosService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,6 +11,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [facturas, setFacturas] = useState([]);
+  const [gastosResumen, setGastosResumen] = useState({ total_mes: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,10 +19,12 @@ export default function Dashboard() {
     
     const fetchData = async () => {
       try {
-        const [facturasRes] = await Promise.all([
+        const [facturasRes, gastosRes] = await Promise.all([
           facturasService.getAll(),
+          gastosService.getResumen().catch(() => ({ data: { total_mes: 0 } })),
         ]);
         setFacturas(facturasRes.data || []);
+        setGastosResumen(gastosRes.data || { total_mes: 0 });
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -90,6 +93,17 @@ export default function Dashboard() {
               <p className="text-white/80 text-sm font-medium">{t('Pagado este Mes')}</p>
               <p className="text-white font-headline text-3xl font-bold">
                 ${paidThisMonth.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+              </p>
+            </div>
+          </div>
+          <div className="flex-1 bg-surface-container-lowest p-8 rounded-xl flex items-center gap-6">
+            <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center">
+              <span className="material-symbols-outlined text-red-600">receipt</span>
+            </div>
+            <div>
+              <p className="text-on-surface-variant text-sm font-medium">{t('Gastos del Mes')}</p>
+              <p className="text-on-surface font-headline text-3xl font-bold">
+                ${(gastosResumen.total_mes || 0).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
               </p>
             </div>
           </div>

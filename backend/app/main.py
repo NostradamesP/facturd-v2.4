@@ -11,7 +11,7 @@ import uvicorn
 from sqlalchemy import text
 from app.database import engine, Base, SessionLocal
 from app.config import get_settings
-from app.routes import auth, clientes, productos, proveedores, cotizaciones, plantillas, facturas, pagos, empresa, pdf, dgii, usuarios
+from app.routes import auth, clientes, productos, proveedores, cotizaciones, plantillas, facturas, pagos, empresa, pdf, dgii, usuarios, gastos
 from app.services.dgii_client import configure as dgii_configure
 
 logging.basicConfig(
@@ -134,6 +134,7 @@ app.include_router(empresa.router)
 app.include_router(pdf.router)
 app.include_router(dgii.router)
 app.include_router(usuarios.router)
+app.include_router(gastos.router)
 
 
 @app.get("/api/health")

@@ -149,6 +149,27 @@ class ProveedorResponse(ProveedorBase):
 
     model_config = ConfigDict(from_attributes=True)
 
+class GastoBase(BaseModel):
+    proveedor_id: Optional[str] = None
+    factura_id: Optional[str] = None
+    monto: float = 0
+    fecha: Optional[str] = None
+    categoria: str = "OTROS"
+    nota: Optional[str] = None
+
+class GastoCreate(GastoBase):
+    pass
+
+class GastoUpdate(GastoBase):
+    pass
+
+class GastoResponse(GastoBase):
+    id: str
+    empresa_id: str
+    created_at: Optional[str] = None
+    proveedor_nombre: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)
+
 # Producto
 class ProductoBase(BaseModel):
     codigo: str

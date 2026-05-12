@@ -10,6 +10,7 @@ import Clientes from './pages/Clientes';
 import Proveedores from './pages/Proveedores';
 import Inventario from './pages/Inventario';
 import Cobros from './pages/Cobros';
+import Gastos from './pages/Gastos';
 import Reportes from './pages/Reportes';
 import Empresa from './pages/Empresa';
 
@@ -57,6 +58,7 @@ function AppRoutes() {
         <Route path="proveedores" element={<Proveedores />} />
         <Route path="inventario" element={<Inventario />} />
         <Route path="cobros" element={<Cobros />} />
+        <Route path="gastos" element={<Gastos />} />
         <Route path="reportes" element={<Reportes />} />
         <Route path="empresa" element={<Empresa />} />
       </Route>

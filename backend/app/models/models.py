@@ -112,6 +112,28 @@ class Cliente(Base):
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
+class CategoriaGasto(enum.Enum):
+    INSUMOS = "INSUMOS"
+    SERVICIOS = "SERVICIOS"
+    LOGISTICA = "LOGISTICA"
+    NOMINA = "NOMINA"
+    MARKETING = "MARKETING"
+    OFICINA = "OFICINA"
+    OTROS = "OTROS"
+
+class Gasto(Base):
+    __tablename__ = "gastos"
+    id = Column(String, primary_key=True)
+    empresa_id = Column(String, ForeignKey("empresas.id"))
+    proveedor_id = Column(String, ForeignKey("proveedores.id"), nullable=True)
+    factura_id = Column(String, ForeignKey("facturas.id"), nullable=True)
+    monto = Column(Float, default=0)
+    fecha = Column(DateTime, server_default=func.now())
+    categoria = Column(Enum(CategoriaGasto), default=CategoriaGasto.OTROS)
+    nota = Column(Text, nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
 class Proveedor(Base):
     __tablename__ = "proveedores"
 

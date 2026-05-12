@@ -102,6 +102,14 @@ export const plantillasService = {
   duplicate: (id) => api.post(`plantillas/${id}/duplicar`),
 };
 
+export const gastosService = {
+  getAll: () => unwrapItems(api.get('gastos')),
+  create: (data) => api.post('gastos', data),
+  update: (id, data) => api.put(`gastos/${id}`, data),
+  delete: (id) => api.delete(`gastos/${id}`),
+  getResumen: () => api.get('gastos/resumen'),
+};
+
 export const dgiiService = {
   enviar: (facturaId) => api.post(`dgii/enviar/${facturaId}`),
   consultar: (facturaId) => api.post(`dgii/consultar/${facturaId}`),
