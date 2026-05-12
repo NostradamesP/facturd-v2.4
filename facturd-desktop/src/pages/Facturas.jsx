@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { facturasService, clientesService, productosService, plantillasService, dgiiService } from '../services/api';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import FacturaPreview from '../components/factura/FacturaPreview';
 
 const STATUS_FILTERS = [
-  { value: 'all', label: 'All' },
-  { value: 'PAGADA', label: 'Pagada' },
-  { value: 'PENDIENTE', label: 'Pendiente' },
-  { value: 'ENVIADA_DGII', label: 'DGII' },
-  { value: 'ANULADA', label: 'Anulada' },
+  { value: 'all', key: 'All' },
+  { value: 'PAGADA', key: 'Pagada' },
+  { value: 'PENDIENTE', key: 'Pendiente' },
+  { value: 'ENVIADA_DGII', key: 'DGII' },
+  { value: 'ANULADA', key: 'Anulada' },
 ];
 
 const emptyDetalle = () => ({
@@ -38,6 +39,7 @@ const formatMoney = (value) =>
   `RD$ ${(value || 0).toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
 
 export default function Facturas() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [facturas, setFacturas] = useState([]);
@@ -555,17 +557,17 @@ export default function Facturas() {
       <div className="flex justify-between items-end">
         <div>
           <h1 className="font-headline text-3xl font-extrabold text-on-surface tracking-tight mb-2">
-            Facturas
+            {t('Facturas')}
           </h1>
           <p className="text-on-surface-variant font-medium">
-            Abre, revisa y modifica facturas existentes
+            {t('Abre, revisa y modifica facturas existentes')}
           </p>
         </div>
         <button
           onClick={() => handleOpenModal()}
           className="px-6 py-2.5 rounded-lg bg-gradient-to-br from-primary to-primary-dim text-on-primary font-semibold text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
         >
-          + Nueva Factura
+          {t('+ Nueva Factura')}
         </button>
       </div>
 
@@ -580,7 +582,7 @@ export default function Facturas() {
                 : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'
             }`}
           >
-            {f.label}
+            {t(f.key)}
           </button>
         ))}
       </div>
@@ -590,19 +592,19 @@ export default function Facturas() {
           <thead>
             <tr className="bg-surface-container-low/50">
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                Factura
+                {t('Facturas')}
               </th>
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                Cliente
+                {t('Clientes')}
               </th>
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                Fecha
+                {t('Fecha')}
               </th>
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant text-right">
-                Total
+                {t('Total')}
               </th>
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant text-center">
-                Estado
+                {t('Estado')}
               </th>
             </tr>
           </thead>
@@ -674,7 +676,7 @@ export default function Facturas() {
             {filteredFacturas.length === 0 && (
               <tr>
                 <td colSpan="5" className="px-8 py-8 text-center text-on-surface-variant">
-                  No hay facturas
+                  {t('No hay facturas')}
                 </td>
               </tr>
             )}

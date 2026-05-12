@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { facturasService, clientesService, productosService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const statusValue = (estado) => String(estado || '').toUpperCase();
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [facturas, setFacturas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +41,7 @@ export default function Dashboard() {
   const recentFacturas = facturas.slice(-5).reverse();
 
   if (loading) {
-    return <div className="text-center py-10">Cargando...</div>;
+    return <div className="text-center py-10">{t('Cargando...')}</div>;
   }
 
   return (
@@ -49,7 +51,7 @@ export default function Dashboard() {
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-20 -mt-20 blur-3xl"></div>
           <div className="relative z-10">
             <h3 className="text-on-surface-variant font-medium text-base mb-2">
-              Ingresos Totales
+              {t('Ingresos Totales')}
             </h3>
             <div className="flex items-baseline gap-2">
               <span className="text-primary font-headline text-6xl font-extrabold tracking-tight">
@@ -61,7 +63,7 @@ export default function Dashboard() {
                 <span className="material-symbols-outlined text-sm mr-1">trending_up</span>
                 +12.5% este trimestre
               </span>
-              <p className="text-on-surface-variant text-sm">vs. mes anterior</p>
+              <p className="text-on-surface-variant text-sm">{t('vs. mes anterior')}</p>
             </div>
           </div>
         </div>
@@ -72,7 +74,7 @@ export default function Dashboard() {
               <span className="material-symbols-outlined text-3xl">hourglass_empty</span>
             </div>
             <div>
-              <p className="text-on-surface-variant text-sm font-medium">Facturas Pendientes</p>
+              <p className="text-on-surface-variant text-sm font-medium">{t('Facturas Pendientes')}</p>
               <p className="text-on-surface font-headline text-3xl font-bold">{pendingInvoices}</p>
             </div>
           </div>
@@ -83,7 +85,7 @@ export default function Dashboard() {
               </span>
             </div>
             <div>
-              <p className="text-white/80 text-sm font-medium">Pagado este Mes</p>
+              <p className="text-white/80 text-sm font-medium">{t('Pagado este Mes')}</p>
               <p className="text-white font-headline text-3xl font-bold">
                 ${paidThisMonth.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
               </p>
@@ -96,8 +98,8 @@ export default function Dashboard() {
         <div className="lg:col-span-8 space-y-6">
           <div className="flex justify-between items-end px-2">
             <div>
-              <h3 className="text-on-surface font-headline text-2xl font-bold">Actividad Reciente</h3>
-              <p className="text-on-surface-variant text-sm">Estado en tiempo real de tus últimas transacciones</p>
+              <h3 className="text-on-surface font-headline text-2xl font-bold">{t('Actividad Reciente')}</h3>
+              <p className="text-on-surface-variant text-sm">{t('Estado en tiempo real de tus últimas transacciones')}</p>
             </div>
           </div>
           <div className="bg-surface-container-lowest rounded-xl overflow-hidden">
@@ -105,16 +107,16 @@ export default function Dashboard() {
               <thead>
                 <tr className="bg-surface-container-low/50">
                   <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant opacity-70">
-                    Cliente / Factura
+                    {t('Cliente / Factura')}
                   </th>
                   <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant opacity-70">
-                    Fecha
+                    {t('Fecha')}
                   </th>
                   <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant opacity-70 text-right">
-                    Monto
+                    {t('Monto')}
                   </th>
                   <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant opacity-70 text-center">
-                    Estado
+                    {t('Estado')}
                   </th>
                 </tr>
               </thead>
@@ -151,7 +153,7 @@ export default function Dashboard() {
                 {recentFacturas.length === 0 && (
                   <tr>
                     <td colSpan="4" className="px-8 py-8 text-center text-on-surface-variant">
-                      No hay facturas recientes
+                      {t('No hay facturas recientes')}
                     </td>
                   </tr>
                 )}
@@ -162,20 +164,20 @@ export default function Dashboard() {
 
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-surface-container-lowest p-6 rounded-xl">
-            <h3 className="text-on-surface font-headline text-xl font-bold mb-4">Resumen</h3>
+            <h3 className="text-on-surface font-headline text-xl font-bold mb-4">{t('Resumen')}</h3>
             <div className="space-y-4">
               <div className="flex justify-between items-center p-3 bg-surface-container-low rounded-lg">
-                <span className="text-on-surface-variant">Total Facturas</span>
+                <span className="text-on-surface-variant">{t('Total Facturas')}</span>
                 <span className="font-bold text-on-surface">{facturas.length}</span>
               </div>
               <div className="flex justify-between items-center p-3 bg-surface-container-low rounded-lg">
-                <span className="text-on-surface-variant">Pagadas</span>
+                <span className="text-on-surface-variant">{t('Pagadas')}</span>
                 <span className="font-bold text-green-600">
                   {facturas.filter(f => statusValue(f.estado) === 'PAGADA').length}
                 </span>
               </div>
               <div className="flex justify-between items-center p-3 bg-surface-container-low rounded-lg">
-                <span className="text-on-surface-variant">Pendientes</span>
+                <span className="text-on-surface-variant">{t('Pendientes')}</span>
                 <span className="font-bold text-yellow-600">{pendingInvoices}</span>
               </div>
             </div>

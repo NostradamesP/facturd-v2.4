@@ -87,10 +87,10 @@ export default function Empresa() {
     <div className="space-y-8">
       <div>
         <h2 className="font-headline text-4xl font-extrabold text-on-surface tracking-tight mb-2">
-          Company Settings
+          {t('Company Settings')}
         </h2>
         <p className="text-on-surface-variant max-w-2xl leading-relaxed">
-          Manage your legal identity and fiscal information. These details will be automatically formatted and displayed on all generated invoices and reports.
+          {t('Manage your legal identity and fiscal information. These details will be automatically formatted and displayed on all generated invoices and reports.')}
         </p>
       </div>
 
@@ -99,7 +99,7 @@ export default function Empresa() {
           <section className="bg-surface-container-lowest rounded-xl p-8 shadow-[0px_20px_40px_rgba(42,52,57,0.04)]">
             <form onSubmit={handleSubmit} className="space-y-10">
               <div className="flex flex-col gap-4">
-                <span className="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Company Brand</span>
+                <span className="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{t('Company Brand')}</span>
                 <div className="flex items-center gap-8">
                   <label className="w-32 h-32 rounded-xl bg-surface-container-low border-2 border-dashed border-outline-variant/30 flex flex-col items-center justify-center text-on-surface-variant hover:border-primary/50 hover:bg-primary-container/10 transition-all cursor-pointer group">
                     <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
@@ -108,13 +108,13 @@ export default function Empresa() {
                     ) : (
                       <>
                         <span className="material-symbols-outlined text-3xl mb-1 group-hover:scale-110 transition-transform">add_a_photo</span>
-                        <span className="text-[10px] font-bold">UPLOAD LOGO</span>
+                        <span className="text-[10px] font-bold">{t('UPLOAD LOGO')}</span>
                       </>
                     )}
                   </label>
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-on-surface mb-1">Upload your official logo</p>
-                    <p className="text-xs text-on-surface-variant leading-relaxed">Recommended size 400x400px. Supports PNG, JPG, and SVG. Max file size 2MB.</p>
+                    <p className="text-sm font-medium text-on-surface mb-1">{t('Upload your official logo')}</p>
+                    <p className="text-xs text-on-surface-variant leading-relaxed">{t('Recommended size 400x400px. Supports PNG, JPG, and SVG. Max file size 2MB.')}</p>
                   </div>
                 </div>
               </div>
@@ -123,7 +123,7 @@ export default function Empresa() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
                 <div className="relative">
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">Legal Name</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Legal Name')}</label>
                   <input
                     type="text"
                     value={formData.nombre}
@@ -132,7 +132,7 @@ export default function Empresa() {
                   />
                 </div>
                 <div className="relative">
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">Tax ID (RNC)</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Tax ID (RNC)')}</label>
                   <input
                     type="text"
                     value={formData.rnc}
@@ -141,7 +141,7 @@ export default function Empresa() {
                   />
                 </div>
                 <div className="col-span-1 md:col-span-2 relative">
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">Physical Address</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Physical Address')}</label>
                   <input
                     type="text"
                     value={formData.direccion}
@@ -150,7 +150,7 @@ export default function Empresa() {
                   />
                 </div>
                 <div className="relative">
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">Primary Phone</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Primary Phone')}</label>
                   <input
                     type="tel"
                     value={formData.telefono}
@@ -159,7 +159,7 @@ export default function Empresa() {
                   />
                 </div>
                 <div className="relative">
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">Business Email</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">{t('Business Email')}</label>
                   <input
                     type="email"
                     value={formData.email}
@@ -186,14 +186,14 @@ export default function Empresa() {
                   onClick={handleDiscard}
                   className="px-6 py-3 rounded-lg text-sm font-semibold text-on-surface-variant hover:bg-surface-container-high transition-colors"
                 >
-                  Discard Changes
+                  {t('Discard Changes')}
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
                   className="px-8 py-3 rounded-lg text-sm font-bold text-on-primary bg-gradient-to-br from-primary to-primary-dim shadow-lg shadow-primary/20 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
                 >
-                  {saving ? 'Saving...' : 'Save Profile'}
+                  {saving ? t('Saving...') : t('Save Profile')}
                 </button>
               </div>
             </form>
@@ -202,10 +202,10 @@ export default function Empresa() {
 
         <div className="col-span-12 lg:col-span-5 space-y-6">
           <div className="flex items-center justify-between px-2">
-            <span className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Live Invoice Preview</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">{t('Live Invoice Preview')}</span>
             <div className="flex items-center gap-2 text-primary">
               <span className="material-symbols-outlined text-sm">visibility</span>
-              <span className="text-[10px] font-bold uppercase tracking-tighter">Updating Real-time</span>
+              <span className="text-[10px] font-bold uppercase tracking-tighter">{t('Updating Real-time')}</span>
             </div>
           </div>
 
@@ -228,19 +228,19 @@ export default function Empresa() {
                 <p className="text-xs text-on-surface-variant font-medium mt-1">Tax ID: {formData.rnc || 'XXX-XXXXXX-X'}</p>
               </div>
               <div className="text-right">
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant opacity-60">INVOICE</span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant opacity-60">{t('INVOICE')}</span>
                 <p className="font-headline font-bold text-2xl text-on-surface tracking-tighter mt-1">#INV-0001</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-10 mb-16 border-t border-outline-variant/10 pt-8">
               <div>
-                <h4 className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Office Address</h4>
+                <h4 className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">{t('Office Address')}</h4>
                 <p className="text-sm text-on-surface leading-relaxed max-w-[180px]">
                   {formData.direccion || 'Your address here'}
                 </p>
               </div>
               <div>
-                <h4 className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Contact Details</h4>
+                <h4 className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">{t('Contact Details')}</h4>
                 <p className="text-sm text-on-surface mb-1">{formData.telefono || '+1 (555) 000-0000'}</p>
                 <p className="text-sm text-on-surface underline decoration-primary/30 underline-offset-4">
                   {formData.email || 'email@company.com'}
@@ -257,7 +257,7 @@ export default function Empresa() {
                 <span className="w-12 h-3 bg-surface-container-high rounded-full"></span>
               </div>
               <div className="flex justify-between items-center pt-8">
-                <span className="text-sm font-bold text-on-surface">TOTAL</span>
+                <span className="text-sm font-bold text-on-surface">{t('TOTAL')}</span>
                 <span className="text-lg font-headline font-extrabold text-primary">$0.00</span>
               </div>
             </div>
@@ -267,9 +267,9 @@ export default function Empresa() {
             <div className="flex gap-4">
               <span className="material-symbols-outlined text-primary">info</span>
               <div>
-                <p className="text-xs font-bold text-primary mb-1 uppercase tracking-tight">Pro-Tip: Branding Matters</p>
+                <p className="text-xs font-bold text-primary mb-1 uppercase tracking-tight">{t('Pro-Tip: Branding Matters')}</p>
                 <p className="text-xs text-on-primary-container leading-relaxed">
-                  Companies with high-resolution logos and clear contact information on invoices get paid up to <span className="font-bold">14% faster</span> on average.
+                  {t('Companies with high-resolution logos and clear contact information on invoices get paid up to 14% faster on average.')}
                 </p>
               </div>
             </div>

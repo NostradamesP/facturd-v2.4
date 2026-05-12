@@ -1,24 +1,25 @@
 import { Outlet } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { useLocation } from 'react-router-dom';
 import { useState } from 'react';
 
-const pageTitles = {
-  '/dashboard': 'Dashboard',
-  '/facturas': 'Facturas',
-  '/diseno': 'Diseño de facturas',
-  '/cotizaciones': 'Cotizaciones',
-  '/clientes': 'Clientes',
-  '/proveedores': 'Proveedores',
-  '/inventario': 'Inventario',
-  '/cobros': 'Cobros',
-  '/reportes': 'Reportes',
-  '/empresa': 'Empresa',
-};
-
 export default function Layout() {
+  const { t } = useTranslation();
   const location = useLocation();
+  const pageTitles = {
+    '/dashboard': t('Dashboard'),
+    '/facturas': t('Facturas'),
+    '/diseno': t('Diseño'),
+    '/cotizaciones': 'Cotizaciones',
+    '/clientes': t('Clientes'),
+    '/proveedores': t('Proveedores'),
+    '/inventario': t('Inventario'),
+    '/cobros': t('Cobros'),
+    '/reportes': t('Reportes'),
+    '/empresa': t('Empresa'),
+  };
   const title = pageTitles[location.pathname] || 'FactuRD';
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
