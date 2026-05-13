@@ -77,6 +77,7 @@ export default function Facturas() {
   });
 
   useEffect(() => {
+    cancelled.current = false;
     if (user) {
       fetchData();
     } else {

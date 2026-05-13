@@ -24,6 +24,7 @@ export default function Cobros() {
   const cancelled = useRef(false);
 
   useEffect(() => {
+    cancelled.current = false;
     if (user) {
       fetchData();
     }

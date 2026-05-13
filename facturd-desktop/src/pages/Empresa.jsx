@@ -6,7 +6,7 @@ import { useToast } from '../components/Toast';
 
 export default function Empresa() {
   const { t, i18n } = useTranslation();
-  const { user, empresa } = useAuth();
+  const { user, empresa, updateEmpresa } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [logo, setLogo] = useState(null);
@@ -74,7 +74,15 @@ export default function Empresa() {
     e.preventDefault();
     setSaving(true);
     try {
-      await empresaService.update(formData);
+      const res = await empresaService.update(formData);
+      updateEmpresa(res.data);
+      setOriginalData(formData);
+      setLogo(null);
+      localStorage.setItem('facturd_empresa_branding', JSON.stringify({
+        nombre_sistema: formData.nombre_sistema,
+        logo_url: formData.logo_url,
+        nombre: formData.nombre,
+      }));
       addToast(t('Empresa actualizada correctamente'), 'success');
     } catch (error) {
       console.error('Error updating empresa:', error);

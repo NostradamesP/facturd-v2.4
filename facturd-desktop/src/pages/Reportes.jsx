@@ -15,6 +15,7 @@ export default function Reportes() {
   const cancelled = useRef(false);
 
   useEffect(() => {
+    cancelled.current = false;
     if (user) {
       fetchData();
     }

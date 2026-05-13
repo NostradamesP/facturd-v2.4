@@ -49,6 +49,16 @@ Pasos realizados:
   6. Render redeploy -> login fallaba por hash de password migrado
   7. Fix: regenerados hashes bcrypt para admin@facturd.com y demo@facturddemo.com
 
+=== FIX (2026-05-13) ===
+
+Frontend:
+  - Dashboard/Facturas/Reportes/Cobros: arreglado loading infinito en StrictMode
+    - cancelled.current se resetea a false al inicio del useEffect
+    - El cleanup del doble mount en desarrollo ya no deja el flag en true
+  - Header.jsx: agregado logo de empresa (empresa.logo_url) en esquina superior derecha
+  - AuthContext.jsx: expuesto updateEmpresa() para refrescar datos tras cambios
+  - Empresa.jsx: al guardar, actualiza AuthContext + localStorage branding inmediatamente
+
 === CONFIGURACION ===
 
 Backend .env local:

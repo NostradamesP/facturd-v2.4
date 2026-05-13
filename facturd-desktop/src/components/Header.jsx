@@ -63,6 +63,17 @@ export default function Header({ title, onMenuClick }) {
           )}
         </div>
         <div className="h-6 lg:h-8 w-px bg-outline-variant opacity-20 hidden lg:block"></div>
+        {empresa?.logo_url ? (
+          <img
+            src={empresa.logo_url}
+            alt={empresa.nombre || 'Logo'}
+            className="h-8 lg:h-10 w-auto max-w-[120px] object-contain"
+          />
+        ) : (
+          <div className="w-8 lg:w-10 h-8 lg:h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm lg:text-base">
+            {user?.name?.charAt(0) || 'U'}
+          </div>
+        )}
         <div className="flex items-center gap-2 lg:gap-3 cursor-pointer group active:opacity-70">
           <div className="text-right hidden sm:block">
             <p className="text-sm font-semibold text-[#2a3439] leading-none">
@@ -71,9 +82,6 @@ export default function Header({ title, onMenuClick }) {
             <p className="text-[10px] text-[#566166] font-medium tracking-wider">
               {user?.role?.toUpperCase() || 'ADMIN'}
             </p>
-          </div>
-          <div className="w-8 lg:w-10 h-8 lg:h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm lg:text-base">
-            {user?.name?.charAt(0) || 'U'}
           </div>
         </div>
       </div>

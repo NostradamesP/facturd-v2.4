@@ -17,6 +17,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!user) return;
+    cancelled.current = false;
     
     const fetchData = async () => {
       try {
