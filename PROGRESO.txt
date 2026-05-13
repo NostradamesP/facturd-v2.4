@@ -196,3 +196,9 @@ Medios:
 - N+1 en get_facturas: no corregido (preexistente, requiere joinedload en models)
 
 42 tests pasando, 0 fallos
+
+=== LOGIN FIX (2026-05-13) ===
+Commit: e2a26c2 (pusheado a origin/main)
+- Login fondo blanco: bg-surface reemplazado por bg-white
+- Nombre empresa: usa branding.nombre como fallback (nombre_sistema || nombre || 'FactuRD')
+- Logout: ahora limpia facturd_empresa_branding de localStorage (evita mostrar datos de sesion anterior)
