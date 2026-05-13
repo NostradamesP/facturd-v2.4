@@ -68,7 +68,7 @@ def create_cotizacion(
     
     fecha_validez = None
     if cotizacion_data.dias_validez:
-        fecha_validez = datetime.now() + timedelta(days=cotizacion_data.dias_validez)
+        fecha_validez = datetime.utcnow() + timedelta(days=cotizacion_data.dias_validez)
     
     cotizacion = models.Cotizacion(
         id=generar_id(),

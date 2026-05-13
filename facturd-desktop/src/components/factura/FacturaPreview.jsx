@@ -167,7 +167,6 @@ export default function FacturaPreview({ formData, cliente, selectedTemplate, on
           <p className="text-gray-500 text-xs">{selectedClient?.direccion || 'Address'}</p>
           <p className="text-gray-500 text-xs">{selectedClient?.email || ''}</p>
         </div>
-      </div>
         {detalles.map((item, i) => (
           <div key={i} className="flex justify-between items-center py-2 border-b border-gray-100">
             <div>

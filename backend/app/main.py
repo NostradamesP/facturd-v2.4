@@ -38,7 +38,7 @@ app = FastAPI(
     version="1.0.0",
 )
 
-cors_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:8000,https://facturd-pruebas.netlify.app").split(",")]
+cors_origins = [o.strip() for o in settings.CORS_ORIGINS.split(",")]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
@@ -144,14 +144,17 @@ def health_check():
 
 @app.get("/api/health/db")
 def health_db():
+    db = None
     try:
         db = SessionLocal()
         result = db.execute(text("SELECT 1")).scalar()
-        db.close()
         return {"status": "ok", "db_connected": True}
     except Exception as e:
         logger.error("Health check DB failed: %s", e)
         return {"status": "error", "db_connected": False}
+    finally:
+        if db:
+            db.close()
 
 
 if __name__ == "__main__":

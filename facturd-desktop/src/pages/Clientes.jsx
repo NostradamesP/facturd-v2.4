@@ -69,14 +69,11 @@ export default function Clientes() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    console.log('Clientes: Submitting formData:', formData);
     try {
       if (editingCliente) {
-        console.log('Clientes: Updating cliente', editingCliente.id);
         await clientesService.update(editingCliente.id, formData);
         addToast(t('Cliente actualizado correctamente'), 'success');
       } else {
-        console.log('Clientes: Creating new cliente');
         await clientesService.create(formData);
         addToast(t('Cliente creado correctamente'), 'success');
       }

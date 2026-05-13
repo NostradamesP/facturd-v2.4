@@ -831,7 +831,7 @@ export default function Facturas() {
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between"><span className="text-on-surface-variant">{t('Subtotal')}</span><span className="font-mono">{formatMoney(selectedFactura.subtotal)}</span></div>
                     <div className="flex justify-between"><span className="text-on-surface-variant">{t('ITBIS')}</span><span className="font-mono">{formatMoney(selectedFactura.itbis)}</span></div>
-                    <div className="flex justify-between"><span className="text-on-surface-variant">{t('Descuento')}</span><span className="font-mono">-{formatMoney(selectedFactura.descuento)}</span></div>
+                    <div className="flex justify-between"><span className="text-on-surface-variant">{t('Discount')}</span><span className="font-mono">-{formatMoney(selectedFactura.descuento)}</span></div>
                     <div className="flex justify-between pt-3 border-t border-outline-variant/20 text-lg font-bold"><span>{t('Total')}</span><span className="font-mono text-primary">{formatMoney(selectedFactura.total)}</span></div>
                   </div>
                 </div>

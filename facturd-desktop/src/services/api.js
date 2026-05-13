@@ -107,7 +107,7 @@ export const clientesService = {
 };
 
 export const proveedoresService = {
-  getAll: () => api.get('proveedores').then(res => res.data || []),
+  getAll: () => unwrapItems(api.get('proveedores')),
   create: (data) => api.post('proveedores', data),
   update: (id, data) => api.put(`proveedores/${id}`, data),
   delete: (id) => api.delete(`proveedores/${id}`),
@@ -121,14 +121,14 @@ export const productosService = {
 };
 
 export const cotizacionesService = {
-  getAll: () => api.get('cotizaciones').then(res => res.data || []),
+  getAll: () => unwrapItems(api.get('cotizaciones')),
   create: (data) => api.post('cotizaciones', data),
   update: (id, data) => api.put(`cotizaciones/${id}`, data),
   delete: (id) => api.delete(`cotizaciones/${id}`),
 };
 
 export const pagosService = {
-  getAll: () => api.get('pagos').then(res => res.data || []),
+  getAll: () => unwrapItems(api.get('pagos')),
   create: (data) => api.post('pagos', data),
 };
 
@@ -147,7 +147,7 @@ export const plantillasService = {
 };
 
 export const gastosService = {
-  getAll: () => api.get('gastos').then(res => res.data || []),
+  getAll: () => unwrapItems(api.get('gastos')),
   create: (data) => api.post('gastos', data),
   update: (id, data) => api.put(`gastos/${id}`, data),
   delete: (id) => api.delete(`gastos/${id}`),
@@ -165,7 +165,7 @@ export const dgiiService = {
 };
 
 export const pdfService = {
-    generate: (facturaId) => api.post(`/pdf/invoice/${facturaId}`, {}, { responseType: 'blob' }),
+    generate: (facturaId) => api.post(`pdf/invoice/${facturaId}`, {}, { responseType: 'blob' }),
 };
 
 export default api;

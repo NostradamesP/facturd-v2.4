@@ -1,8 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Optional
 from functools import lru_cache
 import secrets
-import os
 import logging
 
 logger = logging.getLogger("facturd")
@@ -15,7 +13,7 @@ class Settings(BaseSettings):
     JWT_SECRET: str = ""
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    CORS_ORIGINS: str = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:8000")
+    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:8000"
     AUTO_CREATE_TABLES: bool = False
     RENDER: bool = False
 

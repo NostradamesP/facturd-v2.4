@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 from typing import Optional
 
-from app.database import get_db
+from app.database import get_db, is_sqlite
 from app.middleware.auth import get_current_empresa
 from app.models import models
 from app.models.schemas import DashboardStats, FacturaCreate, FacturaUpdate
@@ -152,9 +152,11 @@ def agregar_detalles_factura(
             total=detalle["total"],
         ))
         if detalle["producto_id"]:
-            producto = db.query(models.Producto).filter(
-                models.Producto.id == detalle["producto_id"]
-            ).with_for_update().first()
+            q = db.query(models.Producto).filter(
+                models.Producto.id == detalle["producto_id"],
+                models.Producto.empresa_id == factura.empresa_id
+            )
+            producto = q.with_for_update().first() if not is_sqlite else q.first()
             if producto:
                 if (producto.stock or 0) < detalle["cantidad"]:
                     raise HTTPException(status_code=400, detail=f"Stock insuficiente para {producto.nombre}")
