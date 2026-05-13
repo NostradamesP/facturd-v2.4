@@ -99,6 +99,7 @@ class EmpresaBase(BaseModel):
     nombre_sistema: Optional[str] = None
     logo_url: Optional[str] = None
 
+class EmpresaCreate(EmpresaBase):
     @field_validator("rnc")
     @classmethod
     def validar_rnc(cls, v: str) -> str:
@@ -107,11 +108,14 @@ class EmpresaBase(BaseModel):
             raise ValueError("RNC inválido: debe tener 9 dígitos con dígito verificador correcto")
         return v
 
-class EmpresaCreate(EmpresaBase):
-    pass
-
 class EmpresaUpdate(EmpresaBase):
-    pass
+    @field_validator("rnc")
+    @classmethod
+    def validar_rnc(cls, v: str) -> str:
+        from app.utils import validar_rnc_formato
+        if not validar_rnc_formato(v):
+            raise ValueError("RNC inválido: debe tener 9 dígitos con dígito verificador correcto")
+        return v
 
 class EmpresaResponse(EmpresaBase):
     id: str
@@ -131,6 +135,7 @@ class ClienteBase(BaseModel):
     email: Optional[EmailStr] = None
     limite_credito: Optional[float] = 0
 
+class ClienteCreate(ClienteBase):
     @field_validator("rnc")
     @classmethod
     def validar_rnc(cls, v: str) -> str:
@@ -139,11 +144,14 @@ class ClienteBase(BaseModel):
             raise ValueError("RNC inválido: debe tener 9 dígitos con dígito verificador correcto")
         return v
 
-class ClienteCreate(ClienteBase):
-    pass
-
 class ClienteUpdate(ClienteBase):
-    pass
+    @field_validator("rnc")
+    @classmethod
+    def validar_rnc(cls, v: str) -> str:
+        from app.utils import validar_rnc_formato
+        if not validar_rnc_formato(v):
+            raise ValueError("RNC inválido: debe tener 9 dígitos con dígito verificador correcto")
+        return v
 
 class ClienteResponse(ClienteBase):
     id: str
@@ -164,6 +172,7 @@ class ProveedorBase(BaseModel):
     productos_servicios: Optional[str] = None
     costo_promedio: float = 0
 
+class ProveedorCreate(ProveedorBase):
     @field_validator("rnc")
     @classmethod
     def validar_rnc(cls, v: str) -> str:
@@ -172,11 +181,14 @@ class ProveedorBase(BaseModel):
             raise ValueError("RNC inválido: debe tener 9 dígitos con dígito verificador correcto")
         return v
 
-class ProveedorCreate(ProveedorBase):
-    pass
-
 class ProveedorUpdate(ProveedorBase):
-    pass
+    @field_validator("rnc")
+    @classmethod
+    def validar_rnc(cls, v: str) -> str:
+        from app.utils import validar_rnc_formato
+        if not validar_rnc_formato(v):
+            raise ValueError("RNC inválido: debe tener 9 dígitos con dígito verificador correcto")
+        return v
 
 class ProveedorResponse(ProveedorBase):
     id: str
