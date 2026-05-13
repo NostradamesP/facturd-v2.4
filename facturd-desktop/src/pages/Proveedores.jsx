@@ -22,6 +22,7 @@ export default function Proveedores() {
     costo_promedio: '',
   });
   const { addToast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => {

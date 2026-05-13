@@ -2,18 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from datetime import datetime
 from typing import Optional
-import uuid
 
 from app.database import get_db
 from app.middleware.auth import get_current_empresa
 from app.models import models
 from app.models.schemas import DashboardStats, FacturaCreate, FacturaUpdate
+from app.utils import generar_id
 
 router = APIRouter(prefix="/api/facturas", tags=["Facturas"])
-
-
-def generar_id() -> str:
-    return uuid.uuid4().hex[:24]
 
 
 def normalizar_enum(enum_cls, value, default):
@@ -155,9 +151,14 @@ def agregar_detalles_factura(
             itbis=detalle["itbis"],
             total=detalle["total"],
         ))
-        producto = detalle["producto"]
-        if producto:
-            producto.stock -= detalle["cantidad"]
+        if detalle["producto_id"]:
+            producto = db.query(models.Producto).filter(
+                models.Producto.id == detalle["producto_id"]
+            ).with_for_update().first()
+            if producto:
+                if (producto.stock or 0) < detalle["cantidad"]:
+                    raise HTTPException(status_code=400, detail=f"Stock insuficiente para {producto.nombre}")
+                producto.stock = (producto.stock or 0.0) - detalle["cantidad"]
             db.add(models.Kardex(
                 id=generar_id(),
                 producto_id=producto.id,

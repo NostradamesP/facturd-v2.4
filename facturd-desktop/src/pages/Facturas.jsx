@@ -386,6 +386,26 @@ export default function Facturas() {
     }
   };
 
+  const handleDownloadPDF = async (facturaId) => {
+    if (!facturaId) return;
+    try {
+      const res = await pdfService.generate(facturaId);
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      const filename = res.headers?.['content-disposition']?.match(/filename=(.+)/)?.[1] || `factura_${facturaId}.pdf`;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      addToast(t('PDF descargado correctamente'), 'success');
+    } catch (error) {
+      console.error('Error descargando PDF:', error);
+      addToast(error.response?.data?.detail || t('Error al descargar PDF'), 'error');
+    }
+  };
+
   const handleLoadDgiiRegistro = async (facturaId) => {
     try {
       const res = await dgiiService.getRegistro(facturaId);
@@ -777,6 +797,9 @@ export default function Facturas() {
                 <button onClick={() => window.print()} className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high" title="Imprimir">
                   <span className="material-symbols-outlined">print</span>
                 </button>
+                <button onClick={() => handleDownloadPDF(selectedFactura?.id)} className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-surface-container hover:bg-primary-container hover:text-on-primary-container" title="Descargar PDF">
+                  <span className="material-symbols-outlined">picture_as_pdf</span>
+                </button>
                 <button onClick={() => handleAnularFactura()} className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-surface-container hover:bg-error-container hover:text-on-error-container" title="Anular">
                   <span className="material-symbols-outlined">block</span>
                 </button>
@@ -806,10 +829,10 @@ export default function Facturas() {
                 <div className="bg-surface-container rounded-xl p-6">
                   <h3 className="font-headline text-lg font-bold mb-4 text-on-surface">Resumen</h3>
                   <div className="space-y-3 text-sm">
-                    <div className="flex justify-between"><span className="text-on-surface-variant">Subtotal</span><span className="font-mono">{formatMoney(selectedFactura.subtotal)}</span></div>
-                    <div className="flex justify-between"><span className="text-on-surface-variant">ITBIS</span><span className="font-mono">{formatMoney(selectedFactura.itbis)}</span></div>
-                    <div className="flex justify-between"><span className="text-on-surface-variant">Descuento</span><span className="font-mono">-{formatMoney(selectedFactura.descuento)}</span></div>
-                    <div className="flex justify-between pt-3 border-t border-outline-variant/20 text-lg font-bold"><span>Total</span><span className="font-mono text-primary">{formatMoney(selectedFactura.total)}</span></div>
+                    <div className="flex justify-between"><span className="text-on-surface-variant">{t('Subtotal')}</span><span className="font-mono">{formatMoney(selectedFactura.subtotal)}</span></div>
+                    <div className="flex justify-between"><span className="text-on-surface-variant">{t('ITBIS')}</span><span className="font-mono">{formatMoney(selectedFactura.itbis)}</span></div>
+                    <div className="flex justify-between"><span className="text-on-surface-variant">{t('Descuento')}</span><span className="font-mono">-{formatMoney(selectedFactura.descuento)}</span></div>
+                    <div className="flex justify-between pt-3 border-t border-outline-variant/20 text-lg font-bold"><span>{t('Total')}</span><span className="font-mono text-primary">{formatMoney(selectedFactura.total)}</span></div>
                   </div>
                 </div>
                 {selectedFactura.estado === 'ENVIADA_DGII' && (
@@ -1110,7 +1133,7 @@ export default function Facturas() {
                     </div>
                     <div className="col-span-1">
                       <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-2">
-                        Invoice Date
+                        {t('Invoice Date')}
                       </label>
                       <input
                         className="w-full bg-transparent border-b border-outline-variant/30 py-3 text-on-surface focus:border-primary transition-all"
@@ -1122,7 +1145,7 @@ export default function Facturas() {
                     </div>
                     <div className="col-span-1">
                       <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-2">
-                        Due Date
+                        {t('Due Date')}
                       </label>
                       <input
                         className="w-full bg-transparent border-b border-outline-variant/30 py-3 text-on-surface focus:border-primary transition-all"
@@ -1137,14 +1160,14 @@ export default function Facturas() {
 
                 <div className="col-span-4 bg-surface-container p-8 rounded-xl flex flex-col justify-between">
                   <div>
-                    <h3 className="font-headline text-lg font-bold mb-6 text-on-surface">Invoice Settings</h3>
+                    <h3 className="font-headline text-lg font-bold mb-6 text-on-surface">{t('Invoice Settings')}</h3>
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-on-surface-variant">Currency</span>
+                        <span className="text-sm text-on-surface-variant">{t('Currency')}</span>
                         <span className="text-sm font-bold text-on-surface">DOP (RD$)</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-on-surface-variant">Tax Rate</span>
+                        <span className="text-sm text-on-surface-variant">{t('Tax Rate')}</span>
                         <span className="text-sm font-bold text-on-surface">18%</span>
                       </div>
                       <div className="flex items-center justify-between">
@@ -1271,7 +1294,7 @@ export default function Facturas() {
                           <th className="pb-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider text-center">Cant.</th>
                           <th className="pb-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider text-right">Precio</th>
                           <th className="pb-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider text-center">18%</th>
-                          <th className="pb-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider text-right">Total</th>
+                          <th className="pb-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider text-right">{t('Total')}</th>
                           <th className="pb-4 w-10"></th>
                         </tr>
                       </thead>
@@ -1382,28 +1405,28 @@ export default function Facturas() {
                 <div className="col-span-12 flex justify-end mt-4">
                   <div className="w-full max-w-sm space-y-4">
                     <div className="flex justify-between items-center text-on-surface-variant">
-                      <span className="text-sm">Subtotal</span>
+                      <span className="text-sm">{t('Subtotal')}</span>
                       <span className="font-mono font-medium">{formatMoney(calcularSubtotal())}</span>
                     </div>
                     <div className="flex justify-between items-center text-on-surface-variant">
-                      <span className="text-sm">Tax (18%)</span>
+                      <span className="text-sm">{t('Tax (18%)')}</span>
                       <span className="font-mono font-medium">{formatMoney(calcularItbis())}</span>
                     </div>
                     {formData.descuento > 0 && (
                       <div className="flex justify-between items-center text-on-surface-variant">
-                        <span className="text-sm">Discount ({formData.descuento}%)</span>
+                        <span className="text-sm">{t('Discount')} ({formData.descuento}%)</span>
                         <span className="font-mono font-medium">-{formatMoney(calcularSubtotal() * formData.descuento / 100)}</span>
                       </div>
                     )}
                     <div className="flex justify-between items-center pt-4 border-t-2 border-primary/10">
-                      <span className="font-headline font-bold text-lg">Amount Due</span>
+                      <span className="font-headline font-bold text-lg">{t('Amount Due')}</span>
                       <span className="font-mono font-bold text-2xl text-primary">{formatMoney(calcularTotal())}</span>
                     </div>
                     <div className="pt-6">
-                      <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-2">Internal Notes</label>
+                      <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-2">{t('Internal Notes')}</label>
                       <textarea
                         className="w-full bg-surface-container rounded-lg border-none text-sm p-4 focus:ring-1 focus:ring-primary/20 resize-none"
-                        placeholder="Private notes for your records..."
+                        placeholder={t('Private notes for your records...')}
                         rows="3"
                         value={formData.nota}
                         onChange={(e) => setFormData({ ...formData, nota: e.target.value })}

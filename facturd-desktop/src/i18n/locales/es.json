@@ -301,5 +301,15 @@
   "Track and manage your business expenses.": "Gestiona y controla los gastos de tu empresa.",
   "Total Expenses": "Total Gastos",
   "Monthly Expenses": "Gastos del Mes",
-  "Number of Expenses": "Cantidad de Gastos"
+  "Number of Expenses": "Cantidad de Gastos",
+  "Invoice Date": "Fecha de factura",
+  "Due Date": "Fecha de vencimiento",
+  "Invoice Settings": "Configuración de factura",
+  "Currency": "Moneda",
+  "Tax Rate": "Tasa ITBIS",
+  "Amount Due": "Total a Pagar",
+  "Internal Notes": "Notas internas",
+  "Private notes for your records...": "Notas privadas para tu registro...",
+  "Discount": "Descuento",
+  "Tax (18%)": "ITBIS (18%)"
 }

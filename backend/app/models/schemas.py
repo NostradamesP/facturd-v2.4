@@ -29,6 +29,10 @@ class TipoItbisEnum(str, Enum):
 
 class TipoNCFEnum(str, Enum):
     B01 = "B01"
+    B02 = "B02"
+    B04 = "B04"
+    B11 = "B11"
+    B12 = "B12"
     E31 = "E31"
     E41 = "E41"
     E43 = "E43"
@@ -76,8 +80,13 @@ class UserResponse(BaseModel):
 
 class LoginResponse(BaseModel):
     token: str
+    refresh_token: str = ""
     user: UserResponse
     empresa: "EmpresaResponse"
+
+class RefreshResponse(BaseModel):
+    token: str
+    refresh_token: str = ""
 
 # Empresa
 class EmpresaBase(BaseModel):

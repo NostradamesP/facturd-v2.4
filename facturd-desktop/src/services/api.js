@@ -21,15 +21,58 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+let isRefreshing = false;
+let failedQueue = [];
+
+function processQueue(proceed, data) {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (proceed) resolve(data);
+    else reject(data);
+  });
+  failedQueue = [];
+}
+
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
     if (import.meta.env.DEV) {
-      console.log('AXIOS Response Error:', error.response?.status, error.config?.url);
+      console.log('AXIOS Response Error:', error.response?.status, originalRequest?.url);
     }
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('auth/')) {
+      const refreshToken = localStorage.getItem('refresh_token');
+      if (!refreshToken) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then((token) => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return api(originalRequest);
+        });
+      }
+      originalRequest._retry = true;
+      isRefreshing = true;
+      try {
+        const res = await axios.post(`${API_URL}auth/refresh`, { refresh_token: refreshToken });
+        const { token, refresh_token: newRefresh } = res.data;
+        localStorage.setItem('token', token);
+        if (newRefresh) localStorage.setItem('refresh_token', newRefresh);
+        processQueue(true, token);
+        originalRequest.headers.Authorization = `Bearer ${token}`;
+        return api(originalRequest);
+      } catch {
+        processQueue(false, null);
+        localStorage.removeItem('token');
+        localStorage.removeItem('refresh_token');
+        window.location.href = '/login';
+        return Promise.reject(error);
+      } finally {
+        isRefreshing = false;
+      }
     }
     return Promise.reject(error);
   }

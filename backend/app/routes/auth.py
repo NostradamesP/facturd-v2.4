@@ -1,13 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 from datetime import timedelta
+from jose import JWTError, jwt
+from pydantic import BaseModel
 
 from app.database import get_db
 from app.models import models
-from app.models.schemas import UserCreate, UserLogin, LoginResponse, UserResponse, EmpresaResponse
-from app.middleware.auth import create_access_token, get_current_user
+from app.models.schemas import UserCreate, UserLogin, LoginResponse, UserResponse, EmpresaResponse, RefreshResponse
+from app.middleware.auth import create_access_token, create_refresh_token, get_current_user
 from app.config import get_settings
 from app.utils import pwd_context, generar_id
+
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
 
 router = APIRouter(prefix="/api/auth", tags=["Auth"])
 settings = get_settings()
@@ -59,10 +65,12 @@ def register(user_data: UserCreate, response: Response, db: Session = Depends(ge
         data={"sub": user.id},
         expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
+    refresh_token = create_refresh_token(data={"sub": user.id})
     _set_token_cookie(response, access_token, settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
     
     return LoginResponse(
         token=access_token,
+        refresh_token=refresh_token,
         user=UserResponse(id=user.id, email=user.email, name=user.name, role=user.role.value),
         empresa=EmpresaResponse(id=empresa.id, nombre=empresa.nombre, rnc=empresa.rnc, idioma=empresa.idioma, nombre_sistema=empresa.nombre_sistema, logo_url=empresa.logo_url)
     )
@@ -79,10 +87,12 @@ def login(login_data: UserLogin, response: Response, db: Session = Depends(get_d
         data={"sub": user.id},
         expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
+    refresh_token = create_refresh_token(data={"sub": user.id})
     _set_token_cookie(response, access_token, settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
     
     return LoginResponse(
         token=access_token,
+        refresh_token=refresh_token,
         user=UserResponse(id=user.id, email=user.email, name=user.name, role=user.role.value),
         empresa=EmpresaResponse(id=empresa.id, nombre=empresa.nombre, rnc=empresa.rnc, idioma=empresa.idioma, nombre_sistema=empresa.nombre_sistema, logo_url=empresa.logo_url)
     )
@@ -96,3 +106,29 @@ def get_me(current_user: models.User = Depends(get_current_user), db: Session = 
         "user": UserResponse(id=current_user.id, email=current_user.email, name=current_user.name, role=current_user.role.value),
         "empresa": EmpresaResponse(id=empresa.id, nombre=empresa.nombre, rnc=empresa.rnc, idioma=empresa.idioma, nombre_sistema=empresa.nombre_sistema, logo_url=empresa.logo_url)
     }
+
+
+@router.post("/refresh", response_model=RefreshResponse)
+def refresh_token(body: RefreshRequest, response: Response, db: Session = Depends(get_db)):
+    try:
+        payload = jwt.decode(body.refresh_token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+        if payload.get("type") != "refresh":
+            raise HTTPException(status_code=401, detail="Token inválido")
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Token inválido")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Refresh token inválido o expirado")
+
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="Usuario no encontrado")
+
+    new_access = create_access_token(
+        data={"sub": user.id},
+        expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+    new_refresh = create_refresh_token(data={"sub": user.id})
+    _set_token_cookie(response, new_access, settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
+
+    return RefreshResponse(token=new_access, refresh_token=new_refresh)

@@ -20,6 +20,7 @@ export default function Clientes() {
     direccion: '',
   });
   const { addToast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => {

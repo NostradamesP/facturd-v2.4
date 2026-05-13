@@ -299,5 +299,15 @@
   "Track and manage your business expenses.": "Track and manage your business expenses.",
   "Total Expenses": "Total Expenses",
   "Monthly Expenses": "Monthly Expenses",
-  "Number of Expenses": "Number of Expenses"
+  "Number of Expenses": "Number of Expenses",
+  "Invoice Date": "Invoice Date",
+  "Due Date": "Due Date",
+  "Invoice Settings": "Invoice Settings",
+  "Currency": "Currency",
+  "Tax Rate": "Tax Rate",
+  "Amount Due": "Amount Due",
+  "Internal Notes": "Internal Notes",
+  "Private notes for your records...": "Private notes for your records...",
+  "Discount": "Discount",
+  "Tax (18%)": "Tax (18%)"
 }

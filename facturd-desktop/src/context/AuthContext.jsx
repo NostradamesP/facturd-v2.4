@@ -38,14 +38,25 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     const res = await authService.login(email, password);
     localStorage.setItem('token', res.data.token);
+    if (res.data.refresh_token) {
+      localStorage.setItem('refresh_token', res.data.refresh_token);
+    }
     setUser(res.data.user);
     setEmpresa(res.data.empresa);
     syncLanguage(res.data.empresa);
+    if (res.data.empresa) {
+      localStorage.setItem('facturd_empresa_branding', JSON.stringify({
+        nombre_sistema: res.data.empresa.nombre_sistema,
+        logo_url: res.data.empresa.logo_url,
+        nombre: res.data.empresa.nombre,
+      }));
+    }
     return res.data;
   };
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('refresh_token');
     setUser(null);
     setEmpresa(null);
   };

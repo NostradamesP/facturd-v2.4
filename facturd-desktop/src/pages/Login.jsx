@@ -31,6 +31,15 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const branding = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('facturd_empresa_branding') || '{}');
+    } catch { return {}; }
+  })();
+
+  const sistemaNombre = branding.nombre_sistema || 'FactuRD';
+  const sistemaLogo = branding.logo_url;
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
@@ -75,12 +84,16 @@ export default function Login() {
       <div className="w-full max-w-md p-8">
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center text-on-primary mx-auto mb-4">
-            <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>
-              account_balance_wallet
-            </span>
+            {sistemaLogo ? (
+              <img src={sistemaLogo} alt={sistemaNombre} className="w-10 h-10 object-contain" />
+            ) : (
+              <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+                account_balance_wallet
+              </span>
+            )}
           </div>
           <h1 className="font-['Manrope'] text-2xl font-extrabold text-[#2a3439]">
-            FactuRD
+            {sistemaNombre}
           </h1>
           <p className="text-on-surface-variant mt-2">{t('Sistema de Facturación DGII')}</p>
         </div>
