@@ -202,3 +202,19 @@ Commit: e2a26c2 (pusheado a origin/main)
 - Login fondo blanco: bg-surface reemplazado por bg-white
 - Nombre empresa: usa branding.nombre como fallback (nombre_sistema || nombre || 'FactuRD')
 - Logout: ahora limpia facturd_empresa_branding de localStorage (evita mostrar datos de sesion anterior)
+
+=== SESION: FAXTURD ===
+Commit: ba2f5f5 + 0a43822 (pusheado a origin/main)
+
+Bug encontrado:
+- Login en produccion (Render) daba 500: EmpresaResponse validaba RNC al serializar
+  El RNC '101000001' de Jinaite no pasa checksum, pero existe en DB
+
+Fix:
+- RNC validation (@field_validator) movido de *Base a *Create y *Update solamente
+- *Response (EmpresaResponse, ClienteResponse, ProveedorResponse) ya no validan RNC
+- La validacion en entrada (crear/editar) se mantiene intacta
+
+Resultado:
+- Login funcionando en Render
+- 42 tests pasando, 0 fallos
