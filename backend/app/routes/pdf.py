@@ -19,8 +19,10 @@ def _generar_pdf_factura(invoice: dict) -> BytesIO:
     from reportlab.lib import colors
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import inch
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
     from reportlab.lib.enums import TA_RIGHT, TA_LEFT, TA_CENTER
+    import base64
+    import re
 
     buf = BytesIO()
     doc = SimpleDocTemplate(buf, pagesize=letter,
@@ -34,19 +36,36 @@ def _generar_pdf_factura(invoice: dict) -> BytesIO:
     primary = colors.HexColor("#1a1a2e")
 
     style_h1 = ParagraphStyle("h1", fontSize=18, fontName="Helvetica-Bold", textColor=primary, spaceAfter=2)
-    style_h2 = ParagraphStyle("h2", fontSize=10, fontName="Helvetica-Bold", textColor=colors.HexColor("#555555"), spaceAfter=2)
     style_p = ParagraphStyle("p", fontSize=9, fontName="Helvetica", textColor=colors.HexColor("#333333"), spaceAfter=1, leading=12)
     style_p_small = ParagraphStyle("ps", fontSize=8, fontName="Helvetica", textColor=colors.HexColor("#666666"), spaceAfter=1, leading=10)
     style_th = ParagraphStyle("th", fontSize=8, fontName="Helvetica-Bold", textColor=colors.white, alignment=TA_CENTER)
     style_td_left = ParagraphStyle("tdl", fontSize=8, fontName="Helvetica", textColor=colors.HexColor("#333333"), alignment=TA_LEFT)
     style_td_right = ParagraphStyle("tdr", fontSize=8, fontName="Helvetica", textColor=colors.HexColor("#333333"), alignment=TA_RIGHT)
-    style_total = ParagraphStyle("total", fontSize=11, fontName="Helvetica-Bold", textColor=primary, alignment=TA_RIGHT)
 
-    # Encabezado: empresa + factura info
-    enc_data = [[
-        Paragraph(f"<b>{emp.get('nombre', 'Empresa')}</b>", style_h1),
-        Paragraph(f"<b>FACTURA</b>", ParagraphStyle("factura_tit", fontSize=16, fontName="Helvetica-Bold", textColor=primary, alignment=TA_RIGHT)),
-    ]]
+    # Encabezado: logo (opcional) + empresa + factura info
+    logo_url = emp.get("logo_url", "")
+    logo_img = None
+    if logo_url and logo_url.startswith("data:image"):
+        try:
+            img_data = re.sub(r'^data:image/\w+;base64,', '', logo_url)
+            img_bytes = base64.b64decode(img_data)
+            logo_img = Image(BytesIO(img_bytes), width=0.8*inch, height=0.8*inch)
+        except Exception:
+            pass
+
+    empresa_nombre = emp.get('nombre_sistema') or emp.get('nombre', 'Empresa')
+    factura_tit = ParagraphStyle("factura_tit", fontSize=16, fontName="Helvetica-Bold", textColor=primary, alignment=TA_RIGHT)
+
+    if logo_img:
+        enc_data = [
+            [logo_img, Paragraph("<b>FACTURA</b>", factura_tit)],
+            [Paragraph(f"<b>{empresa_nombre}</b>", style_h1), ""],
+        ]
+    else:
+        enc_data = [[
+            Paragraph(f"<b>{empresa_nombre}</b>", style_h1),
+            Paragraph("<b>FACTURA</b>", factura_tit),
+        ]]
     enc_table = Table(enc_data, colWidths=[3.5*inch, 3.5*inch])
     enc_table.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
@@ -56,7 +75,6 @@ def _generar_pdf_factura(invoice: dict) -> BytesIO:
 
     # Info empresa y cliente lado a lado
     info_data = [[
-        # Empresa info
         Paragraph(
             f"{emp.get('direccion', '')}<br/>"
             f"RNC: {emp.get('rnc', '')}<br/>"
@@ -64,7 +82,6 @@ def _generar_pdf_factura(invoice: dict) -> BytesIO:
             f"{emp.get('email', '')}",
             style_p_small
         ),
-        # Factura info
         Paragraph(
             f"<b>NCF:</b> {invoice.get('ncf', 'N/A')}<br/>"
             f"<b>Fecha:</b> {invoice.get('fecha', '')}<br/>"
@@ -92,13 +109,13 @@ def _generar_pdf_factura(invoice: dict) -> BytesIO:
     # Cliente
     cliente_lines = [f"<b>Cliente:</b> {cli.get('nombre', 'N/A')}"]
     if cli.get("rnc"):
-        cliente_lines.append(f"RNC: {cli['rnc']}")
+        cliente_lines.append(f"RNC/Cédula: {cli['rnc']}")
     if cli.get("direccion"):
-        cliente_lines.append(cli["direccion"])
+        cliente_lines.append(f"Dirección: {cli['direccion']}")
     if cli.get("telefono"):
         cliente_lines.append(f"Tel: {cli['telefono']}")
     if cli.get("email"):
-        cliente_lines.append(cli["email"])
+        cliente_lines.append(f"Email: {cli['email']}")
     elements.append(Paragraph("<br/>".join(cliente_lines), style_p))
     elements.append(Spacer(1, 16))
 
@@ -203,6 +220,8 @@ def generate_invoice_pdf(
             "direccion": empresa.direccion or "",
             "telefono": empresa.telefono or "",
             "email": empresa.email or "",
+            "logo_url": empresa.logo_url or "",
+            "nombre_sistema": empresa.nombre_sistema or "",
         },
         "cliente": {
             "nombre": cliente.nombre if cliente else "N/A",

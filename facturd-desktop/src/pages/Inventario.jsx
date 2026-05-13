@@ -4,9 +4,12 @@ import { productosService } from '../services/api';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { TableSkeleton } from '../components/Skeleton';
 
 export default function Inventario() {
   const { t } = useTranslation();
+  usePageTitle(t('Inventario'));
   const { user } = useAuth();
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -122,7 +125,7 @@ export default function Inventario() {
   const lowStock = productos.filter(p => (p.stock || 0) < 10).length;
 
   if (loading) {
-    return <div className="text-center py-10">{t('Cargando...')}</div>;
+    return <div className="p-6"><TableSkeleton rows={5} cols={5} /></div>;
   }
 
   return (
@@ -194,8 +197,8 @@ export default function Inventario() {
         </div>
       </div>
 
-      <div className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-[0px_20px_40px_rgba(42,52,57,0.04)]">
-        <table className="w-full text-left">
+      <div className="bg-surface-container-lowest rounded-xl overflow-x-auto shadow-[0px_20px_40px_rgba(42,52,57,0.04)]">
+        <table className="w-full text-left min-w-[700px]">
           <thead>
             <tr className="bg-surface-container-low/50">
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 import uuid
@@ -68,7 +68,7 @@ def get_detalles_factura(factura_id: str, db: Session) -> list[models.DetalleFac
 
 
 def _append_log(registro: models.RegistroDGII, mensaje: str):
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(timezone.utc).isoformat()
     prev = registro.logs or ""
     registro.logs = f"{prev}\n[{now}] {mensaje}".strip()
 
@@ -270,7 +270,7 @@ def enviar_factura_dgii(
 
     registro.track_id = track_id
     registro.respuesta_dgii = str(respuesta_api)
-    registro.enviado_at = datetime.utcnow()
+    registro.enviado_at = datetime.now(timezone.utc)
     _append_log(registro, f"Enviado a DGII: {mensaje_api} (track_id={track_id})")
 
     if estado_api == "RECIBIDO":
@@ -312,10 +312,9 @@ def consultar_estado_dgii(
 
     if estado_consulta == "ACEPTADO":
         registro.estado = models.EstadoDGII.ACEPTADO
-        registro.respondido_at = datetime.utcnow()
-    elif estado_consulta in ("RECHAZADO",):
-        registro.estado = models.EstadoDGII.RECHAZADO
-        registro.respondido_at = datetime.utcnow()
+        registro.respondido_at = datetime.now(timezone.utc)
+
+        registro.respondido_at = datetime.now(timezone.utc)
     elif estado_consulta == "ERROR":
         registro.estado = models.EstadoDGII.ERROR
 

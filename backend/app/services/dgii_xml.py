@@ -122,12 +122,25 @@ def generar_eCF_xml(
     _add_text(encabezado, "HoraEmision", _hora_emision(fecha))
     _add_text(encabezado, "RegimenPago", regimen_pago)
 
-    itbis_18 = sum(d.get("itbis", 0) for d in detalles)
+    itbis_18 = 0.0
+    itbis_13 = 0.0
     itbis_0 = 0.0
     itbis_exento = 0.0
+    for d in detalles:
+        tasa = _determinar_tasa_itbis(d)
+        monto_itbis = float(d.get("itbis", 0))
+        if tasa == "18.00":
+            itbis_18 += monto_itbis
+        elif tasa == "13.00":
+            itbis_13 += monto_itbis
+        elif tasa == "0.00":
+            itbis_0 += monto_itbis
+        else:
+            itbis_exento += monto_itbis
 
     _add_text(encabezado, "TotalITBIS", _fmt(itbis))
     _add_text(encabezado, "TotalITBIS18", _fmt(itbis_18))
+    _add_text(encabezado, "TotalITBIS13", _fmt(itbis_13))
     _add_text(encabezado, "TotalITBIS0", _fmt(itbis_0))
     _add_text(encabezado, "TotalITBISExento", _fmt(itbis_exento))
     _add_text(encabezado, "TotalAntesDescuento", _fmt(subtotal))
@@ -166,10 +179,9 @@ def generar_eCF_xml(
 
 def _determinar_tasa_itbis(detalle: dict) -> str:
     itbis_val = float(detalle.get("itbis", 0))
-    total = float(detalle.get("total", 0))
     base = float(detalle.get("cantidad", 1)) * float(detalle.get("precio_unitario", 0))
 
-    if base == 0:
+    if base == 0 or itbis_val == 0:
         return "0.00"
 
     tasa = (itbis_val / base) * 100
@@ -177,8 +189,6 @@ def _determinar_tasa_itbis(detalle: dict) -> str:
         return "18.00"
     elif tasa >= 12.5:
         return "13.00"
-    elif tasa > 0:
-        return "0.00"
     else:
         return "0.00"
 

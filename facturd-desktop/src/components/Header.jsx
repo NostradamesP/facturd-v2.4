@@ -67,10 +67,10 @@ export default function Header({ title, onMenuClick }) {
           <img
             src={empresa.logo_url}
             alt={empresa.nombre || 'Logo'}
-            className="h-8 lg:h-10 w-auto max-w-[120px] object-contain"
+            className="h-10 w-auto max-w-[120px] object-contain"
           />
         ) : (
-          <div className="w-8 lg:w-10 h-8 lg:h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm lg:text-base">
+          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">
             {user?.name?.charAt(0) || 'U'}
           </div>
         )}

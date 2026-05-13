@@ -128,5 +128,54 @@ Frontend:
   - Toast.jsx: corregido memory leak con timersRef cleanup
   - main.jsx: ErrorBoundary envuelve App
   - Provedores/Gastos/Cotizaciones/Pagos: corregido unwrapItems() (array plano)
-  - api.js: agregado pdfService.generate()
-  - Inventario.jsx: enviado aplica_itbis + tipo_itbis a backend
+   - api.js: agregado pdfService.generate()
+   - Inventario.jsx: enviado aplica_itbis + tipo_itbis a backend
+
+=== FASE 2-5: MEJORAS MAYO 2026 ===
+
+=== FASE 2 — DEPRECACIONES ===
+- Reemplazados 19 `datetime.utcnow()` con `datetime.now(timezone.utc)` en 6 archivos
+- Reparado `create_access_token()`: estaba roto — siempre emitía refresh token
+- Agregada función `create_refresh_token()` en middleware/auth.py
+
+=== FASE 3 — VALIDACION ===
+- Agregado `@field_validator("rnc")` con `validar_rnc_formato` en ClienteBase, ProveedorBase, EmpresaBase (schemas.py)
+- Email validado con `EmailStr` de Pydantic
+- NCF: loop de generación con guarda de 1M intentos máximos + HTTPException 500
+- DGII XML: ITBIS categorizado por tasa (18%, 13%, exento) en services/dgii_xml.py
+
+=== FASE 4 — FRONTEND UX ===
+- Creado hook `useDebounce` (300ms) — hooks/useDebounce.js
+- Creado hook `usePageTitle` (setea <title> dinámico) — hooks/usePageTitle.js
+- Creado `TableSkeleton` + `CardSkeleton` — components/Skeleton.jsx
+- Agregados atributos accesibilidad: aria-modal, role="dialog", aria-live="polite", aria-label
+- Page titles + skeletons aplicados a las 10 páginas (Dashboard, Facturas, Clientes, etc.)
+
+=== FASE 5 — INFRAESTRUCTURA ===
+- Dockerfile multi-stage (node:20 → nginx:alpine) para frontend
+- docker-compose.yml: agregado servicio frontend (puerto 80, proxy a api:8000)
+- Service Worker (public/sw.js) registrado en main.jsx
+- Vite: brotli + gzip compression (threshold 1KB): JS de 547KB → 120KB brotli
+
+=== SILENT REFRESH ===
+- AuthContext.jsx: usa axios.post directo (sin loop 401), programa refresh en exp - 5min
+- Timer se limpia en logout/unmount
+- Agregado console.log para debugging
+
+=== PDF ===
+- POST /api/pdf/invoice/{id} → 200 OK, 2541 bytes, application/pdf válido
+- Logos decodificados base64 via ReportLab Image
+- Campos cliente (RNC, Dirección, Tel, Email) renderizados correctamente
+
+=== TESTS ===
+- 42 pruebas pasando, 0 fallos
+- conftest.py: _generar_rnc_valido() helper
+- test_integration.py: _generar_rnc_valido(), test_send_without_client_rnc_fails actualizado
+- Todos los POST corregidos a status_code=201
+
+=== SUPRASE PASSWORD ROTATION ===
+- Contraseña antigua: Nostradame07.
+- Contraseña nueva: FactuRD-2026-Prod!
+- backend/.env actualizado localmente
+- Render Dashboard: PENDIENTE actualizar DATABASE_URL manualmente
+- archivo .env nunca estuvo en Git — no hay historial que limpiar

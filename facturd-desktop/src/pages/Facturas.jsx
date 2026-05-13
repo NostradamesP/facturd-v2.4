@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { facturasService, clientesService, productosService, plantillasService, dgiiService, pdfService } from '../services/api';
@@ -6,6 +6,9 @@ import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import FacturaPreview from '../components/factura/FacturaPreview';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { useDebounce } from '../hooks/useDebounce';
+import { TableSkeleton } from '../components/Skeleton';
 
 const STATUS_FILTERS = [
   { value: 'all', key: 'All' },
@@ -43,6 +46,7 @@ export default function Facturas() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  usePageTitle(t('Facturas'));
   const [facturas, setFacturas] = useState([]);
   const [clientes, setClientes] = useState([]);
   const [productos, setProductos] = useState([]);
@@ -54,6 +58,7 @@ export default function Facturas() {
   const [selectedFactura, setSelectedFactura] = useState(null);
   const [filter, setFilter] = useState('all');
   const [clienteSearch, setClienteSearch] = useState('');
+  const clienteSearchDebounced = useDebounce(clienteSearch, 300);
   const [showClienteDropdown, setShowClienteDropdown] = useState(false);
   const [clienteManual, setClienteManual] = useState(false);
   const [clienteRapido, setClienteRapido] = useState(emptyClienteRapido());
@@ -136,7 +141,7 @@ export default function Facturas() {
   }), [facturas, filter]);
 
   const filteredClientes = useMemo(() => clientes.filter(c => {
-    const search = clienteSearch.trim().toLowerCase();
+    const search = clienteSearchDebounced.trim().toLowerCase();
     if (!search) return true;
     return (
       c.nombre?.toLowerCase().includes(search) ||
@@ -612,7 +617,7 @@ export default function Facturas() {
   };
 
   if (loading) {
-    return <div className="text-center py-10">Cargando...</div>;
+    return <div className="p-6"><TableSkeleton rows={6} cols={7} /></div>;
   }
 
   return (
@@ -651,8 +656,8 @@ export default function Facturas() {
         ))}
       </div>
 
-      <div className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-[0px_20px_40px_rgba(42,52,57,0.04)]">
-        <table className="w-full text-left">
+      <div className="bg-surface-container-lowest rounded-xl overflow-x-auto shadow-[0px_20px_40px_rgba(42,52,57,0.04)]">
+        <table className="w-full text-left min-w-[700px]">
           <thead>
             <tr className="bg-surface-container-low/50">
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
@@ -1386,12 +1391,13 @@ export default function Facturas() {
                             <td className="py-4 pl-4 text-right font-bold text-sm font-mono">
                               {formatMoney(detalle.total)}
                             </td>
-                            <td className="py-4 text-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <td className="py-4 text-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                               <button
                                 type="button"
                                 onClick={() => handleRemoveDetalle(index)}
                                 disabled={invoiceBodyLocked}
                                 className="material-symbols-outlined text-error cursor-pointer text-lg"
+                                aria-label="Eliminar detalle"
                               >
                                 delete
                               </button>

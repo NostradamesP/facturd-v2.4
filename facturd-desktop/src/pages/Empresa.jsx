@@ -3,9 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { empresaService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { TableSkeleton } from '../components/Skeleton';
 
 export default function Empresa() {
   const { t, i18n } = useTranslation();
+  usePageTitle(t('Empresa'));
   const { user, empresa, updateEmpresa } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -93,7 +96,7 @@ export default function Empresa() {
   };
 
   if (loading) {
-    return <div className="text-center py-10">{t('Cargando...')}</div>;
+    return <div className="p-6"><TableSkeleton rows={5} cols={5} /></div>;
   }
 
   return (
@@ -258,7 +261,7 @@ export default function Empresa() {
             <div className="grid grid-cols-2 gap-10 mb-16 border-t border-outline-variant/10 pt-8">
               <div>
                 <h4 className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">{t('Office Address')}</h4>
-                <p className="text-sm text-on-surface leading-relaxed max-w-[180px]">
+                    <p className="text-sm text-on-surface leading-relaxed max-w-full">
                   {formData.direccion || 'Your address here'}
                 </p>
               </div>

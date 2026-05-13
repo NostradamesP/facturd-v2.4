@@ -3,11 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { facturasService, gastosService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { TableSkeleton } from '../components/Skeleton';
 
 const statusValue = (estado) => String(estado || '').toUpperCase();
 
 export default function Dashboard() {
   const { t } = useTranslation();
+  usePageTitle(t('Dashboard'));
   const { user } = useAuth();
   const navigate = useNavigate();
   const [facturas, setFacturas] = useState([]);
@@ -63,7 +66,7 @@ export default function Dashboard() {
   );
 
   if (loading) {
-    return <div className="text-center py-10">{t('Cargando...')}</div>;
+    return <div className="p-6"><TableSkeleton rows={5} cols={5} /></div>;
   }
 
   return (
@@ -76,7 +79,7 @@ export default function Dashboard() {
               {t('Ingresos Totales')}
             </h3>
             <div className="flex items-baseline gap-2">
-              <span className="text-primary font-headline text-6xl font-extrabold tracking-tight">
+              <span className="text-primary font-headline text-3xl sm:text-6xl font-extrabold tracking-tight">
                 ${totalRevenue.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
               </span>
             </div>
@@ -135,8 +138,8 @@ export default function Dashboard() {
               <p className="text-on-surface-variant text-sm">{t('Estado en tiempo real de tus últimas transacciones')}</p>
             </div>
           </div>
-          <div className="bg-surface-container-lowest rounded-xl overflow-hidden">
-            <table className="w-full text-left border-collapse">
+          <div className="bg-surface-container-lowest rounded-xl overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[600px]">
               <thead>
                 <tr className="bg-surface-container-low/50">
                   <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant opacity-70">

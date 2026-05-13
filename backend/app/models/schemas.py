@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
 from typing import Optional, List, TypeVar, Generic
 from datetime import datetime
 from enum import Enum
@@ -94,10 +94,18 @@ class EmpresaBase(BaseModel):
     rnc: str
     direccion: Optional[str] = None
     telefono: Optional[str] = None
-    email: Optional[str] = None
+    email: Optional[EmailStr] = None
     idioma: str = "es"
     nombre_sistema: Optional[str] = None
     logo_url: Optional[str] = None
+
+    @field_validator("rnc")
+    @classmethod
+    def validar_rnc(cls, v: str) -> str:
+        from app.utils import validar_rnc_formato
+        if not validar_rnc_formato(v):
+            raise ValueError("RNC inválido: debe tener 9 dígitos con dígito verificador correcto")
+        return v
 
 class EmpresaCreate(EmpresaBase):
     pass
@@ -120,8 +128,16 @@ class ClienteBase(BaseModel):
     tipo: TipoContribuyenteEnum = TipoContribuyenteEnum.PERSONA_JURIDICA
     direccion: Optional[str] = None
     telefono: Optional[str] = None
-    email: Optional[str] = None
+    email: Optional[EmailStr] = None
     limite_credito: Optional[float] = 0
+
+    @field_validator("rnc")
+    @classmethod
+    def validar_rnc(cls, v: str) -> str:
+        from app.utils import validar_rnc_formato
+        if not validar_rnc_formato(v):
+            raise ValueError("RNC inválido: debe tener 9 dígitos con dígito verificador correcto")
+        return v
 
 class ClienteCreate(ClienteBase):
     pass
@@ -144,9 +160,17 @@ class ProveedorBase(BaseModel):
     nombre_comercial: Optional[str] = None
     direccion: Optional[str] = None
     telefono: Optional[str] = None
-    email: Optional[str] = None
+    email: Optional[EmailStr] = None
     productos_servicios: Optional[str] = None
     costo_promedio: float = 0
+
+    @field_validator("rnc")
+    @classmethod
+    def validar_rnc(cls, v: str) -> str:
+        from app.utils import validar_rnc_formato
+        if not validar_rnc_formato(v):
+            raise ValueError("RNC inválido: debe tener 9 dígitos con dígito verificador correcto")
+        return v
 
 class ProveedorCreate(ProveedorBase):
     pass

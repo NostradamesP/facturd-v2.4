@@ -2,11 +2,14 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { facturasService, clientesService, pagosService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { TableSkeleton } from '../components/Skeleton';
 
 const statusValue = (estado) => String(estado || '').toUpperCase();
 
 export default function Reportes() {
   const { t } = useTranslation();
+  usePageTitle(t('Reportes'));
   const { user } = useAuth();
   const [facturas, setFacturas] = useState([]);
   const [clientes, setClientes] = useState([]);
@@ -51,7 +54,7 @@ export default function Reportes() {
   }, {});
 
   if (loading) {
-    return <div className="text-center py-10">{t('Cargando...')}</div>;
+    return <div className="p-6"><TableSkeleton rows={5} cols={5} /></div>;
   }
 
   return (

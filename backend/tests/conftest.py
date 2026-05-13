@@ -1,5 +1,6 @@
 import pytest
 import uuid
+import random
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -8,6 +9,14 @@ from sqlalchemy.pool import StaticPool
 from app.main import app, _rate_limit_store
 from app.database import Base, get_db
 from app.utils import pwd_context
+
+
+def _generar_rnc_valido() -> str:
+    base = "".join([str(random.randint(0, 9)) for _ in range(8)])
+    pesos = [7, 9, 8, 6, 5, 4, 3, 2]
+    suma = sum(int(base[i]) * pesos[i] for i in range(8))
+    digito = (10 - (suma % 10)) % 10
+    return base + str(digito)
 
 TEST_DB_URL = "sqlite://"
 
@@ -49,7 +58,7 @@ def test_user_data():
         "email": f"test_{uuid.uuid4().hex[:8]}@test.com",
         "password": "TestPass123!",
         "name": "Test User",
-        "empresa_rnc": f"{uuid.uuid4().hex[:9]}",
+        "empresa_rnc": _generar_rnc_valido(),
         "empresa_nombre": "Test Empresa SRL",
     }
 
@@ -57,7 +66,7 @@ def test_user_data():
 @pytest.fixture
 def auth_headers(client, test_user_data):
     response = client.post("/api/auth/register", json=test_user_data)
-    assert response.status_code == 200
+    assert response.status_code == 201
     token = response.json()["token"]
     return {"Authorization": f"Bearer {token}"}
 

@@ -84,6 +84,20 @@ const unwrapItems = (request) =>
     data: response.data?.items || response.data,
   }));
 
+export function decodeToken(token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
+export function getTokenExpiry(token) {
+  const payload = decodeToken(token);
+  return payload?.exp ? payload.exp * 1000 : null;
+}
+
 export const authService = {
   login: (email, password) => api.post('auth/login', { email, password }),
   register: (data) => api.post('auth/register', data),

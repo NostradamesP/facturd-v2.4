@@ -4,11 +4,14 @@ import { gastosService, proveedoresService } from '../services/api';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { TableSkeleton } from '../components/Skeleton';
 
 const CATEGORIAS = ['INSUMOS', 'SERVICIOS', 'LOGISTICA', 'NOMINA', 'MARKETING', 'OFICINA', 'OTROS'];
 
 export default function Gastos() {
   const { t } = useTranslation();
+  usePageTitle(t('Gastos'));
   const { user } = useAuth();
   const [gastos, setGastos] = useState([]);
   const [proveedores, setProveedores] = useState([]);
@@ -113,7 +116,7 @@ export default function Gastos() {
   };
 
   if (loading) {
-    return <div className="text-center py-10">{t('Cargando...')}</div>;
+    return <div className="p-6"><TableSkeleton rows={5} cols={5} /></div>;
   }
 
   return (

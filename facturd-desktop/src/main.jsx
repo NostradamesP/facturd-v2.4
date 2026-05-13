@@ -5,6 +5,12 @@ import './i18n'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary'
 
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js');
+  });
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>

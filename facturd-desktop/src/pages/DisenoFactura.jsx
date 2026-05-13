@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useToast } from '../components/Toast';
 import { plantillasService } from '../services/api';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { TableSkeleton } from '../components/Skeleton';
 
 const ELEMENT_TYPES = {
   TEXT: 'text',
@@ -260,6 +262,7 @@ const PLANTILLAS_PREDEFINIDAS = [
 
 export default function DisenoFactura() {
   const { t } = useTranslation();
+  usePageTitle(t('Diseño Factura'));
   const { addToast } = useToast();
   const [elements, setElements] = useState([]);
   const [selectedElement, setSelectedElement] = useState(null);

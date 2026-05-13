@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/api';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 function getErrorMessage(err, fallback) {
   const detail = err.response?.data?.detail;
@@ -20,6 +21,7 @@ function getErrorMessage(err, fallback) {
 
 export default function Login() {
   const { t } = useTranslation();
+  usePageTitle(t('Login'));
   const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -118,6 +120,7 @@ export default function Login() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    autoComplete="name"
                     className="w-full px-4 py-3 rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                     required={isRegistering}
                   />
@@ -130,6 +133,7 @@ export default function Login() {
                     type="text"
                     value={empresaNombre}
                     onChange={(e) => setEmpresaNombre(e.target.value)}
+                    autoComplete="organization"
                     className="w-full px-4 py-3 rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                     required={isRegistering}
                   />
@@ -142,6 +146,7 @@ export default function Login() {
                     type="text"
                     value={empresaRnc}
                     onChange={(e) => setEmpresaRnc(e.target.value)}
+                    autoComplete="off"
                     className="w-full px-4 py-3 rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                     required={isRegistering}
                   />
@@ -156,6 +161,7 @@ export default function Login() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
                 className="w-full px-4 py-3 rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                 required
               />
@@ -169,6 +175,7 @@ export default function Login() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
                 className="w-full px-4 py-3 rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                 required
               />
@@ -186,9 +193,9 @@ export default function Login() {
 
         <p className="text-center text-sm text-on-surface-variant mt-6">
           {isRegistering ? (
-            <>{t('¿Ya tienes cuenta?')} <span className="text-primary font-medium cursor-pointer" onClick={() => setIsRegistering(false)}>{t('Inicia sesión')}</span></>
+            <>{t('¿Ya tienes cuenta?')} <span className="text-primary font-medium cursor-pointer py-3 inline-block" onClick={() => setIsRegistering(false)}>{t('Inicia sesión')}</span></>
           ) : (
-            <>{t('¿No tienes cuenta?')} <span className="text-primary font-medium cursor-pointer" onClick={() => setIsRegistering(true)}>{t('Regístrate')}</span></>
+            <>{t('¿No tienes cuenta?')} <span className="text-primary font-medium cursor-pointer py-3 inline-block" onClick={() => setIsRegistering(true)}>{t('Regístrate')}</span></>
           )}
         </p>
       </div>

@@ -1,7 +1,7 @@
 import logging
 import random
 import string
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 logger = logging.getLogger("facturd.dgii_client")
@@ -32,7 +32,7 @@ def enviar_eCF(xml_firmado: str) -> dict:
             "track_id": track_id,
             "estado": "RECIBIDO",
             "mensaje": "Comprobante recibido correctamente por la DGII",
-            "fecha_recepcion": datetime.utcnow().isoformat(),
+            "fecha_recepcion": datetime.now(timezone.utc).isoformat(),
         }
 
     if not DGII_API_BASE_URL:
@@ -60,7 +60,7 @@ def enviar_eCF(xml_firmado: str) -> dict:
             "track_id": None,
             "estado": "ERROR",
             "mensaje": f"Error de comunicacion con DGII: {str(e)}",
-            "fecha_recepcion": datetime.utcnow().isoformat(),
+            "fecha_recepcion": datetime.now(timezone.utc).isoformat(),
         }
 
 
@@ -71,7 +71,7 @@ def consultar_estado(track_id: str) -> dict:
             "track_id": track_id,
             "estado": "ACEPTADO",
             "mensaje": "Comprobante aceptado por la DGII",
-            "fecha_consulta": datetime.utcnow().isoformat(),
+            "fecha_consulta": datetime.now(timezone.utc).isoformat(),
             "detalles": None,
         }
 

@@ -3,11 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { pagosService, facturasService } from '../services/api';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { TableSkeleton } from '../components/Skeleton';
 
 const statusValue = (estado) => String(estado || '').toUpperCase();
 
 export default function Cobros() {
   const { t } = useTranslation();
+  usePageTitle(t('Cobros'));
   const { user } = useAuth();
   const [pagos, setPagos] = useState([]);
   const [facturas, setFacturas] = useState([]);
@@ -88,7 +91,7 @@ export default function Cobros() {
   );
 
   if (loading) {
-    return <div className="text-center py-10">{t('Cargando...')}</div>;
+    return <div className="p-6"><TableSkeleton rows={5} cols={5} /></div>;
   }
 
   return (
@@ -153,8 +156,8 @@ export default function Cobros() {
         </div>
       </div>
 
-      <div className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-[0px_20px_40px_rgba(42,52,57,0.04)]">
-        <table className="w-full text-left">
+      <div className="bg-surface-container-lowest rounded-xl overflow-x-auto shadow-[0px_20px_40px_rgba(42,52,57,0.04)]">
+        <table className="w-full text-left min-w-[600px]">
           <thead>
             <tr className="bg-surface-container-low/50">
               <th className="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
@@ -226,6 +229,7 @@ export default function Cobros() {
                   <input
                     type="number"
                     step="0.01"
+                    inputMode="decimal"
                     value={formData.monto}
                     onChange={(e) => setFormData({ ...formData, monto: e.target.value })}
                     className="w-full bg-transparent border-0 border-b-2 border-outline-variant/20 focus:ring-0 focus:border-primary px-0 py-2 text-on-surface font-medium transition-colors"

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from datetime import datetime
 from typing import Optional
 
@@ -29,12 +30,16 @@ def generar_ncf(tipo_ncf: models.TipoNCF, secuencia: int) -> str:
 
 def generar_ncf_disponible(tipo_ncf: models.TipoNCF, secuencia: int, db: Session) -> tuple[str, int]:
     secuencia_actual = secuencia or 1
-    while True:
+    max_intentos = 1000000
+    intentos = 0
+    while intentos < max_intentos:
         ncf = generar_ncf(tipo_ncf, secuencia_actual)
         existe = db.query(models.Factura.id).filter(models.Factura.ncf == ncf).first()
         if not existe:
             return ncf, secuencia_actual
         secuencia_actual += 1
+        intentos += 1
+    raise HTTPException(status_code=500, detail="No se pudo generar un NCF disponible. Secuencia agotada.")
 
 
 def parse_date(value):
@@ -103,7 +108,12 @@ def preparar_detalles_factura(detalles_data: list, empresa_id: str, db: Session)
         elif detalle_data.get("itbis") not in (None, ""):
             linea_itbis = parse_float(detalle_data.get("itbis"))
         else:
-            linea_itbis = linea_base * 0.18
+            tasa = 0.18
+            if producto and producto.tipo_itbis == models.TipoItbis.ITBIS_REDUCIDO_13:
+                tasa = 0.13
+            elif producto and producto.tipo_itbis in (models.TipoItbis.ITBIS_0, models.TipoItbis.ITBIS_EXENTO):
+                tasa = 0.0
+            linea_itbis = linea_base * tasa
         linea_total = max(linea_base + linea_itbis - descuento_linea, 0.0)
 
         subtotal += linea_base
@@ -125,7 +135,7 @@ def preparar_detalles_factura(detalles_data: list, empresa_id: str, db: Session)
 def calcular_descuento(data: dict, subtotal: float) -> float:
     descuento_porcentaje = parse_float(data.get("descuento_porcentaje"))
     descuento = parse_float(data.get("descuento"))
-    if descuento_porcentaje:
+    if descuento_porcentaje is not None and descuento_porcentaje > 0:
         descuento = subtotal * (descuento_porcentaje / 100)
     if descuento < 0:
         raise HTTPException(status_code=400, detail="El descuento no puede ser negativo")
@@ -266,14 +276,32 @@ def get_stats(
     empresa_id: str = Depends(get_current_empresa),
     db: Session = Depends(get_db),
 ):
-    facturas = db.query(models.Factura).filter(models.Factura.empresa_id == empresa_id).all()
+    base = db.query(
+        func.coalesce(func.sum(models.Factura.total), 0),
+        func.coalesce(func.sum(models.Factura.itbis), 0),
+        func.count(models.Factura.id),
+    ).filter(models.Factura.empresa_id == empresa_id).first()
+    total_ventas = float(base[0])
+    total_itbis = float(base[1])
+    factura_count = base[2]
+    pendientes = db.query(models.Factura).filter(
+        models.Factura.empresa_id == empresa_id,
+        models.Factura.estado == models.EstadoFactura.PENDIENTE,
+    ).count()
+    pagadas = db.query(models.Factura).filter(
+        models.Factura.empresa_id == empresa_id,
+        models.Factura.estado == models.EstadoFactura.PAGADA,
+    ).count()
+    cliente_count = db.query(models.Cliente).filter(
+        models.Cliente.empresa_id == empresa_id
+    ).count()
     return DashboardStats(
-        total_ventas=sum(f.total or 0 for f in facturas),
-        total_itbis=sum(f.itbis or 0 for f in facturas),
-        pendientes=sum(1 for f in facturas if f.estado == models.EstadoFactura.PENDIENTE),
-        pagadas=sum(1 for f in facturas if f.estado == models.EstadoFactura.PAGADA),
-        cliente_count=db.query(models.Cliente).filter(models.Cliente.empresa_id == empresa_id).count(),
-        factura_count=len(facturas),
+        total_ventas=total_ventas,
+        total_itbis=total_itbis,
+        pendientes=pendientes,
+        pagadas=pagadas,
+        cliente_count=cliente_count,
+        factura_count=factura_count,
     )
 
 

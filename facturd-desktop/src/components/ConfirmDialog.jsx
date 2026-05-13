@@ -26,9 +26,9 @@ export default function ConfirmDialog({ open, title, message, onConfirm, onCance
     : 'bg-primary text-on-primary hover:bg-primary/90';
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[200]" onClick={onCancel}>
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[200]" onClick={onCancel} role="dialog" aria-modal="true" aria-labelledby="confirm-dialog-title">
       <div className="bg-surface rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
-        <h3 className="font-headline text-xl font-bold text-on-surface mb-3">{title}</h3>
+        <h3 id="confirm-dialog-title" className="font-headline text-xl font-bold text-on-surface mb-3">{title}</h3>
         <p className="text-on-surface-variant mb-8 leading-relaxed">{message}</p>
         <div className="flex justify-end gap-3">
           <button

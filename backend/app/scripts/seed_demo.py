@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import json
 import os
 
@@ -180,104 +180,19 @@ def upsert_demo_data() -> None:
                 ncf="E410000000001",
                 tipo_ncf=models.TipoNCF.E41,
                 secuencia=1,
-                fecha=datetime.utcnow() - timedelta(days=4),
-                fecha_vencimiento=datetime.utcnow() + timedelta(days=26),
-                subtotal=subtotal,
-                descuento=0,
-                itbis=itbis,
-                total=total,
-                estado=models.EstadoFactura.PAGADA,
-                nota="Factura demo para publicacion temporal.",
-                visual_settings=json.dumps({"theme": "publicacion-demo", "primary": "#0056D2"}),
-            )
-            db.add(factura)
-            db.flush()
-            db.add(models.DetalleFactura(
-                id=generar_id(),
-                factura_id=factura.id,
-                producto_id=producto_objs[0].id,
-                descripcion=producto_objs[0].nombre,
-                cantidad=1,
-                precio_unitario=45000,
-                descuento=0,
-                itbis=0,
-                total=45000,
-            ))
-            db.add(models.DetalleFactura(
-                id=generar_id(),
-                factura_id=factura.id,
-                producto_id=producto_objs[2].id,
-                descripcion=producto_objs[2].nombre,
-                cantidad=1,
-                precio_unitario=18500,
-                descuento=0,
-                itbis=itbis,
-                total=18500 + itbis,
-            ))
-            db.add(models.Pago(
-                id=generar_id(),
-                empresa_id=empresa.id,
-                factura_id=factura.id,
-                monto=total,
-                metodo=models.MetodoPago.TRANSFERENCIA,
-                referencia="DEMO-PAGO-001",
-                nota="Pago demo",
-            ))
+                fecha=datetime.now(timezone.utc) - timedelta(days=4),
 
-        cotizacion = db.query(models.Cotizacion).filter(
-            models.Cotizacion.empresa_id == empresa.id,
-            models.Cotizacion.numero == "COT-DEMO-0001",
-        ).first()
-        if not cotizacion:
-            cotizacion = models.Cotizacion(
-                id=generar_id(),
-                empresa_id=empresa.id,
-                cliente_id=cliente_objs[1].id,
-                numero="COT-DEMO-0001",
-                secuencia=1,
-                fecha=datetime.utcnow() - timedelta(days=1),
-                fecha_validez=datetime.utcnow() + timedelta(days=14),
-                subtotal=12000,
-                descuento=0,
-                itbis=0,
-                total=12000,
-                estado=models.EstadoCotizacion.PENDIENTE,
-                nota="Cotizacion demo.",
-            )
-            db.add(cotizacion)
-            db.flush()
-            db.add(models.DetalleCotizacion(
-                id=generar_id(),
-                cotizacion_id=cotizacion.id,
-                producto_id=producto_objs[1].id,
-                descripcion=producto_objs[1].nombre,
-                cantidad=1,
-                precio_unitario=12000,
-                descuento=0,
-                itbis=0,
-                total=12000,
-            ))
+                fecha_vencimiento=datetime.now(timezone.utc) + timedelta(days=26),
 
-        registro = db.query(models.RegistroDGII).filter(
-            models.RegistroDGII.factura_id == factura.id,
-        ).first()
-        if not registro:
-            db.add(models.RegistroDGII(
-                id=generar_id(),
-                empresa_id=empresa.id,
-                factura_id=factura.id,
-                ncf=factura.ncf,
-                track_id="DEMO-TRACK-0001",
-                estado=models.EstadoDGII.ACEPTADO,
-                xml_original="<eCF><Encabezado><NCF>E410000000001</NCF></Encabezado></eCF>",
-                xml_firmado="<eCF firmado=\"demo\"><Encabezado><NCF>E410000000001</NCF></Encabezado></eCF>",
-                respuesta_dgii='{"estado":"ACEPTADO","mensaje":"Respuesta demo DGII"}',
-                pdf_generado="facturas/demo/E410000000001.pdf",
-                logs='[{"nivel":"info","mensaje":"XML demo generado y firmado"}]',
-                auditoria='[{"actor":"seed_demo","accion":"crear_registro_dgii","ambiente":"demo"}]',
-                firmado_at=datetime.utcnow() - timedelta(days=4, minutes=-2),
-                enviado_at=datetime.utcnow() - timedelta(days=4, minutes=-1),
-                respondido_at=datetime.utcnow() - timedelta(days=4),
+                fecha=datetime.now(timezone.utc) - timedelta(days=1),
+
+                fecha_validez=datetime.now(timezone.utc) + timedelta(days=14),
+
+                firmado_at=datetime.now(timezone.utc) - timedelta(days=4, minutes=-2),
+
+                enviado_at=datetime.now(timezone.utc) - timedelta(days=4, minutes=-1),
+
+                respondido_at=datetime.now(timezone.utc) - timedelta(days=4),
             ))
 
         db.commit()

@@ -28,5 +28,14 @@ services:
              python -m app.scripts.seed_demo &&
              uvicorn app.main:app --host 0.0.0.0 --port 8000"
 
+  frontend:
+    build:
+      context: ../facturd-desktop
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:80:80"
+
 volumes:
   facturd_postgres_data:
