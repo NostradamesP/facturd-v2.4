@@ -177,5 +177,22 @@ Frontend:
 - Contraseña antigua: Nostradame07.
 - Contraseña nueva: FactuRD-2026-Prod!
 - backend/.env actualizado localmente
-- Render Dashboard: PENDIENTE actualizar DATABASE_URL manualmente
+- Render Dashboard: actualizado MANUALMENTE por el usuario
 - archivo .env nunca estuvo en Git — no hay historial que limpiar
+
+=== BUG FIXES COMMIT (2026-05-13) ===
+Commit: d0ccae8 (pusheado a origin/main)
+
+Criticos:
+- Service Worker: excluidas rutas /api/ del cache-first (stale data fix)
+- ITBIS 13%: preparar_detalles_factura ahora respeta producto.tipo_itbis
+- DGII XML: TotalITBIS13 agregado, ITBIS 13% ya no se clasifica como 0%
+- Auth: get_current_user valida token type "access" (refresh tokens rechazados)
+
+Medios:
+- Descuento: descuento_porcentaje=0 ya no se ignora (falsy bug)
+- AuthContext: catch vacio reparado — limpia tokens si refresh falla
+- get_stats: ahora usa SUM/COUNT en SQL en vez de cargar todo en memoria
+- N+1 en get_facturas: no corregido (preexistente, requiere joinedload en models)
+
+42 tests pasando, 0 fallos
