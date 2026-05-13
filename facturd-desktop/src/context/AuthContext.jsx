@@ -104,6 +104,7 @@ export function AuthProvider({ children }) {
     if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
     localStorage.removeItem('token');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('facturd_empresa_branding');
     setUser(null);
     setEmpresa(null);
   };

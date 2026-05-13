@@ -39,7 +39,7 @@ export default function Login() {
     } catch { return {}; }
   })();
 
-  const sistemaNombre = branding.nombre_sistema || 'FactuRD';
+  const sistemaNombre = branding.nombre_sistema || branding.nombre || 'FactuRD';
   const sistemaLogo = branding.logo_url;
 
   const handleLogin = async (e) => {
@@ -82,7 +82,7 @@ export default function Login() {
   const handleSubmit = isRegistering ? handleRegister : handleLogin;
 
   return (
-    <div className="min-h-screen bg-surface flex items-center justify-center">
+    <div className="min-h-screen bg-white flex items-center justify-center">
       <div className="w-full max-w-md p-8">
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center text-on-primary mx-auto mb-4">
