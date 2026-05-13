@@ -43,12 +43,6 @@ npm run dev   # → http://localhost:3000
 
 El dev server de Vite proxy `/api` a `http://localhost:8000`.
 
-## Credenciales Demo
-
-| Rol | Email | Password |
-|-----|-------|----------|
-| Admin | admin@facturd.com | Admin123. |
-| Demo | demo@facturddemo.com | DemoFactuRD2026! |
 
 ## Variables de Entorno
 
