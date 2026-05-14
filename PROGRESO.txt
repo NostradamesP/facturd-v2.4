@@ -218,3 +218,225 @@ Fix:
 Resultado:
 - Login funcionando en Render
 - 42 tests pasando, 0 fallos
+
+========================================
+PLAN DGII COMPLIANCE - MAPA COMPLETO
+========================================
+Fecha: 2026-05-13
+Estado: PLANIFICACION - pendiente de implementar
+
+Objetivo: Convertir FactuRD en un Proveedor de Servicios de
+Facturacion Electronica (PFE) certificado por la DGII.
+
+Basado en:
+- Ley 32-23 (Facturacion Electronica)
+- Decreto 587-24 (Reglamento)
+- Norma General 10-21 (Certificacion de PFE)
+- Norma General 01-20 (e-CF)
+- Formato e-CF v1.0 (DGII)
+
+========================================
+ NIVEL 1 - CRITICO (imprescindible)
+========================================
+Sin esto, la DGII rechaza cualquier e-CF.
+
+[ ] 1.1 FIRMA DIGITAL XML (XMLDSIG)
+    - Implementar firma digital de e-CF usando estandar XMLDSIG
+      (http://www.w3.org/2000/09/xmldsig#)
+    - Dependencia: instalar `signxml` o `xmlsec`
+    - Estado actual: NO EXISTE
+    - Prioridad: MAXIMA
+
+[ ] 1.2 MANEJO DE CERTIFICADOS DIGITALES (P12/PFX)
+    - Carga y almacenamiento seguro de certificados
+    - Validacion de vigencia (expiran ~2 años)
+    - UI para subir certificado desde el frontend
+    - Estado actual: NO EXISTE
+
+[ ] 1.3 API REAL DGII (SOAP + mTLS)
+    - Reemplazar mock REST por cliente SOAP real
+    - Autenticacion via mTLS (mutual TLS con certificado)
+    - Conectar al ambiente de certificacion DGII
+    - Endpoints reales: Recepcion, Consulta, ValidarRNC
+    - Estado actual: MOCK SOLAMENTE
+
+[ ] 1.4 VALIDACION XSD DEL E-CF
+    - Incluir schemaLocation en el XML generado
+    - Validar contra XSD oficial de la DGII antes de enviar
+    - Estado actual: NO SE VALIDA (funcion existe pero sin XSD)
+
+========================================
+ NIVEL 2 - ALTO (necesario para produccion)
+========================================
+[ ] 2.1 RANGOS NCF AUTORIZADOS
+    - Crear modelo NCFRange (desde, hasta, tipo, estado, vigencia)
+    - La DGII asigna rangos por contribuyente y tipo NCF
+    - FactuRD debe validar que no se exceda el rango
+    - UI para visualizar consumo de rangos
+    - Estado actual: NO EXISTE (generacion infinita)
+
+[ ] 2.2 CAMPOS FALTANTES EN XML E-CF
+    - Agregar: DireccionEmisor, TelefonoEmisor, EmailEmisor
+    - Agregar: DireccionReceptor, TelefonoReceptor, EmailReceptor
+    - Agregar: CondicionVenta, FormaPago, TipoVenta
+    - Agregar: NumeroFacturaInterna
+    - Estado actual: PARCIAL
+
+[ ] 2.3 VALIDACION DE CEDULA
+    - Algoritmo de cedula dominicana (11 digitos + checksum)
+    - Campo cedula en Cliente (actualmente solo RNC)
+    - Estado actual: NO EXISTE
+
+[ ] 2.4 FLUJO COMPLETO DE ESTADOS DGII
+    - Corregir: FIRMADO debe ejecutarse antes de ENVIADO
+    - Manejar RECHAZADO con detalle de error estructurado
+    - Endpoint para re-envio tras rechazo
+    - Endpoint para anulacion de e-CF ante DGII
+    - Estado actual: ROTO (salta FIRMADO, no maneja RECHAZADO)
+
+[ ] 2.5 NOTAS DE CREDITO/DEBITO E-CF
+    - Flujo DGII para notas de credito (tipo NCF 43, 44)
+    - Flujo DGII para notas de debito (tipo NCF 45, 46)
+    - Estado actual: SOLO MODELOS, SIN FLUJO DGII
+
+[ ] 2.6 ERROR HANDLING Y REINTENTOS
+    - Parseo de respuestas de error de la DGII
+    - Reintentar envio con backoff exponencial
+    - Mostrar errores legibles al usuario
+    - Estado actual: NO EXISTE
+
+========================================
+ NIVEL 3 - MEDIO (completar funcionalidad)
+========================================
+[ ] 3.1 REPORTES DGII (606/607)
+    - Generar formulario 606 (Compras)
+    - Generar formulario 607 (Ventas)
+    - Exportacion a CSV/XML segun formato DGII
+    - Estado actual: NO EXISTE
+
+[ ] 3.2 SECUENCIA ECF
+    - secuencia_ecf existe en DB pero es dead code
+    - Decidir si se usa o se elimina
+    - Estado actual: CAMPO MUERTO
+
+[ ] 3.3 UI DE CERTIFICADOS
+    - Pagina para subir certificado P12/PFX
+    - Mostrar vigencia, emisor, fecha expiracion
+    - Alerta cuando este proximo a expirar
+    - Estado actual: NO EXISTE
+
+[ ] 3.4 UI DE RANGOS NCF
+    - Pagina para visualizar rangos autorizados
+    - Indicador de consumo (ej: 150/200 usados)
+    - Estado actual: NO EXISTE
+
+[ ] 3.5 VISTA PREVIA XML ANTES DE ENVIAR
+    - Mostrar el XML generado al usuario antes de enviar a DGII
+    - Confirmacion explicita
+    - Estado actual: NO EXISTE
+
+[ ] 3.6 CORRECCION DETERMINAR TASA ITBIS
+    - Actualmente usa heuristicas (>= 17.5 = 18%, >= 12.5 = 13%)
+    - Debe usar el tipo_itbis real del producto
+    - Estado actual: HEURISTICO
+
+========================================
+ NIVEL 4 - BAJO (mejoras y optimizacion)
+========================================
+[ ] 4.1 BATCH / ENVIO MASIVO
+    - Endpoint para enviar multiples facturas a DGII
+    - Cola de procesamiento
+    - Estado actual: NO EXISTE
+
+[ ] 4.2 LIBRO DE VENTAS Y COMPRAS
+    - Visualizacion de libros electronicos
+    - Filtros por periodo, tipo, estado
+    - Exportacion
+    - Estado actual: NO EXISTE
+
+[ ] 4.3 TIPO DE CAMBIO
+    - Actualmente hardcodeado a "1.00"
+    - Integrar API de tasa de cambio del dia (BCRD)
+    - Estado actual: HARDCODEADO
+
+[ ] 4.4 REGIMENES DE PAGO
+    - Mapear tipos NCF a regimenes fiscales validos
+    - Restringir seleccion segun regimen del contribuyente
+    - Estado actual: NO EXISTE
+
+[ ] 4.5 PRUEBAS DE CARGA
+    - Tests de estres para envio batch
+    - Verificar rendimiento con rangos NCF grandes
+    - Estado actual: NO EXISTE
+
+[ ] 4.6 TESTS DE INTEGRACION REAL
+    - Tests contra ambiente de certificacion DGII (no mock)
+    - Pruebas de firma digital
+    - Pruebas de escenarios de error reales
+    - Estado actual: SOLO MOCK
+
+========================================
+RESUMEN
+========================================
+Nivel 1 (Critico): 4 items - 0/4 completado
+Nivel 2 (Alto):    6 items - 0/6 completado
+Nivel 3 (Medio):   6 items - 0/6 completado
+Nivel 4 (Bajo):    6 items - 0/6 completado
+TOTAL: 22 items - 0/22 completado
+
+Proximo paso: definir prioridades y empezar con Nivel 1.
+
+========================================
+ROADMAP PRODUCTO - PRIORIZADO
+========================================
+Fecha: 2026-05-13
+
+Basado en analisis de competencia (Alegra, ef2, eFactRD, SSPoint, GP Software)
+y requisitos de mercado RD.
+
+Prioridad: P0=inmediato, P1=alta, P2=media, P3=baja
+
+=== FASE 1 — P0: CORAZON DEL PRODUCTO ===
+[ ] QR code en facturas (backend + PDF)
+[ ] Envio automatico de facturas por email
+[ ] Servicio de email transaccional (SendGrid / SMTP)
+
+=== FASE 2 — P1: PRESENCIA MOBILE ===
+[ ] PWA (manifest.json, responsive, icono home screen)
+[ ] Diseno responsive para todas las paginas
+[ ] Push notifications basicas
+[ ] Offline mode (service worker cache)
+
+=== FASE 3 — P1: CERTIFICACION DGII ===
+[ ] Firma digital XML (XMLDSIG con signxml)
+[ ] Manejo de certificados P12/PFX
+[ ] API DGII real (SOAP + mTLS)
+[ ] Rangos NCF autorizados
+[ ] Reportes 606/607
+[ ] Validacion de cedula
+
+=== FASE 4 — P2: CRECIMIENTO ===
+[ ] API publica REST para terceros (POS, e-commerce, ERPs)
+[ ] Portal de clientes (ver facturas, descargar PDF, estados de cuenta)
+[ ] Roles y permisos (admin, vendedor, contador, asistente)
+[ ] Envio por WhatsApp
+[ ] Importacion/exportacion de datos (Alegra, Excel, CSV)
+
+=== FASE 5 — P2: MADUREZ ===
+[ ] Dashboard gerencial con graficos y metricas
+[ ] Onboarding guiado (setup wizard)
+[ ] Sistema de suscripciones (Stripe)
+[ ] Multi-moneda
+[ ] POS basico
+
+=== RESUMEN PROGRESO GENERAL ===
+Nivel 1 DGII (Critico):   0/4
+Nivel 2 DGII (Alto):      0/6
+Nivel 3 DGII (Medio):     0/6
+Nivel 4 DGII (Bajo):      0/6
+Producto Fase 1 (P0):     0/3
+Producto Fase 2 (P1):     0/4
+Producto Fase 3 (P1):     0/6
+Producto Fase 4 (P2):     0/5
+Producto Fase 5 (P2):     0/5
+TOTAL: 39 items
