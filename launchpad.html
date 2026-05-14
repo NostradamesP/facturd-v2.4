@@ -7,15 +7,47 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
+:root {
+  --bg: #fff;
+  --bg-alt: #f5f7fa;
+  --text: #333;
+  --text-secondary: #888;
+  --primary: #b00;
+  --primary-light: #fee2e2;
+  --primary-glow: rgba(187,0,0,0.12);
+  --card-bg: #fff;
+  --card-border: #eee;
+  --nav-bg: #fff;
+  --nav-border: #eee;
+  --shadow: rgba(0,0,0,0.06);
+  --section-header-border: #fee2e2;
+}
+body.dark {
+  --bg: #0f0f0f;
+  --bg-alt: #161616;
+  --text: #e8e8e8;
+  --text-secondary: #888;
+  --primary: #ff4444;
+  --primary-light: rgba(255,68,68,0.12);
+  --primary-glow: rgba(255,68,68,0.08);
+  --card-bg: #1a1a1a;
+  --card-border: #2a2a2a;
+  --nav-bg: rgba(15,15,15,0.92);
+  --nav-border: rgba(255,255,255,0.06);
+  --shadow: rgba(0,0,0,0.3);
+  --section-header-border: rgba(255,68,68,0.15);
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #fff;
-  color: #333;
+  background: var(--bg);
+  color: var(--text);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  transition: background 0.3s, color 0.3s;
 }
 
 @keyframes fadeUp {
@@ -32,12 +64,53 @@ body {
 }
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes cardEnter {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 8px var(--primary-glow); }
+  50% { box-shadow: 0 0 20px var(--primary-glow); }
+}
+
+/* PARTICLES */
+.particles {
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+}
+.particle {
+  position: absolute; width: 6px; height: 6px;
+  background: rgba(255,255,255,0.1); border-radius: 50%;
+  animation: particleFloat linear infinite;
+}
+@keyframes particleFloat {
+  0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+}
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.8); }
+  70% { transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fabPulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(187,0,0,0.3); }
+  50% { box-shadow: 0 4px 30px rgba(187,0,0,0.5); }
 }
 
 /* TOP BAR */
 .top-bar {
-  background: #b00;
+  background: var(--primary);
   color: #fff;
   text-align: center;
   padding: 6px 16px;
@@ -53,24 +126,31 @@ nav {
   position: fixed; top: 30px; left: 0; right: 0; z-index: 100;
   padding: 0 32px; height: 56px;
   display: flex; justify-content: space-between; align-items: center;
-  background: #fff;
-  border-bottom: 1px solid #eee;
-  transition: box-shadow 0.3s;
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--nav-border);
+  transition: all 0.3s;
+  backdrop-filter: blur(0px);
 }
-nav.scrolled { box-shadow: 0 2px 16px rgba(0,0,0,0.06); }
+nav.scrolled {
+  box-shadow: 0 2px 20px var(--shadow);
+  backdrop-filter: blur(16px) saturate(1.3);
+  background: var(--nav-bg);
+}
 nav .logo {
   display: flex; align-items: center; gap: 10px;
-  font-weight: 800; font-size: 1.05rem; color: #b00;
+  font-weight: 800; font-size: 1.05rem; color: var(--primary);
   text-decoration: none;
 }
 nav .logo .logo-icon {
   width: 30px; height: 30px;
-  background: #b00;
+  background: var(--primary);
   border-radius: 7px;
   display: flex; align-items: center; justify-content: center;
   font-size: 1.1rem; color: #fff;
+  transition: transform 0.3s;
 }
-nav .logo span { color: #999; font-weight: 400; }
+nav .logo:hover .logo-icon { transform: scale(1.08) rotate(-5deg); }
+nav .logo span { color: var(--text-secondary); font-weight: 400; }
 .nav-links { display: flex; align-items: center; gap: 0; height: 100%; }
 .nav-links > li {
   list-style: none; height: 100%;
@@ -79,41 +159,55 @@ nav .logo span { color: #999; font-weight: 400; }
 .nav-links > li > a {
   display: flex; align-items: center;
   height: 100%; padding: 0 18px;
-  color: #555; text-decoration: none;
+  color: var(--text-secondary); text-decoration: none;
   font-size: 0.85rem; font-weight: 500;
   transition: color 0.2s;
   position: relative;
 }
 .nav-links > li > a::after {
   content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-  width: 0; height: 2.5px; background: #b00;
+  width: 0; height: 2.5px; background: var(--primary);
   transition: width 0.25s;
 }
-.nav-links > li > a:hover { color: #b00; }
+.nav-links > li > a:hover { color: var(--primary); }
 .nav-links > li > a:hover::after { width: 60%; }
-.nav-links > li > a .arrow { margin-left: 4px; font-size: 0.6rem; color: #bbb; }
+.nav-links > li > a .arrow { margin-left: 4px; font-size: 0.6rem; color: var(--text-secondary); }
 .nav-links > li.has-dropdown:hover .dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
 .dropdown {
   position: absolute; top: 100%; left: 0;
-  background: #fff; border: 1px solid #eee;
+  background: var(--card-bg); border: 1px solid var(--card-border);
   border-radius: 10px; padding: 8px; min-width: 200px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 30px var(--shadow);
   opacity: 0; visibility: hidden; transform: translateY(-8px);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .dropdown a {
   display: block; padding: 10px 14px;
-  color: #555; text-decoration: none;
+  color: var(--text-secondary); text-decoration: none;
   font-size: 0.84rem; font-weight: 500;
   border-radius: 7px; transition: all 0.2s;
 }
-.dropdown a:hover { background: #fef2f2; color: #b00; }
+.dropdown a:hover { background: var(--primary-light); color: var(--primary); }
+
+.nav-actions { display: flex; align-items: center; gap: 6px; }
+.nav-actions button {
+  width: 34px; height: 34px; border-radius: 8px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.nav-actions button:hover { border-color: var(--primary); color: var(--primary); }
+.nav-actions button.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
 
 .mobile-toggle {
   display: none; flex-direction: column; gap: 5px;
   cursor: pointer; background: none; border: none; padding: 4px; z-index: 102;
 }
-.mobile-toggle span { display: block; width: 22px; height: 2px; background: #333; border-radius: 2px; transition: all 0.3s; }
+.mobile-toggle span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: all 0.3s; }
 .mobile-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
 .mobile-toggle.active span:nth-child(2) { opacity: 0; }
 .mobile-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
@@ -122,7 +216,9 @@ nav .logo span { color: #999; font-weight: 400; }
 .hero {
   padding: 120px 32px 48px;
   text-align: center;
-  background: linear-gradient(135deg, #b00 0%, #d00 50%, #b00 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, #d00 50%, var(--primary) 100%);
+  background-size: 200% 200%;
+  animation: shimmer 8s ease infinite;
   position: relative;
   overflow: hidden;
 }
@@ -135,8 +231,9 @@ nav .logo span { color: #999; font-weight: 400; }
 }
 .hero::after {
   content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 30px;
-  background: #fff;
+  background: var(--bg);
   border-radius: 15px 15px 0 0;
+  transition: background 0.3s;
 }
 .hero .hero-mascot {
   font-size: 3.2rem; margin-bottom: 10px;
@@ -319,6 +416,219 @@ footer .footer-links { display: flex; gap: 24px; justify-content: center; margin
 footer .footer-links a { color: rgba(255,255,255,0.5); font-size: 0.78rem; }
 footer .footer-links a:hover { color: #fff; }
 
+/* FAVORITES STAR */
+.card .star-btn {
+  position: absolute; top: 8px; right: 8px;
+  width: 28px; height: 28px; border-radius: 50%;
+  border: none; background: transparent;
+  font-size: 0.9rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: all 0.2s;
+  color: #ccc; z-index: 2;
+}
+.card:hover .star-btn { opacity: 1; }
+.star-btn:hover { transform: scale(1.2); }
+.star-btn.starred { opacity: 1; color: #f59e0b; }
+.star-btn.starred:hover { color: #d97706; }
+.card { position: relative; }
+
+/* COMPACT VIEW */
+.main-content.compact .cards-grid {
+  grid-template-columns: 1fr;
+  max-width: 600px; margin: 0 auto;
+}
+.main-content.compact .card p,
+.main-content.compact .card .card-icon,
+.main-content.compact .card .card-arrow { display: none; }
+.main-content.compact .card { padding: 10px 14px; gap: 0; }
+.main-content.compact .card h3 { font-size: 0.84rem; margin: 0; }
+
+/* HISTORY DROPDOWN */
+.history-dropdown {
+  position: absolute; top: 100%; right: 0;
+  background: var(--card-bg); border: 1px solid var(--card-border);
+  border-radius: 10px; min-width: 260px;
+  box-shadow: 0 8px 30px var(--shadow);
+  opacity: 0; visibility: hidden; transform: translateY(-8px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 200; padding: 8px;
+  max-height: 320px; overflow-y: auto;
+}
+.history-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
+.history-dropdown .hd-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 8px 10px; font-size: 0.78rem; font-weight: 600;
+  color: var(--text-secondary); border-bottom: 1px solid var(--card-border);
+  margin-bottom: 4px;
+}
+.history-dropdown .hd-header button {
+  background: none; border: none; font-size: 0.7rem;
+  color: var(--primary); cursor: pointer; font-weight: 500;
+  padding: 2px 6px; border-radius: 4px; transition: background 0.2s;
+}
+.history-dropdown .hd-header button:hover { background: var(--primary-light); }
+.history-dropdown .hd-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px; border-radius: 7px;
+  color: var(--text); text-decoration: none;
+  font-size: 0.8rem; transition: background 0.15s;
+}
+.history-dropdown .hd-item:hover { background: var(--bg-alt); }
+.history-dropdown .hd-item .hd-icon {
+  width: 26px; height: 26px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; flex-shrink: 0;
+}
+.history-dropdown .hd-item .hd-title {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.history-dropdown .hd-empty {
+  text-align: center; padding: 20px 8px;
+  font-size: 0.78rem; color: var(--text-secondary);
+}
+
+/* FAB */
+.fab {
+  position: fixed; bottom: 28px; right: 28px;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--primary); color: #fff;
+  border: none; font-size: 1.3rem; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(187,0,0,0.3);
+  animation: fabPulse 2s ease-in-out infinite;
+  z-index: 300;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.25s;
+}
+.fab:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(187,0,0,0.4); }
+.fab-menu {
+  position: fixed; bottom: 92px; right: 28px;
+  display: none; flex-direction: column; gap: 8px; z-index: 300;
+}
+.fab-menu.open { display: flex; }
+.fab-btn {
+  width: 44px; height: 44px; border-radius: 50%;
+  border: none; background: var(--card-bg);
+  color: var(--text); font-size: 1rem; cursor: pointer;
+  box-shadow: 0 2px 12px var(--shadow);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  border: 1px solid var(--card-border);
+}
+.fab-btn:hover { border-color: var(--primary); color: var(--primary); transform: scale(1.05); }
+.fab-btn .fab-label {
+  position: absolute; right: 56px;
+  background: var(--card-bg); color: var(--text-secondary);
+  padding: 4px 10px; border-radius: 6px; font-size: 0.72rem;
+  font-weight: 500; white-space: nowrap;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 2px 8px var(--shadow);
+  pointer-events: none;
+}
+
+/* TOOLTIP PREVIEW */
+.tooltip-preview {
+  position: fixed; z-index: 250;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 11px;
+  padding: 16px;
+  box-shadow: 0 12px 40px var(--shadow);
+  width: 240px;
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+  pointer-events: none;
+}
+.tooltip-preview.visible { opacity: 1; visibility: visible; }
+.tooltip-preview .tp-screenshot {
+  width: 100%; height: 100px;
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--bg-alt) 100%);
+  border-radius: 7px; margin-bottom: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem;
+}
+.tooltip-preview .tp-title {
+  font-size: 0.84rem; font-weight: 600; color: var(--text);
+  margin-bottom: 4px;
+}
+.tooltip-preview .tp-desc {
+  font-size: 0.75rem; color: var(--text-secondary);
+  line-height: 1.4; margin-bottom: 6px;
+}
+.tooltip-preview .tp-meta {
+  font-size: 0.68rem; color: var(--text-secondary);
+  display: flex; align-items: center; gap: 6px;
+}
+.tooltip-preview .tp-meta span { opacity: 0.6; }
+
+/* SHORTCUTS CHEAT SHEET */
+.shortcuts-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.5);
+  display: none; align-items: center; justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+.shortcuts-overlay.open { display: flex; }
+.shortcuts-sheet {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 28px 32px;
+  max-width: 380px; width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: slideUp 0.25s ease;
+}
+.shortcuts-sheet h2 {
+  font-size: 1.05rem; font-weight: 700; color: var(--text);
+  margin-bottom: 16px;
+}
+.shortcuts-sheet .sc-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px;
+}
+.shortcuts-sheet .sc-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.82rem; color: var(--text-secondary);
+}
+.shortcuts-sheet .sc-key {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 28px; height: 26px;
+  background: var(--bg-alt); border: 1px solid var(--card-border);
+  border-radius: 5px; font-size: 0.72rem; font-weight: 600;
+  color: var(--text); padding: 0 6px;
+  font-family: inherit;
+}
+.shortcuts-sheet .sc-close {
+  display: block; margin-top: 16px; width: 100%;
+  padding: 8px; border-radius: 8px;
+  border: none; background: var(--primary); color: #fff;
+  font-size: 0.85rem; font-weight: 600; cursor: pointer;
+  font-family: inherit; transition: opacity 0.2s;
+}
+.shortcuts-sheet .sc-close:hover { opacity: 0.9; }
+
+/* STAR BADGE */
+.star-badge {
+  display: none;
+  position: absolute; top: -4px; right: -4px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #f59e0b; color: #fff;
+  font-size: 0.55rem; font-weight: 700;
+  align-items: center; justify-content: center;
+}
+.star-badge.visible { display: flex; }
+
+/* HISTORY BADGE */
+.history-badge {
+  display: none;
+  position: absolute; top: -4px; right: -4px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--primary); color: #fff;
+  font-size: 0.55rem; font-weight: 700;
+  align-items: center; justify-content: center;
+}
+.history-badge.visible { display: flex; }
+
+.nav-actions button { position: relative; }
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
   .top-bar { font-size: 0.7rem; padding: 4px 12px; }
@@ -359,7 +669,15 @@ footer .footer-links a:hover { color: #fff; }
   footer { padding: 28px 20px 22px; }
   footer .footer-links { gap: 16px; }
   footer .footer-links a { font-size: 0.74rem; }
-  footer p { font-size: 0.74rem; }
+  .fab { bottom: 20px; right: 20px; width: 46px; height: 46px; font-size: 1.1rem; }
+  .fab-menu { bottom: 78px; right: 20px; }
+  .fab-btn { width: 40px; height: 40px; font-size: 0.9rem; }
+  .fab-btn .fab-label { display: none; }
+  .tooltip-preview { display: none !important; }
+  .history-dropdown { min-width: 220px; right: 0; left: auto; }
+  .shortcuts-sheet { padding: 20px 18px; }
+  .shortcuts-sheet .sc-grid { grid-template-columns: 1fr; gap: 6px; }
+  .shortcuts-sheet h2 { font-size: 0.95rem; }
 }
 
 @media (max-width: 480px) {
@@ -395,6 +713,9 @@ footer .footer-links a:hover { color: #fff; }
   footer .footer-links { gap: 12px; }
   footer .footer-links a { font-size: 0.7rem; }
   footer p { font-size: 0.7rem; }
+  .fab { bottom: 16px; right: 16px; width: 40px; height: 40px; font-size: 1rem; }
+  .fab-menu { bottom: 66px; right: 16px; }
+  .history-dropdown { min-width: 190px; }
 }
 
 @media (max-width: 360px) {
@@ -414,6 +735,8 @@ footer .footer-links a:hover { color: #fff; }
   .card p { font-size: 0.68rem; }
   .category-filters button { font-size: 0.6rem; padding: 3px 7px; }
   .section-header .sec-icon { width: 22px; height: 22px; font-size: 0.7rem; }
+  .fab { bottom: 12px; right: 12px; width: 36px; height: 36px; font-size: 0.9rem; }
+  .fab-menu { bottom: 56px; right: 12px; }
 }
 </style>
 </head>
@@ -440,6 +763,12 @@ footer .footer-links a:hover { color: #fff; }
       </div>
     </li>
   </ul>
+  <div class="nav-actions">
+    <button id="favsBtn" title="Favoritos (V)">☆<span class="star-badge" id="starBadge">0</span></button>
+    <button id="historyBtn" title="Historial (R)">🕐<span class="history-badge" id="historyBadge">0</span></button>
+    <button id="compactBtn" title="Vista compacta (C)">⊞</button>
+    <button id="darkBtn" title="Modo oscuro (D)">🌙</button>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -477,77 +806,77 @@ footer .footer-links a:hover { color: #fff; }
     <span class="sec-count">15</span>
   </div>
   <div class="cards-grid">
-    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdN74O5_4Y_G16KvNnYFljob8UcvumUo631qOy28_2T9riR5A/viewform" target="_blank" class="card" style="animation-delay:0.03s">
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdN74O5_4Y_G16KvNnYFljob8UcvumUo631qOy28_2T9riR5A/viewform" target="_blank" class="card" draggable="false" style="animation-delay:0.03s">
       <div class="card-icon" style="background:#fee2e2;">🛡️</div>
       <div class="card-body"><h3>Child Protection Reporting</h3><p>Formulario de reporte de protección infantil</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1isQ5fHfjRXkix6_9rW--BXltLFEqZP1K4P8_zqhSxEA/edit?usp=sharing" target="_blank" class="card" style="animation-delay:0.06s">
+    <a href="https://docs.google.com/document/d/1isQ5fHfjRXkix6_9rW--BXltLFEqZP1K4P8_zqhSxEA/edit?usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.06s">
       <div class="card-icon" style="background:#fee2e2;">📖</div>
       <div class="card-body"><h3>CMS Acronyms</h3><p>Glosario de siglas y acrónimos del colegio</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://drive.google.com/file/d/1-hFbm5BK9m7pQnSkeD7nQKFyMROPSKdu/view?usp=sharing" target="_blank" class="card" style="animation-delay:0.09s">
+    <a href="https://drive.google.com/file/d/1-hFbm5BK9m7pQnSkeD7nQKFyMROPSKdu/view?usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.09s">
       <div class="card-icon" style="background:#fee2e2;">📞</div>
       <div class="card-body"><h3>Phone Directory 2025-26</h3><p>Directorio telefónico de extensiones del staff</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1q-tpNhZHJyEFSLT9YYESJtMtPpb3gZ19J6q3uF_fyNo/edit?usp=sharing" target="_blank" class="card" style="animation-delay:0.12s">
+    <a href="https://docs.google.com/document/d/1q-tpNhZHJyEFSLT9YYESJtMtPpb3gZ19J6q3uF_fyNo/edit?usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.12s">
       <div class="card-icon" style="background:#fee2e2;">📘</div>
       <div class="card-body"><h3>Child Protection Handbook</h3><p>Manual y guía de protección infantil</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://drive.google.com/file/d/1WiVqEE4KojHtExMDTNlN4JEyODqZ50gt/view?usp=sharing" target="_blank" class="card" style="animation-delay:0.15s">
+    <a href="https://drive.google.com/file/d/1WiVqEE4KojHtExMDTNlN4JEyODqZ50gt/view?usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.15s">
       <div class="card-icon" style="background:#fee2e2;">📅</div>
       <div class="card-body"><h3>Payment Calendar</h3><p>Calendario de pagos del año escolar</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/17b88kaE_Nmy4r1arWnvcC4GT4Npb-3VCeY-oIXB7GH4/edit" target="_blank" class="card" style="animation-delay:0.18s">
+    <a href="https://docs.google.com/document/d/17b88kaE_Nmy4r1arWnvcC4GT4Npb-3VCeY-oIXB7GH4/edit" target="_blank" class="card" draggable="false" style="animation-delay:0.18s">
       <div class="card-icon" style="background:#fee2e2;">⭐</div>
       <div class="card-body"><h3>Core Values</h3><p>Valores fundamentales del colegio</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/17Qf5MoicqGKAdPqsfZ-fZ4Ui3qLEgjf8tB2oEqjZkT0/edit" target="_blank" class="card" style="animation-delay:0.21s">
+    <a href="https://docs.google.com/document/d/17Qf5MoicqGKAdPqsfZ-fZ4Ui3qLEgjf8tB2oEqjZkT0/edit" target="_blank" class="card" draggable="false" style="animation-delay:0.21s">
       <div class="card-icon" style="background:#fee2e2;">📱</div>
       <div class="card-body"><h3>Social Media Policy</h3><p>Política de redes sociales del staff</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://drive.google.com/file/d/1ZpY9M3tDh6CBqDOmVLEQRFgLj_pUZc_r/view" target="_blank" class="card" style="animation-delay:0.24s">
+    <a href="https://drive.google.com/file/d/1ZpY9M3tDh6CBqDOmVLEQRFgLj_pUZc_r/view" target="_blank" class="card" draggable="false" style="animation-delay:0.24s">
       <div class="card-icon" style="background:#fee2e2;">⚖️</div>
       <div class="card-body"><h3>Child Protection Code of Conduct</h3><p>Código de conducta de protección infantil</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1wrxshYNLgWTmCJMsZOWdt9WfAlFZi8ltIvH0RshihLo/edit" target="_blank" class="card" style="animation-delay:0.27s">
+    <a href="https://docs.google.com/document/d/1wrxshYNLgWTmCJMsZOWdt9WfAlFZi8ltIvH0RshihLo/edit" target="_blank" class="card" draggable="false" style="animation-delay:0.27s">
       <div class="card-icon" style="background:#fee2e2;">🌐</div>
       <div class="card-body"><h3>Shark Sphere</h3><p>Portal Shark Sphere</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://www.google.com/url?q=https%3A%2F%2Fsites.google.com%2Fcms.edu.do%2Fsw-library%2Fhome&sa=D&sntz=1&usg=AOvVaw1xTMzE5PTL3-7ubzxPTdpd" target="_blank" class="card" style="animation-delay:0.3s">
+    <a href="https://www.google.com/url?q=https%3A%2F%2Fsites.google.com%2Fcms.edu.do%2Fsw-library%2Fhome&sa=D&sntz=1&usg=AOvVaw1xTMzE5PTL3-7ubzxPTdpd" target="_blank" class="card" draggable="false" style="animation-delay:0.3s">
       <div class="card-icon" style="background:#fee2e2;">📚</div>
       <div class="card-body"><h3>Digital Citizenship Agreement</h3><p>Acuerdo de ciudadanía digital</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://drive.google.com/file/d/1SNsKzwP3C6t5T2HjEeS_VaROCjJItOF4/view" target="_blank" class="card" style="animation-delay:0.33s">
+    <a href="https://drive.google.com/file/d/1SNsKzwP3C6t5T2HjEeS_VaROCjJItOF4/view" target="_blank" class="card" draggable="false" style="animation-delay:0.33s">
       <div class="card-icon" style="background:#fee2e2;">🗂️</div>
       <div class="card-body"><h3>Library Learning Common</h3><p>Biblioteca y recursos de aprendizaje</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1RZ93CBp_xKkJhMw6vXoCkh_oSByobGmUNrnJdrLKtLM/edit" target="_blank" class="card" style="animation-delay:0.36s">
+    <a href="https://docs.google.com/document/d/1RZ93CBp_xKkJhMw6vXoCkh_oSByobGmUNrnJdrLKtLM/edit" target="_blank" class="card" draggable="false" style="animation-delay:0.36s">
       <div class="card-icon" style="background:#fee2e2;">👥</div>
       <div class="card-body"><h3>Faculty & Staff Directory</h3><p>Directorio de facultad y staff</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://www.google.com/url?q=https%3A%2F%2Fwww.cms.edu.do%2Fcalendar-1&sa=D&sntz=1&usg=AOvVaw2DzdkJgEbzn0uPCpBavyPJ" target="_blank" class="card" style="animation-delay:0.39s">
+    <a href="https://www.google.com/url?q=https%3A%2F%2Fwww.cms.edu.do%2Fcalendar-1&sa=D&sntz=1&usg=AOvVaw2DzdkJgEbzn0uPCpBavyPJ" target="_blank" class="card" draggable="false" style="animation-delay:0.39s">
       <div class="card-icon" style="background:#fee2e2;">📆</div>
       <div class="card-body"><h3>Online Safeguards / School Calendar</h3><p>Calendario escolar del colegio</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://www.google.com/url?q=https%3A%2F%2Fsites.google.com%2Fcms.edu.do%2Flitcms%2Fhome&sa=D&sntz=1&usg=AOvVaw2HTgPOOD-yScszx3Jxq0Tl" target="_blank" class="card" style="animation-delay:0.42s">
+    <a href="https://www.google.com/url?q=https%3A%2F%2Fsites.google.com%2Fcms.edu.do%2Flitcms%2Fhome&sa=D&sntz=1&usg=AOvVaw2HTgPOOD-yScszx3Jxq0Tl" target="_blank" class="card" draggable="false" style="animation-delay:0.42s">
       <div class="card-icon" style="background:#fee2e2;">💡</div>
       <div class="card-body"><h3>LIT — Learning Innovation & Technology</h3><p>Innovación y tecnología educativa</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://drive.google.com/file/d/0B6pnGbgDXqL0ZHhEUXdZUHZNUm8/view?resourcekey=0-OpMrPaolBD9IfquEykpG9g" target="_blank" class="card" style="animation-delay:0.45s">
+    <a href="https://drive.google.com/file/d/0B6pnGbgDXqL0ZHhEUXdZUHZNUm8/view?resourcekey=0-OpMrPaolBD9IfquEykpG9g" target="_blank" class="card" draggable="false" style="animation-delay:0.45s">
       <div class="card-icon" style="background:#fee2e2;">🔢</div>
       <div class="card-body"><h3>Essential 11</h3><p>Documento Essential 11 del colegio</p></div>
       <span class="card-arrow">→</span>
@@ -563,87 +892,87 @@ footer .footer-links a:hover { color: #fff; }
     <span class="sec-count">17</span>
   </div>
   <div class="cards-grid">
-    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdiQjsFSM2AhJhbGr3htxbOXIsgZc9fEWQrtZ8AZLRSL_cihw/viewform" target="_blank" class="card" style="animation-delay:0.03s">
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdiQjsFSM2AhJhbGr3htxbOXIsgZc9fEWQrtZ8AZLRSL_cihw/viewform" target="_blank" class="card" draggable="false" style="animation-delay:0.03s">
       <div class="card-icon" style="background:#fef3c7;">🎓</div>
       <div class="card-body"><h3>Professional Learning Form</h3><p>Formulario de aprendizaje profesional (Academic Staff)</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://forms.gle/H3LHXiWC6GZi22nk7" target="_blank" class="card" style="animation-delay:0.06s">
+    <a href="https://forms.gle/H3LHXiWC6GZi22nk7" target="_blank" class="card" draggable="false" style="animation-delay:0.06s">
       <div class="card-icon" style="background:#fef3c7;">🔧</div>
       <div class="card-body"><h3>PL Form — Support Staff</h3><p>Formulario de aprendizaje profesional (Support Staff)</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/forms/d/e/1FAIpQLSfTznmdBVP7Fg7Eaz2FuU05D6leS23ZYRaS-b3GgiB6cdhvCA/viewform" target="_blank" class="card" style="animation-delay:0.09s">
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSfTznmdBVP7Fg7Eaz2FuU05D6leS23ZYRaS-b3GgiB6cdhvCA/viewform" target="_blank" class="card" draggable="false" style="animation-delay:0.09s">
       <div class="card-icon" style="background:#fef3c7;">📦</div>
       <div class="card-body"><h3>Membership & Subscription Form</h3><p>Suscripciones y membresías (no textbook)</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://forms.gle/spfMiZessg3c5nNt5" target="_blank" class="card" style="animation-delay:0.12s">
+    <a href="https://forms.gle/spfMiZessg3c5nNt5" target="_blank" class="card" draggable="false" style="animation-delay:0.12s">
       <div class="card-icon" style="background:#fef3c7;">✍️</div>
       <div class="card-body"><h3>Signature Request Form</h3><p>Solicitud de firmas</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1kB7Ufkm4UjfquB_knaeBPA_HzFHpUHa7Gn2v_j7z2VU/edit?usp=sharing" target="_blank" class="card" style="animation-delay:0.15s">
+    <a href="https://docs.google.com/document/d/1kB7Ufkm4UjfquB_knaeBPA_HzFHpUHa7Gn2v_j7z2VU/edit?usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.15s">
       <div class="card-icon" style="background:#fef3c7;">📘</div>
       <div class="card-body"><h3>Staff Handbook</h3><p>Manual del staff</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://drive.google.com/file/d/1NfR3CwjeXhysexdkrYJu2n6iRJKp1AR9/view?usp=sharing" target="_blank" class="card" style="animation-delay:0.18s">
+    <a href="https://drive.google.com/file/d/1NfR3CwjeXhysexdkrYJu2n6iRJKp1AR9/view?usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.18s">
       <div class="card-icon" style="background:#fef3c7;">🎨</div>
       <div class="card-body"><h3>Corporate Identity Guideline</h3><p>Guía de identidad corporativa</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1s0LLARSCR687ssELlghyRW1WZVvfqVPK/view?usp=sharing" target="_blank" class="card" style="animation-delay:0.21s">
+    <a href="https://docs.google.com/document/d/1s0LLARSCR687ssELlghyRW1WZVvfqVPK/view?usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.21s">
       <div class="card-icon" style="background:#fef3c7;">📁</div>
       <div class="card-body"><h3>Staff Google Groups</h3><p>Grupos de Google del staff</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1fPf7of0hPRrOdKGNWF8SCn3YjoJH9wsXsKeUasa9ofc/edit?usp=sharing" target="_blank" class="card" style="animation-delay:0.24s">
+    <a href="https://docs.google.com/document/d/1fPf7of0hPRrOdKGNWF8SCn3YjoJH9wsXsKeUasa9ofc/edit?usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.24s">
       <div class="card-icon" style="background:#fef3c7;">✉️</div>
       <div class="card-body"><h3>Stationery</h3><p>Papelería institucional</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://drive.google.com/drive/folders/0B2lQ80T8hD4YS1k3NDViQU1tRTA?resourcekey=0-m33QPoU1bsTf8sntS2FXEQ&usp=sharing" target="_blank" class="card" style="animation-delay:0.27s">
+    <a href="https://drive.google.com/drive/folders/0B2lQ80T8hD4YS1k3NDViQU1tRTA?resourcekey=0-m33QPoU1bsTf8sntS2FXEQ&usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.27s">
       <div class="card-icon" style="background:#fef3c7;">📋</div>
       <div class="card-body"><h3>CMS Forms</h3><p>Formularios oficiales del colegio</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdQwmOnjuY_T8dPwdNs2sTEArc3eW7gPEaxyFXPNmaSOqfGCQ/viewform" target="_blank" class="card" style="animation-delay:0.3s">
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdQwmOnjuY_T8dPwdNs2sTEArc3eW7gPEaxyFXPNmaSOqfGCQ/viewform" target="_blank" class="card" draggable="false" style="animation-delay:0.3s">
       <div class="card-icon" style="background:#fef3c7;">🖨️</div>
       <div class="card-body"><h3>Laminator Request Form</h3><p>Solicitud de laminado</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://drive.google.com/drive/folders/0B2lQ80T8hD4YQkowVFI0SDJpTEk?resourcekey=0-fLMaVDX9R5shkOPjgsLwuw&usp=sharing" target="_blank" class="card" style="animation-delay:0.33s">
+    <a href="https://drive.google.com/drive/folders/0B2lQ80T8hD4YQkowVFI0SDJpTEk?resourcekey=0-fLMaVDX9R5shkOPjgsLwuw&usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.33s">
       <div class="card-icon" style="background:#fef3c7;">🏷️</div>
       <div class="card-body"><h3>Logos</h3><p>Logotipos oficiales del colegio</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1KdT-Z295FjmeV2WLtC6B-UYWXqmJImnmxk0nzFNjBaM/edit?usp=sharing" target="_blank" class="card" style="animation-delay:0.36s">
+    <a href="https://docs.google.com/document/d/1KdT-Z295FjmeV2WLtC6B-UYWXqmJImnmxk0nzFNjBaM/edit?usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.36s">
       <div class="card-icon" style="background:#fef3c7;">🚨</div>
       <div class="card-body"><h3>Evacuation Routes</h3><p>Rutas de evacuación del colegio</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/presentation/d/1AT08XdmuZSci60_uZqjxeqaBQWf2Kc7B7oCXG8bg_ew/edit?slide=id.g388e022220b_0_6#slide=id.g388e022220b_0_6" target="_blank" class="card" style="animation-delay:0.39s">
+    <a href="https://docs.google.com/presentation/d/1AT08XdmuZSci60_uZqjxeqaBQWf2Kc7B7oCXG8bg_ew/edit?slide=id.g388e022220b_0_6#slide=id.g388e022220b_0_6" target="_blank" class="card" draggable="false" style="animation-delay:0.39s">
       <div class="card-icon" style="background:#fef3c7;">📋</div>
       <div class="card-body"><h3>SY 25-26 Emergency Plan Overview</h3><p>Plan de emergencia año escolar 25-26</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/forms/d/e/1FAIpQLSf352nLjbCmA79Xne1eSPHz0JajmAVgxeHpNUkmHUGmc9mFnw/viewform" target="_blank" class="card" style="animation-delay:0.42s">
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSf352nLjbCmA79Xne1eSPHz0JajmAVgxeHpNUkmHUGmc9mFnw/viewform" target="_blank" class="card" draggable="false" style="animation-delay:0.42s">
       <div class="card-icon" style="background:#fef3c7;">📽️</div>
       <div class="card-body"><h3>AV Guidelines & Form</h3><p>Guía y formulario de equipos AV</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://sites.google.com/cms.edu.do/cmsfieldtrips/application" target="_blank" class="card" style="animation-delay:0.45s">
+    <a href="https://sites.google.com/cms.edu.do/cmsfieldtrips/application" target="_blank" class="card" draggable="false" style="animation-delay:0.45s">
       <div class="card-icon" style="background:#fef3c7;">🗺️</div>
       <div class="card-body"><h3>Field Trip Protocols & Forms</h3><p>Protocolos, guías y formularios de excursiones</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/forms/d/e/1FAIpQLSeqQrCZ5djeeK0EvGQ9gEGkH8BmbwroEvTopXqpXiC7tKlVfA/viewform?usp=dialog" target="_blank" class="card" style="animation-delay:0.48s">
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSeqQrCZ5djeeK0EvGQ9gEGkH8BmbwroEvTopXqpXiC7tKlVfA/viewform?usp=dialog" target="_blank" class="card" draggable="false" style="animation-delay:0.48s">
       <div class="card-icon" style="background:#fef3c7;">🎨</div>
       <div class="card-body"><h3>Graphic Design Request Form</h3><p>Solicitud de diseño gráfico</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/spreadsheets/d/1IwCnKMv6sknIpQQvpdhIX6VMTuxeHdsV/edit?gid=645583976#gid=645583976" target="_blank" class="card" style="animation-delay:0.51s">
+    <a href="https://docs.google.com/spreadsheets/d/1IwCnKMv6sknIpQQvpdhIX6VMTuxeHdsV/edit?gid=645583976#gid=645583976" target="_blank" class="card" draggable="false" style="animation-delay:0.51s">
       <div class="card-icon" style="background:#fef3c7;">📇</div>
       <div class="card-body"><h3>Staff Directory (Elementary)</h3><p>Directorio de personal de Elementary</p></div>
       <span class="card-arrow">→</span>
@@ -659,57 +988,57 @@ footer .footer-links a:hover { color: #fff; }
     <span class="sec-count">11</span>
   </div>
   <div class="cards-grid">
-    <a href="https://carolmorgan.powerschool.com/teachers/pw.html" target="_blank" class="card" style="animation-delay:0.03s">
+    <a href="https://carolmorgan.powerschool.com/teachers/pw.html" target="_blank" class="card" draggable="false" style="animation-delay:0.03s">
       <div class="card-icon" style="background:#e0e7ff;">📊</div>
       <div class="card-body"><h3>PowerSchool Teachers</h3><p>Acceso a PowerSchool para docentes</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://carolmorgan.powerschool.com/admin/pw.html" target="_blank" class="card" style="animation-delay:0.06s">
+    <a href="https://carolmorgan.powerschool.com/admin/pw.html" target="_blank" class="card" draggable="false" style="animation-delay:0.06s">
       <div class="card-icon" style="background:#e0e7ff;">⚙️</div>
       <div class="card-body"><h3>PowerSchool Admin</h3><p>Acceso administrativo a PowerSchool</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://events.dudesolutions.com/cms/" target="_blank" class="card" style="animation-delay:0.09s">
+    <a href="https://events.dudesolutions.com/cms/" target="_blank" class="card" draggable="false" style="animation-delay:0.09s">
       <div class="card-icon" style="background:#e0e7ff;">📅</div>
       <div class="card-body"><h3>Resource & Event Scheduler</h3><p>Programador de recursos y eventos</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://assetessentials.dudesolutions.com/CarolMorganSchool/MyRequest/Management" target="_blank" class="card" style="animation-delay:0.12s">
+    <a href="https://assetessentials.dudesolutions.com/CarolMorganSchool/MyRequest/Management" target="_blank" class="card" draggable="false" style="animation-delay:0.12s">
       <div class="card-icon" style="background:#e0e7ff;">🔧</div>
       <div class="card-body"><h3>Assets Essentials — Maintenance</h3><p>Sistema de mantenimiento y solicitudes</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="http://reqlogic.cms.edu.do/ReQlogic/Login.aspx" target="_blank" class="card" style="animation-delay:0.15s">
+    <a href="http://reqlogic.cms.edu.do/ReQlogic/Login.aspx" target="_blank" class="card" draggable="false" style="animation-delay:0.15s">
       <div class="card-icon" style="background:#e0e7ff;">🔄</div>
       <div class="card-body"><h3>ReQlogic</h3><p>Sistema de solicitudes y mantenimiento</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="http://papercutcms:9191/job-ticketing/" target="_blank" class="card" style="animation-delay:0.18s">
+    <a href="http://papercutcms:9191/job-ticketing/" target="_blank" class="card" draggable="false" style="animation-delay:0.18s">
       <div class="card-icon" style="background:#e0e7ff;">🖨️</div>
       <div class="card-body"><h3>PaperCut Sign In</h3><p>Inicio de sesión PaperCut</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://drive.google.com/file/d/1ui__IRUiLqqUnkefqS-6te397ul8HEWw/view?usp=sharing" target="_blank" class="card" style="animation-delay:0.21s">
+    <a href="https://drive.google.com/file/d/1ui__IRUiLqqUnkefqS-6te397ul8HEWw/view?usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.21s">
       <div class="card-icon" style="background:#e0e7ff;">📄</div>
       <div class="card-body"><h3>PaperCut Instructions</h3><p>Instrucciones de uso de PaperCut</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://cms22.on.spiceworks.com" target="_blank" class="card" style="animation-delay:0.24s">
+    <a href="https://cms22.on.spiceworks.com" target="_blank" class="card" draggable="false" style="animation-delay:0.24s">
       <div class="card-icon" style="background:#e0e7ff;">🖥️</div>
       <div class="card-body"><h3>IT Help Desk</h3><p>Mesa de ayuda de TI</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://drive.google.com/file/d/1k-5Z00i8xu2Uo8arVOjDMz6Kq1YtNEJ6/view" target="_blank" class="card" style="animation-delay:0.27s">
+    <a href="https://drive.google.com/file/d/1k-5Z00i8xu2Uo8arVOjDMz6Kq1YtNEJ6/view" target="_blank" class="card" draggable="false" style="animation-delay:0.27s">
       <div class="card-icon" style="background:#e0e7ff;">❓</div>
       <div class="card-body"><h3>IT Help Desk — How to Guide</h3><p>Guía de uso del Help Desk</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://autoservicio.cms.edu.do/index.html" target="_blank" class="card" style="animation-delay:0.3s">
+    <a href="https://autoservicio.cms.edu.do/index.html" target="_blank" class="card" draggable="false" style="animation-delay:0.3s">
       <div class="card-icon" style="background:#e0e7ff;">🏖️</div>
       <div class="card-body"><h3>Autoservicio — Leave Requests</h3><p>Solicitudes de permisos y ausencias</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://carolmorgan.latticehq.com/" target="_blank" class="card" style="animation-delay:0.33s">
+    <a href="https://carolmorgan.latticehq.com/" target="_blank" class="card" draggable="false" style="animation-delay:0.33s">
       <div class="card-icon" style="background:#e0e7ff;">📈</div>
       <div class="card-body"><h3>Lattice</h3><p>Plataforma de gestión de desempeño</p></div>
       <span class="card-arrow">→</span>
@@ -725,77 +1054,77 @@ footer .footer-links a:hover { color: #fff; }
     <span class="sec-count">14</span>
   </div>
   <div class="cards-grid">
-    <a href="https://drive.google.com/drive/folders/1Kk04g0LTvSP5d_1oetJmEfhH1IB_5c4d?usp=sharing" target="_blank" class="card" style="animation-delay:0.03s">
+    <a href="https://drive.google.com/drive/folders/1Kk04g0LTvSP5d_1oetJmEfhH1IB_5c4d?usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.03s">
       <div class="card-icon" style="background:#fef3c7;">📰</div>
       <div class="card-body"><h3>WAG Archives</h3><p>Archivos del WAG (Weekly Action Guide)</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://drive.google.com/drive/folders/1VNAzcP7vWc78-n2l7nhSwhbe7i1iz-T0?usp=sharing" target="_blank" class="card" style="animation-delay:0.06s">
+    <a href="https://drive.google.com/drive/folders/1VNAzcP7vWc78-n2l7nhSwhbe7i1iz-T0?usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.06s">
       <div class="card-icon" style="background:#fef3c7;">📋</div>
       <div class="card-body"><h3>Staff Bulletin Archive</h3><p>Archivo de boletines del staff</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1usTFSQ6qE6vhOH_-znpfty4Yh3kzOUPKCAjCZhh16_Q/edit?usp=drive_link" target="_blank" class="card" style="animation-delay:0.09s">
+    <a href="https://docs.google.com/document/d/1usTFSQ6qE6vhOH_-znpfty4Yh3kzOUPKCAjCZhh16_Q/edit?usp=drive_link" target="_blank" class="card" draggable="false" style="animation-delay:0.09s">
       <div class="card-icon" style="background:#fef3c7;">📅</div>
       <div class="card-body"><h3>Staff Bulletin Calendar</h3><p>Calendario de boletines del staff</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://www.cms.edu.do/alumni-newsletter" target="_blank" class="card" style="animation-delay:0.12s">
+    <a href="https://www.cms.edu.do/alumni-newsletter" target="_blank" class="card" draggable="false" style="animation-delay:0.12s">
       <div class="card-icon" style="background:#fef3c7;">📬</div>
       <div class="card-body"><h3>Alumni Newsletter</h3><p>Newsletter de exalumnos</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://chat.whatsapp.com/BR6AxeY200vI1oTbQWHQiA" target="_blank" class="card" style="animation-delay:0.15s">
+    <a href="https://chat.whatsapp.com/BR6AxeY200vI1oTbQWHQiA" target="_blank" class="card" draggable="false" style="animation-delay:0.15s">
       <div class="card-icon" style="background:#fef3c7;">💬</div>
       <div class="card-body"><h3>Faculty & Staff WhatsApp Group</h3><p>Grupo de WhatsApp del staff</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://drive.google.com/drive/folders/0B3jq8aCPCpvlQ1g4TkFrVmNLbUk?resourcekey=0-vozuBvGO9gjWkVUDVTpQTg&usp=sharing" target="_blank" class="card" style="animation-delay:0.18s">
+    <a href="https://drive.google.com/drive/folders/0B3jq8aCPCpvlQ1g4TkFrVmNLbUk?resourcekey=0-vozuBvGO9gjWkVUDVTpQTg&usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.18s">
       <div class="card-icon" style="background:#fef3c7;">📸</div>
       <div class="card-body"><h3>CMS Photos/Videos Stock</h3><p>Banco de fotos y videos del colegio</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://open.spotify.com/show/6wG1FE0OeYiLpg9Y1x9mAw" target="_blank" class="card" style="animation-delay:0.21s">
+    <a href="https://open.spotify.com/show/6wG1FE0OeYiLpg9Y1x9mAw" target="_blank" class="card" draggable="false" style="animation-delay:0.21s">
       <div class="card-icon" style="background:#fef3c7;">🎙️</div>
       <div class="card-body"><h3>Shark Talk — Spotify</h3><p>Podcast Shark Talk en Spotify</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://podcasts.apple.com/us/podcast/shark-talk/id1609270507" target="_blank" class="card" style="animation-delay:0.24s">
+    <a href="https://podcasts.apple.com/us/podcast/shark-talk/id1609270507" target="_blank" class="card" draggable="false" style="animation-delay:0.24s">
       <div class="card-icon" style="background:#fef3c7;">🎧</div>
       <div class="card-body"><h3>Shark Talk — Apple Podcast</h3><p>Podcast Shark Talk en Apple Podcasts</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://www.instagram.com/cmssharks/" target="_blank" class="card" style="animation-delay:0.27s">
+    <a href="https://www.instagram.com/cmssharks/" target="_blank" class="card" draggable="false" style="animation-delay:0.27s">
       <div class="card-icon" style="background:#fef3c7;">📷</div>
       <div class="card-body"><h3>Sharks Instagram</h3><p>Instagram oficial del colegio</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://www.facebook.com/CMSSharks" target="_blank" class="card" style="animation-delay:0.3s">
+    <a href="https://www.facebook.com/CMSSharks" target="_blank" class="card" draggable="false" style="animation-delay:0.3s">
       <div class="card-icon" style="background:#fef3c7;">👍</div>
       <div class="card-body"><h3>Sharks Facebook</h3><p>Facebook oficial del colegio</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://www.instagram.com/alumnicms/" target="_blank" class="card" style="animation-delay:0.33s">
+    <a href="https://www.instagram.com/alumnicms/" target="_blank" class="card" draggable="false" style="animation-delay:0.33s">
       <div class="card-icon" style="background:#fef3c7;">🎓</div>
       <div class="card-body"><h3>Alumni Instagram</h3><p>Instagram de exalumnos</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://www.facebook.com/CarolMorganSchoolAlumniAssociation" target="_blank" class="card" style="animation-delay:0.36s">
+    <a href="https://www.facebook.com/CarolMorganSchoolAlumniAssociation" target="_blank" class="card" draggable="false" style="animation-delay:0.36s">
       <div class="card-icon" style="background:#fef3c7;">👥</div>
       <div class="card-body"><h3>Alumni Facebook</h3><p>Facebook de exalumnos</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://drive.google.com/drive/folders/1GfgBUPikWORkVJjds7MF6DZQLLDyY89-?usp=sharing" target="_blank" class="card" style="animation-delay:0.39s">
+    <a href="https://drive.google.com/drive/folders/1GfgBUPikWORkVJjds7MF6DZQLLDyY89-?usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.39s">
       <div class="card-icon" style="background:#fef3c7;">🖼️</div>
       <div class="card-body"><h3>Virtual Meeting Backgrounds</h3><p>Fondos virtuales para reuniones</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://www.canva.com/design/DAG5J2dp0zs/E9v5zdRDts6eWOr9MZ97Aw/edit" target="_blank" class="card" style="animation-delay:0.42s">
+    <a href="https://www.canva.com/design/DAG5J2dp0zs/E9v5zdRDts6eWOr9MZ97Aw/edit" target="_blank" class="card" draggable="false" style="animation-delay:0.42s">
       <div class="card-icon" style="background:#fef3c7;">📑</div>
       <div class="card-body"><h3>Presentations Template</h3><p>Plantilla de presentaciones Canva</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://www.canva.com/brand/kAGFfOdwf8g" target="_blank" class="card" style="animation-delay:0.45s">
+    <a href="https://www.canva.com/brand/kAGFfOdwf8g" target="_blank" class="card" draggable="false" style="animation-delay:0.45s">
       <div class="card-icon" style="background:#fef3c7;">🎨</div>
       <div class="card-body"><h3>CMS Brand Kit</h3><p>Kit de marca CMS en Canva</p></div>
       <span class="card-arrow">→</span>
@@ -811,37 +1140,37 @@ footer .footer-links a:hover { color: #fff; }
     <span class="sec-count">7</span>
   </div>
   <div class="cards-grid">
-    <a href="https://drive.google.com/file/d/1mt37jXPBwvKnkVGXLjW_6PyXxy0u1RVV/view?usp=sharing" target="_blank" class="card" style="animation-delay:0.03s">
+    <a href="https://drive.google.com/file/d/1mt37jXPBwvKnkVGXLjW_6PyXxy0u1RVV/view?usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.03s">
       <div class="card-icon" style="background:#fce7f3;">📘</div>
       <div class="card-body"><h3>Student / Parent Handbook — ES</h3><p>Manual de estudiantes y padres de Elementary</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1V1BiOFGZGfFWubvdWvhGeqrTi-aZtVg9P33tqM5eXxc/edit?tab=t.0" target="_blank" class="card" style="animation-delay:0.06s">
+    <a href="https://docs.google.com/document/d/1V1BiOFGZGfFWubvdWvhGeqrTi-aZtVg9P33tqM5eXxc/edit?tab=t.0" target="_blank" class="card" draggable="false" style="animation-delay:0.06s">
       <div class="card-icon" style="background:#fce7f3;">🔩</div>
       <div class="card-body"><h3>Nuts & Bolts — ES</h3><p>Procedimientos operativos de Elementary</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/forms/d/e/1FAIpQLSeLKinMCYmW56gLBNmC0g8PdKnJhYD2_sUj-tmQCFu0sscvNA/viewform" target="_blank" class="card" style="animation-delay:0.09s">
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSeLKinMCYmW56gLBNmC0g8PdKnJhYD2_sUj-tmQCFu0sscvNA/viewform" target="_blank" class="card" draggable="false" style="animation-delay:0.09s">
       <div class="card-icon" style="background:#fce7f3;">⚠️</div>
       <div class="card-body"><h3>Incident Report Form — ES</h3><p>Reporte de incidentes de Elementary</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1lA1QwnsRdu-3q8NpA4NDLaLi5dyo0ckcH6kT7BqB71g/edit?usp=sharing" target="_blank" class="card" style="animation-delay:0.12s">
+    <a href="https://docs.google.com/document/d/1lA1QwnsRdu-3q8NpA4NDLaLi5dyo0ckcH6kT7BqB71g/edit?usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.12s">
       <div class="card-icon" style="background:#fce7f3;">🏫</div>
       <div class="card-body"><h3>Staff & Room Number — ES</h3><p>Staff y números de salón de Elementary</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/spreadsheets/d/1Ipml8ylHig6nWLd5VEJ1LU1lYZqobhEyZFhKnAuGvNg/edit?gid=11561357#gid=11561357" target="_blank" class="card" style="animation-delay:0.15s">
+    <a href="https://docs.google.com/spreadsheets/d/1Ipml8ylHig6nWLd5VEJ1LU1lYZqobhEyZFhKnAuGvNg/edit?gid=11561357#gid=11561357" target="_blank" class="card" draggable="false" style="animation-delay:0.15s">
       <div class="card-icon" style="background:#fce7f3;">📊</div>
       <div class="card-body"><h3>Master Schedule — ES</h3><p>Horario maestro de Elementary</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://sites.google.com/cms.edu.do/mapcms/home" target="_blank" class="card" style="animation-delay:0.18s">
+    <a href="https://sites.google.com/cms.edu.do/mapcms/home" target="_blank" class="card" draggable="false" style="animation-delay:0.18s">
       <div class="card-icon" style="background:#fce7f3;">🗺️</div>
       <div class="card-body"><h3>MAP Support — ES</h3><p>Soporte MAP para Elementary</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://sites.google.com/cms.edu.do/sw-library/elementary-resources" target="_blank" class="card" style="animation-delay:0.21s">
+    <a href="https://sites.google.com/cms.edu.do/sw-library/elementary-resources" target="_blank" class="card" draggable="false" style="animation-delay:0.21s">
       <div class="card-icon" style="background:#fce7f3;">📚</div>
       <div class="card-body"><h3>ES Library</h3><p>Biblioteca de Elementary</p></div>
       <span class="card-arrow">→</span>
@@ -857,47 +1186,47 @@ footer .footer-links a:hover { color: #fff; }
     <span class="sec-count">9</span>
   </div>
   <div class="cards-grid">
-    <a href="https://docs.google.com/document/d/1PyHPPWFA3BpUL9vQHRX9yyRr97uGKwFLS26aq2-pAY8/edit?tab=t.0#heading=h.gjdgxs" target="_blank" class="card" style="animation-delay:0.03s">
+    <a href="https://docs.google.com/document/d/1PyHPPWFA3BpUL9vQHRX9yyRr97uGKwFLS26aq2-pAY8/edit?tab=t.0#heading=h.gjdgxs" target="_blank" class="card" draggable="false" style="animation-delay:0.03s">
       <div class="card-icon" style="background:#e0e7ff;">📘</div>
       <div class="card-body"><h3>Student / Parent Handbook — MS</h3><p>Manual de estudiantes y padres de MS</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://drive.google.com/file/d/12G0QkuJKA2psA_XyOAfOakGKFJRVgkXD/view" target="_blank" class="card" style="animation-delay:0.06s">
+    <a href="https://drive.google.com/file/d/12G0QkuJKA2psA_XyOAfOakGKFJRVgkXD/view" target="_blank" class="card" draggable="false" style="animation-delay:0.06s">
       <div class="card-icon" style="background:#e0e7ff;">📋</div>
       <div class="card-body"><h3>Program of Studies — MS</h3><p>Programa de estudios de MS</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/spreadsheets/d/1HS2vF3KznBtEdcS80UXjd58K710ntAkTxEIQAFDY1x4/edit?gid=1592087435#gid=1592087435" target="_blank" class="card" style="animation-delay:0.09s">
+    <a href="https://docs.google.com/spreadsheets/d/1HS2vF3KznBtEdcS80UXjd58K710ntAkTxEIQAFDY1x4/edit?gid=1592087435#gid=1592087435" target="_blank" class="card" draggable="false" style="animation-delay:0.09s">
       <div class="card-icon" style="background:#e0e7ff;">📊</div>
       <div class="card-body"><h3>Master Schedule — MS</h3><p>Horario maestro de MS</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1cJ27Oa14dOd6CvDLktzAfd8AedWDBHMfY8Ali4YGOCk/edit?tab=t.0" target="_blank" class="card" style="animation-delay:0.12s">
+    <a href="https://docs.google.com/document/d/1cJ27Oa14dOd6CvDLktzAfd8AedWDBHMfY8Ali4YGOCk/edit?tab=t.0" target="_blank" class="card" draggable="false" style="animation-delay:0.12s">
       <div class="card-icon" style="background:#e0e7ff;">⏰</div>
       <div class="card-body"><h3>MS Daily Schedule</h3><p>Horario diario de MS</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1uQTwE_oei9NzZKHmVmaMOlKOsZxiCJLLc8G4gURUwkA/edit?usp=sharing" target="_blank" class="card" style="animation-delay:0.15s">
+    <a href="https://docs.google.com/document/d/1uQTwE_oei9NzZKHmVmaMOlKOsZxiCJLLc8G4gURUwkA/edit?usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.15s">
       <div class="card-icon" style="background:#e0e7ff;">🔔</div>
       <div class="card-body"><h3>Bell Schedule — MS</h3><p>Horario de campanas de MS</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1TkMDsxkrOkFwGMJ_vdNlar9fXwVvAhdcPQkWySjFSUE/edit?usp=sharing" target="_blank" class="card" style="animation-delay:0.18s">
+    <a href="https://docs.google.com/document/d/1TkMDsxkrOkFwGMJ_vdNlar9fXwVvAhdcPQkWySjFSUE/edit?usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.18s">
       <div class="card-icon" style="background:#e0e7ff;">👥</div>
       <div class="card-body"><h3>GLL / Advisors / ITL — MS</h3><p>Guías y asesores de MS</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/11GLSPQeE6T-uTsDxomcDBTfzMfALMU6eB0Ei_qJPZEI/edit?usp=drive_link" target="_blank" class="card" style="animation-delay:0.21s">
+    <a href="https://docs.google.com/document/d/11GLSPQeE6T-uTsDxomcDBTfzMfALMU6eB0Ei_qJPZEI/edit?usp=drive_link" target="_blank" class="card" draggable="false" style="animation-delay:0.21s">
       <div class="card-icon" style="background:#e0e7ff;">📅</div>
       <div class="card-body"><h3>MS Calendar</h3><p>Calendario de MS</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1OXUllrw2-lCVKOKoRThx2x7TABVqRvKKysv2OYnz5So/edit?tab=t.0" target="_blank" class="card" style="animation-delay:0.24s">
+    <a href="https://docs.google.com/document/d/1OXUllrw2-lCVKOKoRThx2x7TABVqRvKKysv2OYnz5So/edit?tab=t.0" target="_blank" class="card" draggable="false" style="animation-delay:0.24s">
       <div class="card-icon" style="background:#e0e7ff;">🏠</div>
       <div class="card-body"><h3>MS Shark Houses</h3><p>Casas Shark de MS</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://sites.google.com/cms.edu.do/sw-library/home" target="_blank" class="card" style="animation-delay:0.27s">
+    <a href="https://sites.google.com/cms.edu.do/sw-library/home" target="_blank" class="card" draggable="false" style="animation-delay:0.27s">
       <div class="card-icon" style="background:#e0e7ff;">📚</div>
       <div class="card-body"><h3>MS / HS Library</h3><p>Biblioteca de MS y HS</p></div>
       <span class="card-arrow">→</span>
@@ -913,77 +1242,77 @@ footer .footer-links a:hover { color: #fff; }
     <span class="sec-count">14</span>
   </div>
   <div class="cards-grid">
-    <a href="https://drive.google.com/file/d/1hjHs0ASg4LgmX_ERKtLjHTsk1FzWKzZ8/view" target="_blank" class="card" style="animation-delay:0.03s">
+    <a href="https://drive.google.com/file/d/1hjHs0ASg4LgmX_ERKtLjHTsk1FzWKzZ8/view" target="_blank" class="card" draggable="false" style="animation-delay:0.03s">
       <div class="card-icon" style="background:#fee2e2;">📘</div>
       <div class="card-body"><h3>Student / Parent Handbook — HS</h3><p>Manual de estudiantes y padres de HS</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1JUa-Lldag_dbk_WRxyt88obgUbx7pt6jCZiuFiZTJfE/edit?usp=sharing" target="_blank" class="card" style="animation-delay:0.06s">
+    <a href="https://docs.google.com/document/d/1JUa-Lldag_dbk_WRxyt88obgUbx7pt6jCZiuFiZTJfE/edit?usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.06s">
       <div class="card-icon" style="background:#fee2e2;">⏰</div>
       <div class="card-body"><h3>Daily Schedules — HS</h3><p>Horarios diarios de HS</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://www.maialearning.com/#/" target="_blank" class="card" style="animation-delay:0.09s">
+    <a href="https://www.maialearning.com/#/" target="_blank" class="card" draggable="false" style="animation-delay:0.09s">
       <div class="card-icon" style="background:#fee2e2;">🎯</div>
       <div class="card-body"><h3>Maia Learning</h3><p>Plataforma Maia Learning</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://drive.google.com/file/d/10PIe_iV0dVz-L82nAq0Iy58bVC3lSqjf/view?usp=sharing" target="_blank" class="card" style="animation-delay:0.12s">
+    <a href="https://drive.google.com/file/d/10PIe_iV0dVz-L82nAq0Iy58bVC3lSqjf/view?usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.12s">
       <div class="card-icon" style="background:#fee2e2;">📋</div>
       <div class="card-body"><h3>Program of Studies — HS</h3><p>Programa de estudios de HS</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1kE37ntd01ZIY28npVtmiWytrZVg27fyBZYuzXVt70c0/edit?usp=sharing" target="_blank" class="card" style="animation-delay:0.15s">
+    <a href="https://docs.google.com/document/d/1kE37ntd01ZIY28npVtmiWytrZVg27fyBZYuzXVt70c0/edit?usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.15s">
       <div class="card-icon" style="background:#fee2e2;">👥</div>
       <div class="card-body"><h3>Advisory Schedule — HS</h3><p>Horario de advisory de HS</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/spreadsheets/d/1UcUT5rI1duZcY_XDRzQGgrAF13BxTzm4oFbHcZ08XXs/edit?gid=0#gid=0" target="_blank" class="card" style="animation-delay:0.18s">
+    <a href="https://docs.google.com/spreadsheets/d/1UcUT5rI1duZcY_XDRzQGgrAF13BxTzm4oFbHcZ08XXs/edit?gid=0#gid=0" target="_blank" class="card" draggable="false" style="animation-delay:0.18s">
       <div class="card-icon" style="background:#fee2e2;">📊</div>
       <div class="card-body"><h3>Master Schedule — HS</h3><p>Horario maestro de HS</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/spreadsheets/d/17JEVVRHZ8i1CHQmsdVZsDk57gDp-n7L1o1eu9Qvqc-I/edit?gid=797488942#gid=797488942" target="_blank" class="card" style="animation-delay:0.21s">
+    <a href="https://docs.google.com/spreadsheets/d/17JEVVRHZ8i1CHQmsdVZsDk57gDp-n7L1o1eu9Qvqc-I/edit?gid=797488942#gid=797488942" target="_blank" class="card" draggable="false" style="animation-delay:0.21s">
       <div class="card-icon" style="background:#fee2e2;">📅</div>
       <div class="card-body"><h3>25-26 HS Calendar</h3><p>Calendario HS 2025-2026</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://drive.google.com/file/d/1l7w3w-D3aGhIrnr8drk77eMffDXXbSZS/view?usp=share_link" target="_blank" class="card" style="animation-delay:0.24s">
+    <a href="https://drive.google.com/file/d/1l7w3w-D3aGhIrnr8drk77eMffDXXbSZS/view?usp=share_link" target="_blank" class="card" draggable="false" style="animation-delay:0.24s">
       <div class="card-icon" style="background:#fee2e2;">🎓</div>
       <div class="card-body"><h3>High School Profile</h3><p>Perfil de High School</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/spreadsheets/d/1HCSmh5XE5SvKYj97zrSBUDG9cKO5vKG7uM-cPhMuMsg/edit?usp=drive_link" target="_blank" class="card" style="animation-delay:0.27s">
+    <a href="https://docs.google.com/spreadsheets/d/1HCSmh5XE5SvKYj97zrSBUDG9cKO5vKG7uM-cPhMuMsg/edit?usp=drive_link" target="_blank" class="card" draggable="false" style="animation-delay:0.27s">
       <div class="card-icon" style="background:#fee2e2;">📋</div>
       <div class="card-body"><h3>Advisory Lists — HS</h3><p>Listas de advisory de HS</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/spreadsheets/d/1byjAVK-ttigxWoiyaAVKD3pBAqT6S-UryHpb-08j1RU/edit?gid=0#gid=0" target="_blank" class="card" style="animation-delay:0.3s">
+    <a href="https://docs.google.com/spreadsheets/d/1byjAVK-ttigxWoiyaAVKD3pBAqT6S-UryHpb-08j1RU/edit?gid=0#gid=0" target="_blank" class="card" draggable="false" style="animation-delay:0.3s">
       <div class="card-icon" style="background:#fee2e2;">📆</div>
       <div class="card-body"><h3>PL Calendar — HS</h3><p>Calendario de aprendizaje profesional HS</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://app.smartpass.app/" target="_blank" class="card" style="animation-delay:0.33s">
+    <a href="https://app.smartpass.app/" target="_blank" class="card" draggable="false" style="animation-delay:0.33s">
       <div class="card-icon" style="background:#fee2e2;">🎫</div>
       <div class="card-body"><h3>Smart Pass</h3><p>Sistema Smart Pass</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1Y-lXUqXBm7wYAZ4pJ88Iutb6MADlB8GUzQrXf21BKnE/edit" target="_blank" class="card" style="animation-delay:0.36s">
+    <a href="https://docs.google.com/document/d/1Y-lXUqXBm7wYAZ4pJ88Iutb6MADlB8GUzQrXf21BKnE/edit" target="_blank" class="card" draggable="false" style="animation-delay:0.36s">
       <div class="card-icon" style="background:#fee2e2;">📜</div>
       <div class="card-body"><h3>Club Doc & Procedures — HS</h3><p>Documento y procedimientos de clubes HS</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/11qtajJB7WvGEbSgIO4uY-N2OVOtsZ1JOFuuX7CBhjCM/edit?tab=t.0" target="_blank" class="card" style="animation-delay:0.39s">
+    <a href="https://docs.google.com/document/d/11qtajJB7WvGEbSgIO4uY-N2OVOtsZ1JOFuuX7CBhjCM/edit?tab=t.0" target="_blank" class="card" draggable="false" style="animation-delay:0.39s">
       <div class="card-icon" style="background:#fee2e2;">👀</div>
       <div class="card-body"><h3>HS Supervision Schedule</h3><p>Horario de supervisión de HS</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/forms/d/e/1FAIpQLScx5Vj_KQzrLqIW07pDRJ_uCZ1hlHESchaj2Vt40-v5exKtwg/viewform" target="_blank" class="card" style="animation-delay:0.42s">
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLScx5Vj_KQzrLqIW07pDRJ_uCZ1hlHESchaj2Vt40-v5exKtwg/viewform" target="_blank" class="card" draggable="false" style="animation-delay:0.42s">
       <div class="card-icon" style="background:#fee2e2;">📝</div>
       <div class="card-body"><h3>Grade Change Request Form</h3><p>Solicitud de cambio de notas</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1ShaU-7vkoSZo8unxQFSBycvPKP7ZWJFfSR1N8j0gBK4/edit?tab=t.0" target="_blank" class="card" style="animation-delay:0.45s">
+    <a href="https://docs.google.com/document/d/1ShaU-7vkoSZo8unxQFSBycvPKP7ZWJFfSR1N8j0gBK4/edit?tab=t.0" target="_blank" class="card" draggable="false" style="animation-delay:0.45s">
       <div class="card-icon" style="background:#fee2e2;">📏</div>
       <div class="card-body"><h3>Standards-based Grading Handbook</h3><p>Manual de calificación basada en estándares</p></div>
       <span class="card-arrow">→</span>
@@ -999,37 +1328,37 @@ footer .footer-links a:hover { color: #fff; }
     <span class="sec-count">7</span>
   </div>
   <div class="cards-grid">
-    <a href="https://drive.google.com/drive/folders/1oqa0cSNYiJBRVhFy9GK7diBnCUWx4TNR" target="_blank" class="card" style="animation-delay:0.03s">
+    <a href="https://drive.google.com/drive/folders/1oqa0cSNYiJBRVhFy9GK7diBnCUWx4TNR" target="_blank" class="card" draggable="false" style="animation-delay:0.03s">
       <div class="card-icon" style="background:#fef3c7;">🏆</div>
       <div class="card-body"><h3>CMS Cup</h3><p>Información de la CMS Cup</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://calendar.google.com/calendar/embed?src=c_d266c691bc4898a2271e0a6056b01db8210e039c7edf48e15748b3e1f66bcb96%40group.calendar.google.com&ctz=America%2FSanto_Domingo" target="_blank" class="card" style="animation-delay:0.06s">
+    <a href="https://calendar.google.com/calendar/embed?src=c_d266c691bc4898a2271e0a6056b01db8210e039c7edf48e15748b3e1f66bcb96%40group.calendar.google.com&ctz=America%2FSanto_Domingo" target="_blank" class="card" draggable="false" style="animation-delay:0.06s">
       <div class="card-icon" style="background:#fef3c7;">📅</div>
       <div class="card-body"><h3>Athletics Calendar</h3><p>Calendario deportivo</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1BfuvmPem07K0lH3M5mLIkK40H5K76zfFPXBaUrBoQ1g/edit?tab=t.0#heading=h.kb84adgxa3sp" target="_blank" class="card" style="animation-delay:0.09s">
+    <a href="https://docs.google.com/document/d/1BfuvmPem07K0lH3M5mLIkK40H5K76zfFPXBaUrBoQ1g/edit?tab=t.0#heading=h.kb84adgxa3sp" target="_blank" class="card" draggable="false" style="animation-delay:0.09s">
       <div class="card-icon" style="background:#fef3c7;">⏱️</div>
       <div class="card-body"><h3>Practice Schedules</h3><p>Horarios de práctica deportiva</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://drive.google.com/file/d/1-dEb7-y3upDQIvwECRUGh0hFG8iwt16W/view" target="_blank" class="card" style="animation-delay:0.12s">
+    <a href="https://drive.google.com/file/d/1-dEb7-y3upDQIvwECRUGh0hFG8iwt16W/view" target="_blank" class="card" draggable="false" style="animation-delay:0.12s">
       <div class="card-icon" style="background:#fef3c7;">📖</div>
       <div class="card-body"><h3>Coaches Handbook</h3><p>Manual de entrenadores</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://drive.google.com/drive/folders/1WmafM9FEPzWTMZu-15yWHB0JXDr_2rW4?usp=sharing" target="_blank" class="card" style="animation-delay:0.15s">
+    <a href="https://drive.google.com/drive/folders/1WmafM9FEPzWTMZu-15yWHB0JXDr_2rW4?usp=sharing" target="_blank" class="card" draggable="false" style="animation-delay:0.15s">
       <div class="card-icon" style="background:#fef3c7;">👥</div>
       <div class="card-body"><h3>Team Rosters</h3><p>Roster de equipos deportivos</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1Whj-YVEvRlipE9JcTXLdHoWGPtxp2iFm/edit" target="_blank" class="card" style="animation-delay:0.18s">
+    <a href="https://docs.google.com/document/d/1Whj-YVEvRlipE9JcTXLdHoWGPtxp2iFm/edit" target="_blank" class="card" draggable="false" style="animation-delay:0.18s">
       <div class="card-icon" style="background:#fef3c7;">✈️</div>
       <div class="card-body"><h3>Athletic Trip Permission Form</h3><p>Permiso de viaje deportivo</p></div>
       <span class="card-arrow">→</span>
     </a>
-    <a href="https://docs.google.com/document/d/1BfuvmPem07K0lH3M5mLIkK40H5K76zfFPXBaUrBoQ1g/edit" target="_blank" class="card" style="animation-delay:0.21s">
+    <a href="https://docs.google.com/document/d/1BfuvmPem07K0lH3M5mLIkK40H5K76zfFPXBaUrBoQ1g/edit" target="_blank" class="card" draggable="false" style="animation-delay:0.21s">
       <div class="card-icon" style="background:#fef3c7;">📋</div>
       <div class="card-body"><h3>Practice Schedules (Detailed)</h3><p>Horarios detallados de prácticas</p></div>
       <span class="card-arrow">→</span>
@@ -1056,7 +1385,50 @@ footer .footer-links a:hover { color: #fff; }
   <p style="margin-top:8px;font-size:0.7rem;color:rgba(255,255,255,0.35);">© 2026 Carol Morgan School. Todos los derechos reservados.</p>
 </footer>
 
+<!-- HISTORY DROPDOWN -->
+<div class="history-dropdown" id="historyDropdown">
+  <div class="hd-header">
+    <span>Historial reciente</span>
+    <button id="clearHistoryBtn">Limpiar</button>
+  </div>
+  <div id="historyList"></div>
+</div>
+
+<!-- TOOLTIP -->
+<div class="tooltip-preview" id="tooltipPreview">
+  <div class="tp-screenshot" id="tpScreenshot">🖥️</div>
+  <div class="tp-title" id="tpTitle"></div>
+  <div class="tp-desc" id="tpDesc"></div>
+  <div class="tp-meta"><span>●</span> Click to open</div>
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fabBtn">⚡</button>
+<div class="fab-menu" id="fabMenu">
+  <button class="fab-btn" id="fabShortcuts" title="Atajos">⌨<span class="fab-label">Atajos de teclado</span></button>
+  <button class="fab-btn" id="fabNewLink" title="Nuevo enlace">➕<span class="fab-label">Nuevo enlace</span></button>
+</div>
+
+<!-- SHORTCUTS OVERLAY -->
+<div class="shortcuts-overlay" id="shortcutsOverlay">
+  <div class="shortcuts-sheet">
+    <h2>Atajos de teclado</h2>
+    <div class="sc-grid">
+      <div class="sc-item"><span class="sc-key">G</span> Vista grid</div>
+      <div class="sc-item"><span class="sc-key">C</span> Vista compacta</div>
+      <div class="sc-item"><span class="sc-key">D</span> Modo oscuro</div>
+      <div class="sc-item"><span class="sc-key">V</span> Solo favoritos</div>
+      <div class="sc-item"><span class="sc-key">R</span> Historial</div>
+      <div class="sc-item"><span class="sc-key">N</span> Nuevo enlace</div>
+      <div class="sc-item"><span class="sc-key">Esc</span> Cerrar</div>
+      <div class="sc-item"><span class="sc-key">?</span> Esta ayuda</div>
+    </div>
+    <button class="sc-close" id="shortcutsClose">Cerrar</button>
+  </div>
+</div>
+
 <script>
+// ===== DOM REFS =====
 const navbar = document.getElementById('navbar');
 const searchInput = document.getElementById('searchInput');
 const searchClear = document.getElementById('searchClear');
@@ -1064,17 +1436,201 @@ const noResults = document.getElementById('noResults');
 const searchTerm = document.getElementById('searchTerm');
 const allCards = document.querySelectorAll('.card');
 const allSections = document.querySelectorAll('.section');
+const darkBtn = document.getElementById('darkBtn');
+const compactBtn = document.getElementById('compactBtn');
+const favsBtn = document.getElementById('favsBtn');
+const starBadge = document.getElementById('starBadge');
+const historyBtn = document.getElementById('historyBtn');
+const historyBadge = document.getElementById('historyBadge');
+const historyDropdown = document.getElementById('historyDropdown');
+const historyList = document.getElementById('historyList');
+const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+const fabBtn = document.getElementById('fabBtn');
+const fabMenu = document.getElementById('fabMenu');
+const fabShortcuts = document.getElementById('fabShortcuts');
+const fabNewLink = document.getElementById('fabNewLink');
+const shortcutsOverlay = document.getElementById('shortcutsOverlay');
+const shortcutsClose = document.getElementById('shortcutsClose');
+const tooltip = document.getElementById('tooltipPreview');
+const tpTitle = document.getElementById('tpTitle');
+const tpDesc = document.getElementById('tpDesc');
+const tpScreenshot = document.getElementById('tpScreenshot');
 
-document.getElementById('mobileToggle').addEventListener('click', () => {
-  document.getElementById('mobileToggle').classList.toggle('active');
-  document.getElementById('navLinks').classList.toggle('open');
+// ===== MOBILE TOGGLE =====
+const mobileToggle = document.getElementById('mobileToggle');
+const navLinks = document.getElementById('navLinks');
+mobileToggle.addEventListener('click', () => {
+  mobileToggle.classList.toggle('active');
+  navLinks.classList.toggle('open');
 });
 document.querySelectorAll('#navLinks a').forEach(a => a.addEventListener('click', () => {
-  document.getElementById('mobileToggle').classList.remove('active');
-  document.getElementById('navLinks').classList.remove('open');
+  mobileToggle.classList.remove('active');
+  navLinks.classList.remove('open');
 }));
 
+// ===== DARK MODE =====
+function initDarkMode() {
+  const saved = localStorage.getItem('launchpad-dark');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (saved === 'true' || (saved === null && prefersDark)) {
+    document.body.classList.add('dark');
+    darkBtn.textContent = '☀️';
+  } else {
+    darkBtn.textContent = '🌙';
+  }
+}
+function toggleDark() {
+  document.body.classList.toggle('dark');
+  const isDark = document.body.classList.contains('dark');
+  darkBtn.textContent = isDark ? '☀️' : '🌙';
+  localStorage.setItem('launchpad-dark', isDark);
+}
+darkBtn.addEventListener('click', toggleDark);
+
+// ===== COMPACT VIEW =====
+const mainContent = document.querySelector('.main-content');
+function initCompact() {
+  const saved = localStorage.getItem('launchpad-compact');
+  if (saved === 'true') {
+    mainContent.classList.add('compact');
+    compactBtn.textContent = '⊟';
+  } else {
+    compactBtn.textContent = '⊞';
+  }
+}
+function toggleCompact() {
+  mainContent.classList.toggle('compact');
+  const isCompact = mainContent.classList.contains('compact');
+  compactBtn.textContent = isCompact ? '⊟' : '⊞';
+  localStorage.setItem('launchpad-compact', isCompact);
+}
+compactBtn.addEventListener('click', toggleCompact);
+
+// ===== FAVORITES =====
+function getFavorites() {
+  try { return JSON.parse(localStorage.getItem('launchpad-favs')) || []; } catch { return []; }
+}
+function saveFavorites(favs) {
+  localStorage.setItem('launchpad-favs', JSON.stringify(favs));
+}
+function updateStarBadge() {
+  const count = getFavorites().length;
+  if (count > 0) { starBadge.textContent = count; starBadge.classList.add('visible'); }
+  else { starBadge.classList.remove('visible'); }
+}
+function addStarsToCards() {
+  const favs = getFavorites();
+  allCards.forEach(card => {
+    const btn = document.createElement('button');
+    btn.className = 'star-btn';
+    btn.textContent = '☆';
+    btn.setAttribute('aria-label', 'Marcar como favorito');
+    const url = card.getAttribute('href');
+    if (favs.includes(url)) btn.classList.add('starred');
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const favs2 = getFavorites();
+      const idx = favs2.indexOf(url);
+      if (idx > -1) { favs2.splice(idx, 1); btn.classList.remove('starred'); }
+      else { favs2.push(url); btn.classList.add('starred'); }
+      saveFavorites(favs2);
+      updateStarBadge();
+      if (favsBtn.classList.contains('active')) applyFavsFilter();
+    });
+    card.prepend(btn);
+  });
+}
+let favsFilterActive = false;
+function applyFavsFilter() {
+  const favs = getFavorites();
+  allCards.forEach(card => {
+    const url = card.getAttribute('href');
+    card.classList.toggle('card-hidden', !favs.includes(url));
+  });
+  allSections.forEach(section => {
+    const cards = section.querySelectorAll('.card');
+    let hasVisible = false;
+    cards.forEach(c => { if (!c.classList.contains('card-hidden')) hasVisible = true; });
+    section.style.display = hasVisible ? '' : 'none';
+  });
+  noResults.style.display = 'none';
+}
+function toggleFavs() {
+  favsFilterActive = !favsFilterActive;
+  favsBtn.classList.toggle('active', favsFilterActive);
+  if (favsFilterActive) {
+    applyFavsFilter();
+  } else {
+    filterCards();
+  }
+}
+favsBtn.addEventListener('click', toggleFavs);
+addStarsToCards();
+updateStarBadge();
+
+// ===== HISTORY =====
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem('launchpad-history')) || []; } catch { return []; }
+}
+function saveHistory(h) {
+  localStorage.setItem('launchpad-history', JSON.stringify(h));
+}
+function updateHistoryBadge() {
+  const count = getHistory().length;
+  if (count > 0) { historyBadge.textContent = count; historyBadge.classList.add('visible'); }
+  else { historyBadge.classList.remove('visible'); }
+}
+function renderHistory() {
+  const items = getHistory();
+  historyList.innerHTML = '';
+  if (items.length === 0) {
+    historyList.innerHTML = '<div class="hd-empty">No hay historial aún</div>';
+    return;
+  }
+  items.forEach(item => {
+    const el = document.createElement('a');
+    el.className = 'hd-item';
+    el.href = item.url;
+    el.target = '_blank';
+    el.innerHTML = `<div class="hd-icon" style="background:var(--primary-light)">🔗</div><span class="hd-title">${item.title}</span>`;
+    historyList.appendChild(el);
+  });
+}
+function trackHistory(card) {
+  const title = card.querySelector('h3')?.textContent || 'Enlace';
+  const url = card.getAttribute('href');
+  let items = getHistory();
+  items = items.filter(i => i.url !== url);
+  items.unshift({ title, url });
+  if (items.length > 8) items = items.slice(0, 8);
+  saveHistory(items);
+  updateHistoryBadge();
+}
+allCards.forEach(card => {
+  card.addEventListener('click', () => trackHistory(card));
+});
+historyBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  historyDropdown.classList.toggle('open');
+  renderHistory();
+});
+clearHistoryBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  saveHistory([]);
+  updateHistoryBadge();
+  renderHistory();
+});
+document.addEventListener('click', e => {
+  if (!historyDropdown.contains(e.target) && e.target !== historyBtn) {
+    historyDropdown.classList.remove('open');
+  }
+});
+updateHistoryBadge();
+
+// ===== SEARCH + CATEGORY FILTER =====
 function filterCards() {
+  if (favsFilterActive) return;
   const query = searchInput.value.toLowerCase().trim();
   let visibleCount = 0;
   searchClear.classList.toggle('visible', query.length > 0);
@@ -1107,6 +1663,8 @@ searchClear.addEventListener('click', () => {
 const catButtons = document.querySelectorAll('#categoryFilters button');
 catButtons.forEach(btn => {
   btn.addEventListener('click', () => {
+    favsFilterActive = false;
+    favsBtn.classList.remove('active');
     catButtons.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     const cat = btn.dataset.cat;
@@ -1123,6 +1681,143 @@ catButtons.forEach(btn => {
     });
   });
 });
+
+// ===== TOOLTIP PREVIEW =====
+let tooltipTimeout = null;
+allCards.forEach(card => {
+  card.addEventListener('mouseenter', e => {
+    clearTimeout(tooltipTimeout);
+    const title = card.querySelector('h3')?.textContent || '';
+    const desc = card.querySelector('p')?.textContent || '';
+    const icon = card.querySelector('.card-icon')?.textContent || '🔗';
+    tpTitle.textContent = title;
+    tpDesc.textContent = desc;
+    tpScreenshot.textContent = icon;
+    tooltipTimeout = setTimeout(() => {
+      tooltip.classList.add('visible');
+      positionTooltip(card);
+    }, 400);
+  });
+  card.addEventListener('mouseleave', () => {
+    clearTimeout(tooltipTimeout);
+    tooltip.classList.remove('visible');
+  });
+  card.addEventListener('mousemove', () => {
+    if (tooltip.classList.contains('visible')) positionTooltip(card);
+  });
+});
+function positionTooltip(card) {
+  const rect = card.getBoundingClientRect();
+  const tw = 240;
+  const th = tooltip.offsetHeight || 200;
+  let left = rect.right + 12;
+  let top = rect.top + rect.height / 2 - th / 2;
+  if (left + tw > window.innerWidth - 10) {
+    left = rect.left - tw - 12;
+  }
+  if (left < 10) {
+    left = rect.left;
+    top = rect.bottom + 8;
+  }
+  if (top + th > window.innerHeight - 10) {
+    top = window.innerHeight - th - 10;
+  }
+  if (top < 10) top = 10;
+  tooltip.style.left = left + 'px';
+  tooltip.style.top = top + 'px';
+}
+
+// ===== FAB =====
+fabBtn.addEventListener('click', () => {
+  fabMenu.classList.toggle('open');
+});
+fabShortcuts.addEventListener('click', () => {
+  fabMenu.classList.remove('open');
+  shortcutsOverlay.classList.add('open');
+});
+fabNewLink.addEventListener('click', () => {
+  fabMenu.classList.remove('open');
+  const url = prompt('Pega el URL del nuevo enlace:');
+  if (url && url.trim()) {
+    window.open(url.trim(), '_blank');
+  }
+});
+shortcutsClose.addEventListener('click', () => {
+  shortcutsOverlay.classList.remove('open');
+});
+shortcutsOverlay.addEventListener('click', e => {
+  if (e.target === shortcutsOverlay) shortcutsOverlay.classList.remove('open');
+});
+
+// ===== KEYBOARD SHORTCUTS =====
+const ignoreKeys = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
+document.addEventListener('keydown', e => {
+  if (ignoreKeys.has(e.target.tagName) || e.target.isContentEditable) return;
+  const k = e.key.toLowerCase();
+  if (k === 'd') { e.preventDefault(); toggleDark(); }
+  else if (k === 'c') { e.preventDefault(); toggleCompact(); }
+  else if (k === 'v') { e.preventDefault(); toggleFavs(); }
+  else if (k === 'r') { e.preventDefault(); historyBtn.click(); }
+  else if (k === 'g') {
+    e.preventDefault();
+    if (mainContent.classList.contains('compact')) toggleCompact();
+  }
+  else if (k === 'n') { e.preventDefault(); fabNewLink.click(); }
+  else if (k === '?') { e.preventDefault(); shortcutsOverlay.classList.toggle('open'); }
+  else if (k === 'escape') {
+    shortcutsOverlay.classList.remove('open');
+    historyDropdown.classList.remove('open');
+    fabMenu.classList.remove('open');
+  }
+});
+
+// ===== PARTICLES =====
+function createParticles() {
+  const hero = document.querySelector('.hero');
+  const container = document.createElement('div');
+  container.className = 'particles';
+  hero.prepend(container);
+  const emojis = ['⬡', '⬢', '✦', '✧', '◇', '○'];
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = 4 + Math.random() * 8;
+    p.style.width = size + 'px';
+    p.style.height = size + 'px';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDuration = (12 + Math.random() * 20) + 's';
+    p.style.animationDelay = (Math.random() * 15) + 's';
+    p.style.background = `rgba(255,255,255,${0.03 + Math.random() * 0.08})`;
+    container.appendChild(p);
+  }
+}
+createParticles();
+
+// ===== SCROLL BLUR =====
+let scrollRAF = null;
+window.addEventListener('scroll', () => {
+  if (scrollRAF) cancelAnimationFrame(scrollRAF);
+  scrollRAF = requestAnimationFrame(() => {
+    navbar.classList.toggle('scrolled', window.scrollY > 10);
+  });
+});
+
+// ===== INTERSECTION OBSERVER =====
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.animationPlayState = 'running';
+    }
+  });
+}, { threshold: 0.05 });
+allCards.forEach(card => {
+  card.style.animationPlayState = 'paused';
+  observer.observe(card);
+});
+
+// ===== INIT =====
+initDarkMode();
+initCompact();
 </script>
 </body>
 </html>
