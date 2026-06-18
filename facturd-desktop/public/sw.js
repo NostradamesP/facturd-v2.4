@@ -26,6 +26,11 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
+  const isHttpRequest = url.protocol === 'http:' || url.protocol === 'https:';
+
+  if (!isHttpRequest) {
+    return;
+  }
 
   if (event.request.mode === 'navigate') {
     event.respondWith(
@@ -51,6 +56,13 @@ self.addEventListener('fetch', (event) => {
     );
     return;
   }
+
+  const isSameOriginAsset = url.origin === self.location.origin;
+  if (!isSameOriginAsset) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const fetched = fetch(event.request).then((response) => {

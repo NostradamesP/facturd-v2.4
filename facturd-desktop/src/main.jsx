@@ -5,7 +5,7 @@ import './i18n'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary'
 
-const APP_VERSION = '2026-06-18-2';
+const APP_VERSION = '2026-06-18-3';
 const APP_VERSION_KEY = 'facturd_app_version';
 
 async function resetLegacyOfflineState() {
