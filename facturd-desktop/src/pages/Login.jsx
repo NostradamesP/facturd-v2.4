@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/api';
 import { usePageTitle } from '../hooks/usePageTitle';
 import landingHtml from '../assets/facturdLanding.html?raw';
-import '../assets/facturdLanding.css';
+import landingCss from '../assets/facturdLanding.css?raw';
 
 function getErrorMessage(err, fallback) {
   const detail = err.response?.data?.detail;
@@ -34,6 +34,42 @@ const enterMobileButton = `
   </button>
 `;
 
+const landingBridgeCss = `
+  .facturd-enter-btn {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 8px;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .facturd-hero-enter {
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .facturd-enter-fab {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 120;
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: #ffffff;
+    color: #121212;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.25);
+    cursor: pointer;
+  }
+  @media (max-width: 768px) {
+    .facturd-enter-fab { display: inline-flex; }
+    .facturd-enter-btn { display: none !important; }
+  }
+`;
+
 const enhancedLandingHtml = `${landingHtml}`
   .replace(
     '<a href="#contact" class="btn-nav">Demo</a>',
@@ -48,6 +84,8 @@ const enhancedLandingHtml = `${landingHtml}`
 export default function Login() {
   const { t } = useTranslation();
   usePageTitle(t('Login'));
+  const landingHostRef = useRef(null);
+  const landingRootRef = useRef(null);
   const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -61,10 +99,18 @@ export default function Login() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const navbar = document.getElementById('navbar');
-    const mobileToggle = document.getElementById('mobileToggle');
-    const navLinks = document.getElementById('navLinks');
-    const animated = Array.from(document.querySelectorAll('.animate-on-view'));
+    if (!landingHostRef.current) return;
+    if (!landingRootRef.current) {
+      landingRootRef.current = landingHostRef.current.attachShadow({ mode: 'open' });
+    }
+
+    const root = landingRootRef.current;
+    root.innerHTML = `<style>${landingCss}\n${landingBridgeCss}</style>${enhancedLandingHtml}`;
+
+    const navbar = root.getElementById('navbar');
+    const mobileToggle = root.getElementById('mobileToggle');
+    const navLinks = root.getElementById('navLinks');
+    const animated = Array.from(root.querySelectorAll('.animate-on-view'));
 
     const onScroll = () => navbar?.classList.toggle('scrolled', window.scrollY > 40);
     onScroll();
@@ -82,14 +128,14 @@ export default function Login() {
       navLinks?.classList.remove('open');
     };
 
-    const navAnchors = Array.from(document.querySelectorAll('#navLinks a'));
+    const navAnchors = Array.from(root.querySelectorAll('#navLinks a'));
     navAnchors.forEach((anchor) => anchor.addEventListener('click', closeMobile));
 
-    const faqCards = Array.from(document.querySelectorAll('#faq .feature-card'));
+    const faqCards = Array.from(root.querySelectorAll('#faq .feature-card'));
     const toggleFaq = (event) => event.currentTarget.classList.toggle('expanded');
     faqCards.forEach((card) => card.addEventListener('click', toggleFaq));
 
-    const authTriggers = Array.from(document.querySelectorAll('[data-auth-open]'));
+    const authTriggers = Array.from(root.querySelectorAll('[data-auth-open]'));
     const openAuth = (event) => {
       const mode = event.currentTarget.getAttribute('data-auth-open');
       setIsRegistering(mode === 'register');
@@ -344,7 +390,7 @@ export default function Login() {
           .facturd-auth-title { font-size: 1.6rem; }
         }
       `}</style>
-      <div dangerouslySetInnerHTML={{ __html: enhancedLandingHtml }} />
+      <div ref={landingHostRef} />
 
       {authOpen && (
         <div className="facturd-auth-overlay" onClick={() => setAuthOpen(false)}>
