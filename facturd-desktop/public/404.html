@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="refresh" content="0; url=./" />
+    <title>FactuRD</title>
+    <script>
+      (function () {
+        const { pathname, search, hash } = window.location;
+        const repoBase = '/facturd-v2.4';
+        const appPath = pathname.startsWith(repoBase) ? pathname.slice(repoBase.length) : pathname;
+        sessionStorage.setItem(
+          'facturd_pages_redirect',
+          `${repoBase}${appPath}${search}${hash}`,
+        );
+        window.location.replace(`${repoBase}/`);
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>

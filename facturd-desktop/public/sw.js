@@ -1,9 +1,10 @@
 const CACHE = 'facturd-v1';
+const BASE_PATH = self.location.pathname.replace(/sw\.js$/, '');
 const PRECACHE_URLS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icon-192.svg',
+  `${BASE_PATH}`,
+  `${BASE_PATH}index.html`,
+  `${BASE_PATH}manifest.json`,
+  `${BASE_PATH}icon-192.svg`,
 ];
 
 self.addEventListener('install', (event) => {
