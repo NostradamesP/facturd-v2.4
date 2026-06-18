@@ -101,9 +101,9 @@ export default function Sidebar({ isOpen = true, onClose }) {
   return (
     <>
       <aside className={`
-        fixed lg:relative lg:left-0 top-0 h-full w-64 bg-surface-container border-r border-outline-variant/20 flex flex-col py-5 gap-y-1 z-50
+        fixed inset-y-0 left-0 w-64 shrink-0 bg-surface-container border-r border-outline-variant/20 flex flex-col py-5 gap-y-1 z-50
         transition-transform duration-300 ease-in-out
-        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0
       `}>
         <div className="px-5 mb-6">

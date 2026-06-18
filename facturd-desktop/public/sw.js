@@ -1,4 +1,4 @@
-const CACHE = 'facturd-v1';
+const CACHE = 'facturd-v2';
 const BASE_PATH = self.location.pathname.replace(/sw\.js$/, '');
 const PRECACHE_URLS = [
   `${BASE_PATH}`,
@@ -17,7 +17,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
+      Promise.all(keys.filter((k) => k.startsWith('facturd-') && k !== CACHE).map((k) => caches.delete(k)))
     )
   );
   self.clients.claim();
@@ -26,6 +26,25 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
+
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(`${BASE_PATH}index.html`, clone));
+          }
+          return response;
+        })
+        .catch(async () => {
+          const cached = await caches.match(`${BASE_PATH}index.html`);
+          return cached || Response.error();
+        })
+    );
+    return;
+  }
+
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(event.request).catch(() => caches.match(event.request))

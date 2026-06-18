@@ -26,15 +26,16 @@ export default function Layout() {
   return (
     <div className="flex min-h-screen bg-surface">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      
+      <div className="hidden lg:block w-64 shrink-0" aria-hidden="true" />
+
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
-      
-      <main className="flex-1 min-w-0 h-full overflow-y-auto custom-scrollbar bg-surface relative w-full">
+
+      <main className="flex-1 min-h-screen w-full overflow-x-hidden overflow-y-auto custom-scrollbar bg-surface relative">
         <Header title={title} onMenuClick={() => setSidebarOpen(true)} />
         <div className="p-4 lg:p-8 w-full max-w-none">
           <Outlet />
