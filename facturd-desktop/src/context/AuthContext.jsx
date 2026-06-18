@@ -8,6 +8,12 @@ const API_URL = `${import.meta.env.VITE_API_URL || '/api'}`.replace(/\/?$/, '/')
 
 const AuthContext = createContext(null);
 
+function clearAuthStorage() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('refresh_token');
+  localStorage.removeItem('facturd_empresa_branding');
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [empresa, setEmpresa] = useState(null);
@@ -26,7 +32,11 @@ export function AuthProvider({ children }) {
     if (!refreshToken) return;
     console.log('[Auth] Proactive refresh scheduled, refreshing token...');
     try {
-      const res = await axios.post(`${API_URL}auth/refresh`, { refresh_token: refreshToken });
+      const res = await axios.post(
+        `${API_URL}auth/refresh`,
+        { refresh_token: refreshToken },
+        { withCredentials: true },
+      );
       const { token, refresh_token: newRefresh } = res.data;
       localStorage.setItem('token', token);
       if (newRefresh) localStorage.setItem('refresh_token', newRefresh);
@@ -37,8 +47,10 @@ export function AuthProvider({ children }) {
       }
     } catch (err) {
       console.warn('[Auth] Refresh failed, clearing tokens:', err.message);
-      localStorage.removeItem('token');
-      localStorage.removeItem('refresh_token');
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+      clearAuthStorage();
+      setUser(null);
+      setEmpresa(null);
     }
   }, []);
 
@@ -64,7 +76,7 @@ export function AuthProvider({ children }) {
           }
         } catch (error) {
           console.error('Auth check failed:', error);
-          localStorage.removeItem('token');
+          clearAuthStorage();
         }
       }
       setLoading(false);
@@ -74,6 +86,7 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const res = await authService.login(email, password);
+    if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
     localStorage.setItem('token', res.data.token);
     if (res.data.refresh_token) {
       localStorage.setItem('refresh_token', res.data.refresh_token);
@@ -102,9 +115,10 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
-    localStorage.removeItem('token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('facturd_empresa_branding');
+    authService.logout().catch((error) => {
+      console.warn('Logout request failed:', error.message);
+    });
+    clearAuthStorage();
     setUser(null);
     setEmpresa(null);
   };

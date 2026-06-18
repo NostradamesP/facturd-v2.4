@@ -4,6 +4,7 @@ const API_URL = `${import.meta.env.VITE_API_URL || '/api'}`.replace(/\/?$/, '/')
 
 const api = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -57,7 +58,11 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
       try {
-        const res = await axios.post(`${API_URL}auth/refresh`, { refresh_token: refreshToken });
+        const res = await axios.post(
+          `${API_URL}auth/refresh`,
+          { refresh_token: refreshToken },
+          { withCredentials: true },
+        );
         const { token, refresh_token: newRefresh } = res.data;
         localStorage.setItem('token', token);
         if (newRefresh) localStorage.setItem('refresh_token', newRefresh);
@@ -102,6 +107,7 @@ export const authService = {
   login: (email, password) => api.post('auth/login', { email, password }),
   register: (data) => api.post('auth/register', data),
   getMe: () => api.get('auth/me'),
+  logout: () => api.post('auth/logout'),
 };
 
 export const facturasService = {

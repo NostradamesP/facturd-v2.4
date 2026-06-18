@@ -31,6 +31,16 @@ def _set_token_cookie(response: Response, token: str, max_age: int):
     )
 
 
+def _clear_token_cookie(response: Response):
+    response.delete_cookie(
+        key="token",
+        httponly=True,
+        samesite="none" if settings.RENDER else "lax",
+        secure=bool(settings.RENDER),
+        path="/",
+    )
+
+
 @router.post("/register", status_code=201, response_model=LoginResponse)
 def register(user_data: UserCreate, response: Response, db: Session = Depends(get_db)):
     existing_user = db.query(models.User).filter(models.User.email == user_data.email).first()
@@ -132,3 +142,10 @@ def refresh_token(body: RefreshRequest, response: Response, db: Session = Depend
     _set_token_cookie(response, new_access, settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
 
     return RefreshResponse(token=new_access, refresh_token=new_refresh)
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(response: Response):
+    _clear_token_cookie(response)
+    response.status_code = status.HTTP_204_NO_CONTENT
+    return response

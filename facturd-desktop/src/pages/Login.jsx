@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/api';
 import { usePageTitle } from '../hooks/usePageTitle';
+import landingHtml from '../assets/facturdLanding.html?raw';
+import '../assets/facturdLanding.css';
 
 function getErrorMessage(err, fallback) {
   const detail = err.response?.data?.detail;
@@ -19,6 +21,30 @@ function getErrorMessage(err, fallback) {
   return fallback;
 }
 
+const enterDesktopButton = `
+  <button type="button" class="btn-nav facturd-enter-btn" data-auth-open="login">
+    <span class="material-symbols-outlined" style="font-size:16px;">person</span>
+    Entrar
+  </button>
+`;
+
+const enterMobileButton = `
+  <button type="button" class="facturd-enter-fab" data-auth-open="login" aria-label="Entrar">
+    <span class="material-symbols-outlined">person</span>
+  </button>
+`;
+
+const enhancedLandingHtml = `${landingHtml}`
+  .replace(
+    '<a href="#contact" class="btn-nav">Demo</a>',
+    `<a href="#contact" class="btn-nav">Demo</a>${enterDesktopButton}`,
+  )
+  .replace(
+    '<div class="cta-group">',
+    `<div class="cta-group">
+      <button type="button" class="btn-secondary facturd-hero-enter" data-auth-open="login">Entrar al sistema</button>`,
+  ) + enterMobileButton;
+
 export default function Login() {
   const { t } = useTranslation();
   usePageTitle(t('Login'));
@@ -30,23 +56,82 @@ export default function Login() {
   const [empresaNombre, setEmpresaNombre] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const branding = (() => {
+  useEffect(() => {
+    const navbar = document.getElementById('navbar');
+    const mobileToggle = document.getElementById('mobileToggle');
+    const navLinks = document.getElementById('navLinks');
+    const animated = Array.from(document.querySelectorAll('.animate-on-view'));
+
+    const onScroll = () => navbar?.classList.toggle('scrolled', window.scrollY > 40);
+    onScroll();
+    window.addEventListener('scroll', onScroll);
+
+    const toggleMobile = () => {
+      mobileToggle?.classList.toggle('active');
+      navLinks?.classList.toggle('open');
+    };
+
+    mobileToggle?.addEventListener('click', toggleMobile);
+
+    const closeMobile = () => {
+      mobileToggle?.classList.remove('active');
+      navLinks?.classList.remove('open');
+    };
+
+    const navAnchors = Array.from(document.querySelectorAll('#navLinks a'));
+    navAnchors.forEach((anchor) => anchor.addEventListener('click', closeMobile));
+
+    const faqCards = Array.from(document.querySelectorAll('#faq .feature-card'));
+    const toggleFaq = (event) => event.currentTarget.classList.toggle('expanded');
+    faqCards.forEach((card) => card.addEventListener('click', toggleFaq));
+
+    const authTriggers = Array.from(document.querySelectorAll('[data-auth-open]'));
+    const openAuth = (event) => {
+      const mode = event.currentTarget.getAttribute('data-auth-open');
+      setIsRegistering(mode === 'register');
+      setAuthOpen(true);
+      setError('');
+      closeMobile();
+    };
+    authTriggers.forEach((trigger) => trigger.addEventListener('click', openAuth));
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+    animated.forEach((element) => observer.observe(element));
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      mobileToggle?.removeEventListener('click', toggleMobile);
+      navAnchors.forEach((anchor) => anchor.removeEventListener('click', closeMobile));
+      faqCards.forEach((card) => card.removeEventListener('click', toggleFaq));
+      authTriggers.forEach((trigger) => trigger.removeEventListener('click', openAuth));
+      animated.forEach((element) => observer.unobserve(element));
+      observer.disconnect();
+    };
+  }, []);
+
+  const branding = useMemo(() => {
     try {
       return JSON.parse(localStorage.getItem('facturd_empresa_branding') || '{}');
-    } catch { return {}; }
-  })();
+    } catch {
+      return {};
+    }
+  }, []);
 
   const sistemaNombre = branding.nombre_sistema || branding.nombre || 'FactuRD';
-  const sistemaLogo = branding.logo_url;
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    
+
     try {
       await login(email, password);
       navigate('/dashboard');
@@ -61,7 +146,7 @@ export default function Login() {
     e.preventDefault();
     setError('');
     setLoading(true);
-    
+
     try {
       await authService.register({
         email,
@@ -79,126 +164,279 @@ export default function Login() {
     }
   };
 
-  const handleSubmit = isRegistering ? handleRegister : handleLogin;
-
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
-      <div className="w-full max-w-md p-8">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center text-on-primary mx-auto mb-4">
-            {sistemaLogo ? (
-              <img src={sistemaLogo} alt={sistemaNombre} className="w-10 h-10 object-contain" />
-            ) : (
-              <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>
-                account_balance_wallet
-              </span>
-            )}
+    <>
+      <style>{`
+        .facturd-enter-btn {
+          display: inline-flex !important;
+          align-items: center;
+          gap: 8px;
+          border: 0;
+          cursor: pointer;
+          font-family: inherit;
+        }
+        .facturd-hero-enter {
+          cursor: pointer;
+          font-family: inherit;
+        }
+        .facturd-enter-fab {
+          position: fixed;
+          right: 18px;
+          bottom: 18px;
+          z-index: 120;
+          width: 56px;
+          height: 56px;
+          border-radius: 999px;
+          border: 1px solid rgba(255,255,255,0.12);
+          background: #ffffff;
+          color: #121212;
+          display: none;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 18px 40px rgba(0,0,0,0.25);
+          cursor: pointer;
+        }
+        .facturd-auth-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 200;
+          background: rgba(0,0,0,0.65);
+          backdrop-filter: blur(12px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 24px;
+        }
+        .facturd-auth-modal {
+          width: min(100%, 460px);
+          max-height: calc(100vh - 48px);
+          overflow-y: auto;
+          background: #111111;
+          color: #e8e8e8;
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 24px;
+          padding: 28px;
+          box-shadow: 0 30px 80px rgba(0,0,0,0.45);
+        }
+        .facturd-auth-head {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 16px;
+          margin-bottom: 20px;
+        }
+        .facturd-auth-kicker {
+          font-size: 0.76rem;
+          font-weight: 700;
+          letter-spacing: 0.25em;
+          text-transform: uppercase;
+          color: #777;
+          margin-bottom: 8px;
+        }
+        .facturd-auth-title {
+          font-size: 2rem;
+          font-weight: 800;
+          line-height: 1.05;
+          letter-spacing: -0.04em;
+        }
+        .facturd-auth-close {
+          width: 42px;
+          height: 42px;
+          border-radius: 999px;
+          border: 1px solid rgba(255,255,255,0.1);
+          background: rgba(255,255,255,0.04);
+          color: #fff;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .facturd-auth-copy {
+          color: #8a8a8a;
+          font-size: 0.92rem;
+          line-height: 1.7;
+          margin-bottom: 20px;
+        }
+        .facturd-auth-error {
+          margin-bottom: 16px;
+          border: 1px solid rgba(255,99,99,0.2);
+          background: rgba(255,99,99,0.12);
+          color: #ffd0d0;
+          border-radius: 14px;
+          padding: 12px 14px;
+          font-size: 0.88rem;
+        }
+        .facturd-auth-form {
+          display: grid;
+          gap: 14px;
+        }
+        .facturd-auth-form label {
+          display: grid;
+          gap: 8px;
+          font-size: 0.88rem;
+          color: #b8b8b8;
+        }
+        .facturd-auth-input {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          border: 1px solid rgba(255,255,255,0.1);
+          background: rgba(255,255,255,0.04);
+          border-radius: 14px;
+          padding: 0 14px;
+        }
+        .facturd-auth-input input {
+          width: 100%;
+          border: 0;
+          outline: none;
+          background: transparent;
+          color: #fff;
+          font: inherit;
+          padding: 14px 0;
+          box-shadow: none;
+        }
+        .facturd-auth-input .material-symbols-outlined {
+          color: #6f6f6f;
+          font-size: 20px;
+        }
+        .facturd-auth-submit {
+          margin-top: 4px;
+          border: 0;
+          border-radius: 14px;
+          background: #ffffff;
+          color: #111111;
+          font: inherit;
+          font-weight: 700;
+          padding: 14px 18px;
+          cursor: pointer;
+        }
+        .facturd-auth-toggle {
+          margin-top: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          color: #8a8a8a;
+          font-size: 0.9rem;
+        }
+        .facturd-auth-toggle button {
+          background: transparent;
+          border: 0;
+          color: #ffffff;
+          font: inherit;
+          font-weight: 700;
+          cursor: pointer;
+          box-shadow: none;
+          padding: 0;
+        }
+        @media (max-width: 768px) {
+          .facturd-enter-fab { display: inline-flex; }
+          .facturd-enter-btn { display: none !important; }
+        }
+        @media (max-width: 480px) {
+          .facturd-auth-overlay { padding: 0; align-items: flex-end; }
+          .facturd-auth-modal {
+            width: 100%;
+            max-height: 92vh;
+            border-radius: 24px 24px 0 0;
+            padding: 24px 18px 20px;
+          }
+          .facturd-auth-title { font-size: 1.6rem; }
+        }
+      `}</style>
+      <div dangerouslySetInnerHTML={{ __html: enhancedLandingHtml }} />
+
+      {authOpen && (
+        <div className="facturd-auth-overlay" onClick={() => setAuthOpen(false)}>
+          <div className="facturd-auth-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="facturd-auth-head">
+              <div>
+                <div className="facturd-auth-kicker">{isRegistering ? 'Registro' : 'Entrar'}</div>
+                <div className="facturd-auth-title">
+                  {isRegistering ? `Crea tu acceso en ${sistemaNombre}` : `Entrar a ${sistemaNombre}`}
+                </div>
+              </div>
+              <button type="button" className="facturd-auth-close" onClick={() => setAuthOpen(false)}>
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <div className="facturd-auth-copy">
+              Usa tu usuario y contraseña sin salir de la landing.
+            </div>
+
+            {error && <div className="facturd-auth-error">{error}</div>}
+
+            <form className="facturd-auth-form" onSubmit={isRegistering ? handleRegister : handleLogin}>
+              {isRegistering && (
+                <>
+                  <label>
+                    <span>{t('Nombre')}</span>
+                    <div className="facturd-auth-input">
+                      <span className="material-symbols-outlined">badge</span>
+                      <input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" required />
+                    </div>
+                  </label>
+                  <label>
+                    <span>{t('Nombre de Empresa')}</span>
+                    <div className="facturd-auth-input">
+                      <span className="material-symbols-outlined">business</span>
+                      <input value={empresaNombre} onChange={(e) => setEmpresaNombre(e.target.value)} autoComplete="organization" required />
+                    </div>
+                  </label>
+                  <label>
+                    <span>{t('RNC')}</span>
+                    <div className="facturd-auth-input">
+                      <span className="material-symbols-outlined">receipt_long</span>
+                      <input value={empresaRnc} onChange={(e) => setEmpresaRnc(e.target.value)} autoComplete="off" required />
+                    </div>
+                  </label>
+                </>
+              )}
+
+              <label>
+                <span>{t('Correo Electrónico')}</span>
+                <div className="facturd-auth-input">
+                  <span className="material-symbols-outlined">person</span>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
+                    placeholder="demo@facturd-demo.com"
+                    required
+                  />
+                </div>
+              </label>
+
+              <label>
+                <span>{t('Contraseña')}</span>
+                <div className="facturd-auth-input">
+                  <span className="material-symbols-outlined">lock</span>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete={isRegistering ? 'new-password' : 'current-password'}
+                    required
+                  />
+                </div>
+              </label>
+
+              <button type="submit" className="facturd-auth-submit" disabled={loading}>
+                {loading ? (isRegistering ? t('Registrando...') : t('Iniciando...')) : (isRegistering ? t('Registrarse') : t('Iniciar Sesión'))}
+              </button>
+            </form>
+
+            <div className="facturd-auth-toggle">
+              <span>{isRegistering ? t('¿Ya tienes cuenta?') : t('¿No tienes cuenta?')}</span>
+              <button type="button" onClick={() => setIsRegistering((current) => !current)}>
+                {isRegistering ? t('Inicia sesión') : t('Regístrate')}
+              </button>
+            </div>
           </div>
-          <h1 className="font-['Manrope'] text-2xl font-extrabold text-[#2a3439]">
-            {sistemaNombre}
-          </h1>
-          <p className="text-on-surface-variant mt-2">{t('Sistema de Facturación DGII')}</p>
         </div>
-
-        <div className="bg-surface-container-lowest p-8 rounded-2xl shadow-lg">
-          <h2 className="text-xl font-bold text-on-surface mb-6">{isRegistering ? t('Crear Cuenta') : t('Iniciar Sesión')}</h2>
-          
-          {error && (
-            <div className="bg-error-container text-on-error-container p-3 rounded-lg mb-4 text-sm">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {isRegistering && (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-on-surface mb-1">
-                    {t('Nombre')}
-                  </label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    autoComplete="name"
-                    className="w-full px-4 py-3 rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                    required={isRegistering}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-on-surface mb-1">
-                    {t('Nombre de Empresa')}
-                  </label>
-                  <input
-                    type="text"
-                    value={empresaNombre}
-                    onChange={(e) => setEmpresaNombre(e.target.value)}
-                    autoComplete="organization"
-                    className="w-full px-4 py-3 rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                    required={isRegistering}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-on-surface mb-1">
-                    {t('RNC')}
-                  </label>
-                  <input
-                    type="text"
-                    value={empresaRnc}
-                    onChange={(e) => setEmpresaRnc(e.target.value)}
-                    autoComplete="off"
-                    className="w-full px-4 py-3 rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                    required={isRegistering}
-                  />
-                </div>
-              </>
-            )}
-            <div>
-              <label className="block text-sm font-medium text-on-surface mb-1">
-                {t('Correo Electrónico')}
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                className="w-full px-4 py-3 rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-on-surface mb-1">
-                {t('Contraseña')}
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                className="w-full px-4 py-3 rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-primary text-on-primary py-3 rounded-lg font-semibold hover:bg-primary-dim transition-colors disabled:opacity-50"
-            >
-              {loading ? (isRegistering ? t('Registrando...') : t('Iniciando...')) : (isRegistering ? t('Registrarse') : t('Iniciar Sesión'))}
-            </button>
-          </form>
-        </div>
-
-        <p className="text-center text-sm text-on-surface-variant mt-6">
-          {isRegistering ? (
-            <>{t('¿Ya tienes cuenta?')} <span className="text-primary font-medium cursor-pointer py-3 inline-block" onClick={() => setIsRegistering(false)}>{t('Inicia sesión')}</span></>
-          ) : (
-            <>{t('¿No tienes cuenta?')} <span className="text-primary font-medium cursor-pointer py-3 inline-block" onClick={() => setIsRegistering(true)}>{t('Regístrate')}</span></>
-          )}
-        </p>
-      </div>
-    </div>
+      )}
+    </>
   );
 }

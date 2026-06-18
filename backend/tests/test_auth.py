@@ -12,5 +12,14 @@ def test_login_invalid_credentials():
     assert response.status_code in (401, 400, 404)
 
 def test_root():
-    # If there's a root or health check
-    pass
+    response = client.get("/api/health")
+    assert response.status_code == 200
+    assert response.json()["status"] == "ok"
+
+
+def test_logout_clears_auth_cookie():
+    response = client.post("/api/auth/logout")
+    assert response.status_code == 204
+    set_cookie = response.headers.get("set-cookie", "")
+    assert "token=" in set_cookie
+    assert "Max-Age=0" in set_cookie or "expires=" in set_cookie.lower()

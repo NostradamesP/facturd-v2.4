@@ -180,20 +180,42 @@ def upsert_demo_data() -> None:
                 ncf="E410000000001",
                 tipo_ncf=models.TipoNCF.E41,
                 secuencia=1,
-                fecha=datetime.now(timezone.utc) - timedelta(days=4),
-
                 fecha_vencimiento=datetime.now(timezone.utc) + timedelta(days=26),
-
                 fecha=datetime.now(timezone.utc) - timedelta(days=1),
+                subtotal=subtotal,
+                descuento=0,
+                itbis=itbis,
+                total=total,
+                estado=models.EstadoFactura.PAGADA,
+                nota="Factura demo creada automaticamente",
+            )
+            db.add(factura)
+            db.flush()
 
-                fecha_validez=datetime.now(timezone.utc) + timedelta(days=14),
-
-                firmado_at=datetime.now(timezone.utc) - timedelta(days=4, minutes=-2),
-
-                enviado_at=datetime.now(timezone.utc) - timedelta(days=4, minutes=-1),
-
-                respondido_at=datetime.now(timezone.utc) - timedelta(days=4),
-            ))
+            detalle_servicio = models.DetalleFactura(
+                id=generar_id(),
+                factura_id=factura.id,
+                producto_id=producto_objs[0].id,
+                descripcion=producto_objs[0].nombre,
+                cantidad=1,
+                precio_unitario=45000,
+                descuento=0,
+                itbis=0,
+                total=45000,
+            )
+            detalle_producto = models.DetalleFactura(
+                id=generar_id(),
+                factura_id=factura.id,
+                producto_id=producto_objs[2].id,
+                descripcion=producto_objs[2].nombre,
+                cantidad=1,
+                precio_unitario=18500,
+                descuento=0,
+                itbis=itbis,
+                total=18500 + itbis,
+            )
+            db.add(detalle_servicio)
+            db.add(detalle_producto)
 
         db.commit()
         print("Demo listo")

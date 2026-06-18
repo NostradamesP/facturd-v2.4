@@ -1,3 +1,4 @@
+import os
 import pytest
 import uuid
 import random
@@ -6,9 +7,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+os.environ.setdefault("JWT_SECRET", "test-secret")
+
 from app.main import app, _rate_limit_store
 from app.database import Base, get_db
-from app.utils import pwd_context
 
 
 def _generar_rnc_valido() -> str:
