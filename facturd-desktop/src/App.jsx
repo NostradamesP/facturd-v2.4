@@ -69,15 +69,24 @@ function AppRoutes() {
 
 export default function App() {
   const isGitHubPages = typeof window !== 'undefined' && window.location.hostname.endsWith('github.io');
-  const Router = isGitHubPages ? HashRouter : BrowserRouter;
 
   return (
-    <Router basename={import.meta.env.BASE_URL}>
-      <ToastProvider>
-        <AuthProvider>
-          <AppRoutes />
-        </AuthProvider>
-      </ToastProvider>
-    </Router>
+    isGitHubPages ? (
+      <HashRouter>
+        <ToastProvider>
+          <AuthProvider>
+            <AppRoutes />
+          </AuthProvider>
+        </ToastProvider>
+      </HashRouter>
+    ) : (
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
+        <ToastProvider>
+          <AuthProvider>
+            <AppRoutes />
+          </AuthProvider>
+        </ToastProvider>
+      </BrowserRouter>
+    )
   );
 }
