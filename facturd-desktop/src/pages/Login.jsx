@@ -335,6 +335,7 @@ export default function Login() {
         .facturd-auth-popover {
           position: fixed;
           z-index: 200;
+          color-scheme: dark;
           width: min(360px, calc(100vw - 24px));
           max-height: calc(100vh - 24px);
           overflow-y: auto;
@@ -417,11 +418,26 @@ export default function Login() {
           width: 100%;
           border: 0;
           outline: none;
-          background: transparent;
+          background: transparent !important;
           color: #fff;
+          caret-color: #fff;
           font: inherit;
           padding: 10px 0;
           box-shadow: none;
+        }
+        .facturd-auth-input input:-webkit-autofill,
+        .facturd-auth-input input:-webkit-autofill:hover,
+        .facturd-auth-input input:-webkit-autofill:focus,
+        .facturd-auth-input input:-webkit-autofill:active {
+          -webkit-text-fill-color: #ffffff !important;
+          caret-color: #ffffff;
+          box-shadow: 0 0 0 1000px #171717 inset !important;
+          -webkit-box-shadow: 0 0 0 1000px #171717 inset !important;
+          transition: background-color 9999s ease-out 0s;
+        }
+        .facturd-auth-input input::selection {
+          background: rgba(255,255,255,0.2);
+          color: #ffffff;
         }
         .facturd-auth-input .material-symbols-outlined {
           color: #6f6f6f;
