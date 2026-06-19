@@ -121,6 +121,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
+  const [authPosition, setAuthPosition] = useState(null);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -180,7 +181,27 @@ export default function Login() {
     const authTriggers = Array.from(root.querySelectorAll('[data-auth-open]'));
     const openAuth = (event) => {
       const mode = event.currentTarget.getAttribute('data-auth-open');
+      const rect = event.currentTarget.getBoundingClientRect();
+      const panelWidth = Math.min(360, window.innerWidth - 24);
+      const left = Math.min(
+        Math.max(12, rect.right - panelWidth),
+        window.innerWidth - panelWidth - 12,
+      );
+      const roomBelow = window.innerHeight - rect.bottom;
+      const openBelow = roomBelow >= 320 || roomBelow >= rect.top;
+
       setIsRegistering(mode === 'register');
+      setAuthPosition(openBelow
+        ? {
+            top: rect.bottom + 10,
+            left,
+            maxHeight: window.innerHeight - rect.bottom - 22,
+          }
+        : {
+            bottom: window.innerHeight - rect.top + 10,
+            left,
+            maxHeight: rect.top - 22,
+          });
       setAuthOpen(true);
       setError('');
       closeMobile();
@@ -206,6 +227,25 @@ export default function Login() {
       observer.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    if (!authOpen) return undefined;
+
+    const closePopover = () => setAuthOpen(false);
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') closePopover();
+    };
+
+    window.addEventListener('keydown', closeOnEscape);
+    window.addEventListener('resize', closePopover);
+    window.addEventListener('scroll', closePopover, { passive: true });
+
+    return () => {
+      window.removeEventListener('keydown', closeOnEscape);
+      window.removeEventListener('resize', closePopover);
+      window.removeEventListener('scroll', closePopover);
+    };
+  }, [authOpen]);
 
   const branding = useMemo(() => {
     try {
@@ -286,52 +326,55 @@ export default function Login() {
           box-shadow: 0 18px 40px rgba(0,0,0,0.25);
           cursor: pointer;
         }
-        .facturd-auth-overlay {
+        .facturd-auth-dismiss {
           position: fixed;
           inset: 0;
-          z-index: 200;
-          background: rgba(0,0,0,0.65);
-          backdrop-filter: blur(12px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 24px;
+          z-index: 190;
+          background: transparent;
         }
-        .facturd-auth-modal {
-          width: min(100%, 460px);
-          max-height: calc(100vh - 48px);
+        .facturd-auth-popover {
+          position: fixed;
+          z-index: 200;
+          width: min(360px, calc(100vw - 24px));
+          max-height: calc(100vh - 24px);
           overflow-y: auto;
           background: #111111;
           color: #e8e8e8;
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 24px;
-          padding: 28px;
-          box-shadow: 0 30px 80px rgba(0,0,0,0.45);
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 16px;
+          padding: 18px;
+          box-shadow: 0 18px 50px rgba(0,0,0,0.5);
+          animation: facturd-popover-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes facturd-popover-in {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
         }
         .facturd-auth-head {
           display: flex;
-          align-items: flex-start;
+          align-items: center;
           justify-content: space-between;
-          gap: 16px;
-          margin-bottom: 20px;
+          gap: 12px;
+          margin-bottom: 10px;
         }
         .facturd-auth-kicker {
-          font-size: 0.76rem;
+          font-size: 0.64rem;
           font-weight: 700;
-          letter-spacing: 0.25em;
+          letter-spacing: 0.2em;
           text-transform: uppercase;
           color: #777;
-          margin-bottom: 8px;
+          margin-bottom: 3px;
         }
         .facturd-auth-title {
-          font-size: 2rem;
+          font-size: 1.25rem;
           font-weight: 800;
-          line-height: 1.05;
-          letter-spacing: -0.04em;
+          line-height: 1.15;
+          letter-spacing: -0.025em;
         }
         .facturd-auth-close {
-          width: 42px;
-          height: 42px;
+          width: 32px;
+          height: 32px;
+          flex: 0 0 auto;
           border-radius: 999px;
           border: 1px solid rgba(255,255,255,0.1);
           background: rgba(255,255,255,0.04);
@@ -341,39 +384,34 @@ export default function Login() {
           align-items: center;
           justify-content: center;
         }
-        .facturd-auth-copy {
-          color: #8a8a8a;
-          font-size: 0.92rem;
-          line-height: 1.7;
-          margin-bottom: 20px;
-        }
+        .facturd-auth-close .material-symbols-outlined { font-size: 18px; }
         .facturd-auth-error {
-          margin-bottom: 16px;
+          margin-bottom: 10px;
           border: 1px solid rgba(255,99,99,0.2);
           background: rgba(255,99,99,0.12);
           color: #ffd0d0;
-          border-radius: 14px;
-          padding: 12px 14px;
-          font-size: 0.88rem;
+          border-radius: 10px;
+          padding: 9px 10px;
+          font-size: 0.78rem;
         }
         .facturd-auth-form {
           display: grid;
-          gap: 14px;
+          gap: 10px;
         }
         .facturd-auth-form label {
           display: grid;
-          gap: 8px;
-          font-size: 0.88rem;
+          gap: 5px;
+          font-size: 0.78rem;
           color: #b8b8b8;
         }
         .facturd-auth-input {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 8px;
           border: 1px solid rgba(255,255,255,0.1);
           background: rgba(255,255,255,0.04);
-          border-radius: 14px;
-          padding: 0 14px;
+          border-radius: 10px;
+          padding: 0 11px;
         }
         .facturd-auth-input input {
           width: 100%;
@@ -382,32 +420,32 @@ export default function Login() {
           background: transparent;
           color: #fff;
           font: inherit;
-          padding: 14px 0;
+          padding: 10px 0;
           box-shadow: none;
         }
         .facturd-auth-input .material-symbols-outlined {
           color: #6f6f6f;
-          font-size: 20px;
+          font-size: 18px;
         }
         .facturd-auth-submit {
-          margin-top: 4px;
+          margin-top: 2px;
           border: 0;
-          border-radius: 14px;
+          border-radius: 10px;
           background: #ffffff;
           color: #111111;
           font: inherit;
           font-weight: 700;
-          padding: 14px 18px;
+          padding: 11px 14px;
           cursor: pointer;
         }
         .facturd-auth-toggle {
-          margin-top: 16px;
+          margin-top: 12px;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 12px;
+          gap: 10px;
           color: #8a8a8a;
-          font-size: 0.9rem;
+          font-size: 0.78rem;
         }
         .facturd-auth-toggle button {
           background: transparent;
@@ -424,21 +462,20 @@ export default function Login() {
           .facturd-enter-btn { display: none !important; }
         }
         @media (max-width: 480px) {
-          .facturd-auth-overlay { padding: 0; align-items: flex-end; }
-          .facturd-auth-modal {
-            width: 100%;
-            max-height: 92vh;
-            border-radius: 24px 24px 0 0;
-            padding: 24px 18px 20px;
+          .facturd-auth-popover {
+            width: calc(100vw - 24px);
+            max-height: calc(100vh - 24px);
+            padding: 16px;
           }
-          .facturd-auth-title { font-size: 1.6rem; }
+          .facturd-auth-title { font-size: 1.15rem; }
         }
       `}</style>
       <div ref={landingHostRef} />
 
       {authOpen && (
-        <div className="facturd-auth-overlay" onClick={() => setAuthOpen(false)}>
-          <div className="facturd-auth-modal" onClick={(e) => e.stopPropagation()}>
+        <>
+          <div className="facturd-auth-dismiss" onClick={() => setAuthOpen(false)} />
+          <div className="facturd-auth-popover" style={authPosition || undefined}>
             <div className="facturd-auth-head">
               <div>
                 <div className="facturd-auth-kicker">{isRegistering ? 'Registro' : 'Entrar'}</div>
@@ -449,10 +486,6 @@ export default function Login() {
               <button type="button" className="facturd-auth-close" aria-label="Cerrar" onClick={() => setAuthOpen(false)}>
                 <span className="material-symbols-outlined">close</span>
               </button>
-            </div>
-
-            <div className="facturd-auth-copy">
-              Usa tu usuario y contraseña sin salir de la landing.
             </div>
 
             {error && <div className="facturd-auth-error">{error}</div>}
@@ -525,7 +558,7 @@ export default function Login() {
               </button>
             </div>
           </div>
-        </div>
+        </>
       )}
     </>
   );
