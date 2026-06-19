@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const API_URL = `${import.meta.env.VITE_API_URL || '/api'}`.replace(/\/?$/, '/');
+export const AUTH_EXPIRED_EVENT = 'facturd:auth-expired';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -33,6 +34,12 @@ function processQueue(proceed, data) {
   failedQueue = [];
 }
 
+function expireSession() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('refresh_token');
+  window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -43,8 +50,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('auth/')) {
       const refreshToken = localStorage.getItem('refresh_token');
       if (!refreshToken) {
-        localStorage.removeItem('token');
-        window.location.href = '/login';
+        expireSession();
         return Promise.reject(error);
       }
       if (isRefreshing) {
@@ -71,9 +77,7 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch {
         processQueue(false, null);
-        localStorage.removeItem('token');
-        localStorage.removeItem('refresh_token');
-        window.location.href = '/login';
+        expireSession();
         return Promise.reject(error);
       } finally {
         isRefreshing = false;
@@ -91,7 +95,13 @@ const unwrapItems = (request) =>
 
 export function decodeToken(token) {
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
+    const segment = token?.split('.')[1];
+    if (!segment) return null;
+    const normalized = segment.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
+    const payload = JSON.parse(decodeURIComponent(
+      Array.from(atob(padded), (char) => `%${char.charCodeAt(0).toString(16).padStart(2, '0')}`).join(''),
+    ));
     return payload;
   } catch {
     return null;

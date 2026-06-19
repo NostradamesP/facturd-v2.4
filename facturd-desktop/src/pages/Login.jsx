@@ -35,6 +35,16 @@ const enterMobileButton = `
 `;
 
 const landingBridgeCss = `
+  :host {
+    display: block;
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #121212;
+    color: #e8e8e8;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
   .facturd-enter-btn {
     display: inline-flex !important;
     align-items: center;
@@ -100,6 +110,8 @@ export default function Login() {
 
   useEffect(() => {
     if (!landingHostRef.current) return;
+    const previousBodyBackground = document.body.style.backgroundColor;
+    document.body.style.backgroundColor = '#121212';
     if (!landingRootRef.current) {
       landingRootRef.current = landingHostRef.current.attachShadow({ mode: 'open' });
     }
@@ -128,12 +140,26 @@ export default function Login() {
       navLinks?.classList.remove('open');
     };
 
-    const navAnchors = Array.from(root.querySelectorAll('#navLinks a'));
-    navAnchors.forEach((anchor) => anchor.addEventListener('click', closeMobile));
+    const sectionAnchors = Array.from(root.querySelectorAll('a[href^="#"]'));
+    const navigateToSection = (event) => {
+      event.preventDefault();
+      const targetId = event.currentTarget.getAttribute('href')?.slice(1);
+      const target = targetId ? root.getElementById(targetId) : null;
+      target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      closeMobile();
+    };
+    sectionAnchors.forEach((anchor) => anchor.addEventListener('click', navigateToSection));
 
     const faqCards = Array.from(root.querySelectorAll('#faq .feature-card'));
     const toggleFaq = (event) => event.currentTarget.classList.toggle('expanded');
     faqCards.forEach((card) => card.addEventListener('click', toggleFaq));
+
+    const demoForm = root.querySelector('#contact form');
+    const submitDemo = (event) => {
+      event.preventDefault();
+      window.alert('Gracias por tu interés. Te contactaremos pronto.');
+    };
+    demoForm?.addEventListener('submit', submitDemo);
 
     const authTriggers = Array.from(root.querySelectorAll('[data-auth-open]'));
     const openAuth = (event) => {
@@ -153,10 +179,12 @@ export default function Login() {
     animated.forEach((element) => observer.observe(element));
 
     return () => {
+      document.body.style.backgroundColor = previousBodyBackground;
       window.removeEventListener('scroll', onScroll);
       mobileToggle?.removeEventListener('click', toggleMobile);
-      navAnchors.forEach((anchor) => anchor.removeEventListener('click', closeMobile));
+      sectionAnchors.forEach((anchor) => anchor.removeEventListener('click', navigateToSection));
       faqCards.forEach((card) => card.removeEventListener('click', toggleFaq));
+      demoForm?.removeEventListener('submit', submitDemo);
       authTriggers.forEach((trigger) => trigger.removeEventListener('click', openAuth));
       animated.forEach((element) => observer.unobserve(element));
       observer.disconnect();
@@ -402,7 +430,7 @@ export default function Login() {
                   {isRegistering ? `Crea tu acceso en ${sistemaNombre}` : `Entrar a ${sistemaNombre}`}
                 </div>
               </div>
-              <button type="button" className="facturd-auth-close" onClick={() => setAuthOpen(false)}>
+              <button type="button" className="facturd-auth-close" aria-label="Cerrar" onClick={() => setAuthOpen(false)}>
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>

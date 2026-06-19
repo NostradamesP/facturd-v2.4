@@ -1,28 +1,34 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './components/Toast';
-import Layout from './components/Layout';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Facturas from './pages/Facturas';
-import DisenoFactura from './pages/DisenoFactura';
-import Clientes from './pages/Clientes';
-import Proveedores from './pages/Proveedores';
-import Inventario from './pages/Inventario';
-import Cobros from './pages/Cobros';
-import Gastos from './pages/Gastos';
-import Reportes from './pages/Reportes';
-import Empresa from './pages/Empresa';
+
+const Layout = lazy(() => import('./components/Layout'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Facturas = lazy(() => import('./pages/Facturas'));
+const DisenoFactura = lazy(() => import('./pages/DisenoFactura'));
+const Clientes = lazy(() => import('./pages/Clientes'));
+const Proveedores = lazy(() => import('./pages/Proveedores'));
+const Inventario = lazy(() => import('./pages/Inventario'));
+const Cobros = lazy(() => import('./pages/Cobros'));
+const Gastos = lazy(() => import('./pages/Gastos'));
+const Reportes = lazy(() => import('./pages/Reportes'));
+const Empresa = lazy(() => import('./pages/Empresa'));
+
+function LoadingScreen() {
+  return <div className="min-h-screen flex items-center justify-center">Cargando...</div>;
+}
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Cargando...</div>;
+    return <LoadingScreen />;
   }
 
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 
   return children;
@@ -32,38 +38,40 @@ function AppRoutes() {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Cargando...</div>;
+    return <LoadingScreen />;
   }
 
   return (
-    <Routes>
-      <Route
-        path="/login"
-        element={user ? <Navigate to="/dashboard" /> : <Login />}
-      />
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<Navigate to="/dashboard" />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="facturas" element={<Facturas />} />
-        <Route path="diseno" element={<DisenoFactura />} />
-        <Route path="cotizaciones" element={<div className="text-center py-10">Quotes - Coming Soon</div>} />
-        <Route path="clientes" element={<Clientes />} />
-        <Route path="proveedores" element={<Proveedores />} />
-        <Route path="inventario" element={<Inventario />} />
-        <Route path="cobros" element={<Cobros />} />
-        <Route path="gastos" element={<Gastos />} />
-        <Route path="reportes" element={<Reportes />} />
-        <Route path="empresa" element={<Empresa />} />
-      </Route>
-      <Route path="*" element={<Navigate to="/dashboard" />} />
-    </Routes>
+    <Suspense fallback={<LoadingScreen />}>
+      <Routes>
+        <Route
+          path="/login"
+          element={user ? <Navigate to="/dashboard" replace /> : <Login />}
+        />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="facturas" element={<Facturas />} />
+          <Route path="diseno" element={<DisenoFactura />} />
+          <Route path="cotizaciones" element={<div className="text-center py-10">Quotes - Coming Soon</div>} />
+          <Route path="clientes" element={<Clientes />} />
+          <Route path="proveedores" element={<Proveedores />} />
+          <Route path="inventario" element={<Inventario />} />
+          <Route path="cobros" element={<Cobros />} />
+          <Route path="gastos" element={<Gastos />} />
+          <Route path="reportes" element={<Reportes />} />
+          <Route path="empresa" element={<Empresa />} />
+        </Route>
+        <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} replace />} />
+      </Routes>
+    </Suspense>
   );
 }
 

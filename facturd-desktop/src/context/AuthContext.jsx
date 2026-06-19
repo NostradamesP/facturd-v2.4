@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
-import { authService, decodeToken } from '../services/api';
+import { AUTH_EXPIRED_EVENT, authService, decodeToken } from '../services/api';
 import i18n from '../i18n';
 
 const REFRESH_MARGIN_MS = 5 * 60 * 1000;
@@ -55,8 +55,18 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    const handleAuthExpired = () => {
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+      refreshTimerRef.current = null;
+      clearAuthStorage();
+      setUser(null);
+      setEmpresa(null);
+    };
+
+    window.addEventListener(AUTH_EXPIRED_EVENT, handleAuthExpired);
     return () => {
       if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+      window.removeEventListener(AUTH_EXPIRED_EVENT, handleAuthExpired);
     };
   }, []);
 
