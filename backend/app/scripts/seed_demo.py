@@ -76,6 +76,15 @@ def upsert_demo_data() -> None:
             )
             db.add(empresa)
             db.flush()
+        else:
+            empresa.nombre = empresa.nombre or "FactuRD Demo SRL"
+            empresa.direccion = empresa.direccion or "Av. Demo 24, Santo Domingo"
+            empresa.telefono = empresa.telefono or "809-555-2400"
+            empresa.email = empresa.email or "demo@facturd.com"
+            empresa.secuencia_ncf = empresa.secuencia_ncf or 3
+            empresa.secuencia_ecf = empresa.secuencia_ecf or 3
+            empresa.itbis = empresa.itbis if empresa.itbis is not None else 18.0
+            empresa.regimen = empresa.regimen or "ORDINARIO"
 
         user = db.query(models.User).filter(models.User.email == DEMO_EMAIL).first()
         if not user:
@@ -119,6 +128,12 @@ def upsert_demo_data() -> None:
                     saldo_pendiente=0,
                 )
                 db.add(cliente)
+            else:
+                if not cliente.estatus:
+                    cliente.estatus = "ACTIVO"
+                cliente.nombre = cliente.nombre or nombre
+                cliente.direccion = cliente.direccion or direccion
+                cliente.telefono = cliente.telefono or telefono
             cliente_objs.append(cliente)
 
         productos = [
@@ -149,6 +164,12 @@ def upsert_demo_data() -> None:
                     activo=True,
                 )
                 db.add(producto)
+            else:
+                if producto.activo is None:
+                    producto.activo = True
+                producto.nombre = producto.nombre or nombre
+                if not producto.precio_unitario:
+                    producto.precio_unitario = precio
             producto_objs.append(producto)
 
         plantilla = db.query(models.PlantillaFactura).filter(
@@ -200,11 +221,20 @@ def upsert_demo_data() -> None:
             db.add(factura)
             db.flush()
 
+        if not cliente_objs[0].id:
+            raise RuntimeError("Cliente demo no disponible")
+
+        tiene_detalles = db.query(models.DetalleFactura).filter(
+            models.DetalleFactura.factura_id == factura.id
+        ).first() is not None
+
+        if not tiene_detalles:
+            itbis_producto = 18500 * 0.18
             detalle_servicio = models.DetalleFactura(
                 id=generar_id(),
                 factura_id=factura.id,
                 producto_id=producto_objs[0].id,
-                descripcion=producto_objs[0].nombre,
+                descripcion=producto_objs[0].nombre or "Implementacion e-CF",
                 cantidad=1,
                 precio_unitario=45000,
                 descuento=0,
@@ -215,12 +245,12 @@ def upsert_demo_data() -> None:
                 id=generar_id(),
                 factura_id=factura.id,
                 producto_id=producto_objs[2].id,
-                descripcion=producto_objs[2].nombre,
+                descripcion=producto_objs[2].nombre or "Impresora termica demo",
                 cantidad=1,
                 precio_unitario=18500,
                 descuento=0,
-                itbis=itbis,
-                total=18500 + itbis,
+                itbis=itbis_producto,
+                total=18500 + itbis_producto,
             )
             db.add(detalle_servicio)
             db.add(detalle_producto)
