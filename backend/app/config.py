@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     CORS_ORIGINS: str = "http://localhost:3000,http://localhost:8000"
+    RATE_LIMIT_WINDOW: int = 60
+    RATE_LIMIT_MAX: int = 30
     AUTO_CREATE_TABLES: bool = False
     RENDER: bool = False
 

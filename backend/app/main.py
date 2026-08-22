@@ -95,8 +95,8 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 
 _rate_limit_store: dict[str, list[float]] = defaultdict(list)
-RATE_LIMIT_WINDOW = 60
-RATE_LIMIT_MAX = 10
+RATE_LIMIT_WINDOW = settings.RATE_LIMIT_WINDOW
+RATE_LIMIT_MAX = settings.RATE_LIMIT_MAX
 
 
 @app.middleware("http")
