@@ -194,6 +194,23 @@ class ProveedorResponse(ProveedorBase):
     id: str
     empresa_id: str
 
+    @field_validator("costo_promedio", mode="before")
+    @classmethod
+    def costo_none_a_cero(cls, v):
+        return 0 if v is None else v
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def email_invalido_a_none(cls, v):
+        if v is None or v == "":
+            return None
+        try:
+            from pydantic import validate_email
+            validate_email(v)
+            return v
+        except Exception:
+            return None
+
     model_config = ConfigDict(from_attributes=True)
 
 class GastoBase(BaseModel):
