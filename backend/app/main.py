@@ -2,7 +2,10 @@ import logging
 import os
 import time
 from collections import defaultdict
+from pathlib import Path
 
+from alembic import command
+from alembic.config import Config as AlembicConfig
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -25,6 +28,31 @@ settings = get_settings()
 
 if settings.AUTO_CREATE_TABLES or settings.DATABASE_URL.startswith("sqlite"):
     Base.metadata.create_all(bind=engine)
+
+
+def _es_base_gestionada() -> bool:
+    return bool(settings.RENDER or "supabase" in settings.DATABASE_URL)
+
+
+def _aplicar_migraciones() -> None:
+    try:
+        base_dir = Path(__file__).resolve().parents[1]
+        alembic_cfg = AlembicConfig(str(base_dir / "alembic.ini"))
+        alembic_cfg.set_main_option("script_location", str(base_dir / "alembic"))
+        command.upgrade(alembic_cfg, "head")
+        logger.info("Migraciones aplicadas (alembic upgrade head)")
+    except Exception:
+        logger.exception("Error aplicando migraciones al arranque")
+
+
+def _ejecutar_seed_demo() -> None:
+    try:
+        from app.scripts.seed_demo import upsert_admin, upsert_demo_data
+        upsert_admin()
+        upsert_demo_data()
+        logger.info("Seed demo verificado/aplicado")
+    except Exception:
+        logger.exception("Error ejecutando seed demo al arranque")
 
 dgii_configure(
     endpoint=os.getenv("DGII_API_URL"),
@@ -135,6 +163,13 @@ app.include_router(pdf.router)
 app.include_router(dgii.router)
 app.include_router(usuarios.router)
 app.include_router(gastos.router)
+
+
+@app.on_event("startup")
+def _arranque_produccion() -> None:
+    if _es_base_gestionada():
+        _aplicar_migraciones()
+        _ejecutar_seed_demo()
 
 
 @app.get("/api/health")
