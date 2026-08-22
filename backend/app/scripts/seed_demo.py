@@ -88,6 +88,10 @@ def upsert_demo_data() -> None:
                 empresa_id=empresa.id,
             )
             db.add(user)
+        else:
+            user.password = pwd_context.hash(DEMO_PASSWORD)
+            user.role = models.Role.ADMIN
+            user.empresa_id = empresa.id
 
         clientes = [
             ("101999991", "Comercial Caribe Demo", "Av. Winston Churchill 100", "809-555-1101"),

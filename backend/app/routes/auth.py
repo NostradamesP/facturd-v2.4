@@ -92,7 +92,9 @@ def login(login_data: UserLogin, response: Response, db: Session = Depends(get_d
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
     
     empresa = db.query(models.Empresa).filter(models.Empresa.id == user.empresa_id).first()
-    
+    if not empresa:
+        raise HTTPException(status_code=500, detail="Empresa del usuario no encontrada")
+
     access_token = create_access_token(
         data={"sub": user.id},
         expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
