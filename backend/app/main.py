@@ -30,6 +30,9 @@ if settings.AUTO_CREATE_TABLES or settings.DATABASE_URL.startswith("sqlite"):
     Base.metadata.create_all(bind=engine)
 
 
+_estado_arranque: dict = {"migraciones": "no ejecutado", "seed": "no ejecutado", "gestionada": None}
+
+
 def _es_base_gestionada() -> bool:
     return bool(settings.RENDER or "supabase" in settings.DATABASE_URL)
 
@@ -40,8 +43,10 @@ def _aplicar_migraciones() -> None:
         alembic_cfg = AlembicConfig(str(base_dir / "alembic.ini"))
         alembic_cfg.set_main_option("script_location", str(base_dir / "alembic"))
         command.upgrade(alembic_cfg, "head")
+        _estado_arranque["migraciones"] = "ok"
         logger.info("Migraciones aplicadas (alembic upgrade head)")
-    except Exception:
+    except Exception as e:
+        _estado_arranque["migraciones"] = f"error: {e}"
         logger.exception("Error aplicando migraciones al arranque")
 
 
@@ -50,8 +55,10 @@ def _ejecutar_seed_demo() -> None:
         from app.scripts.seed_demo import upsert_admin, upsert_demo_data
         upsert_admin()
         upsert_demo_data()
+        _estado_arranque["seed"] = "ok"
         logger.info("Seed demo verificado/aplicado")
-    except Exception:
+    except Exception as e:
+        _estado_arranque["seed"] = f"error: {e}"
         logger.exception("Error ejecutando seed demo al arranque")
 
 dgii_configure(
@@ -167,6 +174,7 @@ app.include_router(gastos.router)
 
 @app.on_event("startup")
 def _arranque_produccion() -> None:
+    _estado_arranque["gestionada"] = _es_base_gestionada()
     if _es_base_gestionada():
         _aplicar_migraciones()
         _ejecutar_seed_demo()
@@ -174,7 +182,14 @@ def _arranque_produccion() -> None:
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "ok", "message": "FactuRD API running"}
+    url = settings.DATABASE_URL
+    host = url.split("@")[-1].split("/")[0] if "@" in url else "local"
+    return {
+        "status": "ok",
+        "message": "FactuRD API running",
+        "db_host": host,
+        "arranque": _estado_arranque,
+    }
 
 
 @app.get("/api/health/db")
