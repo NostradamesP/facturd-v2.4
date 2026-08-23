@@ -198,7 +198,24 @@ def upsert_demo_data() -> None:
             models.Factura.empresa_id == empresa.id,
             models.Factura.ncf == "E410000000001",
         ).first()
+        ncf_demo = "E410000000001"
         if not factura:
+            ocupado = db.query(models.Factura).filter(
+                models.Factura.ncf == ncf_demo,
+                models.Factura.empresa_id != empresa.id,
+            ).first()
+            if ocupado:
+                usados = {
+                    row[0]
+                    for row in db.query(models.Factura.ncf)
+                    .filter(models.Factura.ncf.like("E41%"))
+                    .all()
+                }
+                secuencia = 1
+                while f"E41{str(secuencia).zfill(10)}" in usados:
+                    secuencia += 1
+                ncf_demo = f"E41{str(secuencia).zfill(10)}"
+
             subtotal = 45000 + 18500
             itbis = 18500 * 0.18
             total = subtotal + itbis
@@ -206,9 +223,9 @@ def upsert_demo_data() -> None:
                 id=generar_id(),
                 empresa_id=empresa.id,
                 cliente_id=cliente_objs[0].id,
-                ncf="E410000000001",
+                ncf=ncf_demo,
                 tipo_ncf=models.TipoNCF.E41,
-                secuencia=1,
+                secuencia=int(ncf_demo[-10:]) or 1,
                 fecha_vencimiento=datetime.now(timezone.utc) + timedelta(days=26),
                 fecha=datetime.now(timezone.utc) - timedelta(days=1),
                 subtotal=subtotal,
